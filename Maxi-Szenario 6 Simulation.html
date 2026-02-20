@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Härteprüfung: Signalüberschneidung</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        .machine { position: relative; width: 600px; height: 400px; background: #e0e0e0; border: 4px solid #333; margin-top: 20px; overflow: hidden; }
+        .table { position: absolute; bottom: 50px; left: 50px; width: 250px; height: 20px; background: #555; }
+        .tile { position: absolute; bottom: 70px; left: 125px; width: 100px; height: 10px; background: #d2691e; transition: all 0.1s; }
+        .stamp { position: absolute; top: 0; left: 160px; width: 30px; height: 150px; background: #777; transition: top 0.1s linear; }
+        .stamp-head { position: absolute; bottom: -10px; left: -10px; width: 50px; height: 10px; background: #222; }
+        .door { position: absolute; bottom: 50px; right: 0; width: 250px; height: 250px; background: rgba(173, 216, 230, 0.5); border: 4px solid #888; transition: right 1s ease-in-out; }
+        
+        .panel { display: flex; gap: 20px; margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .led-group { display: flex; flex-direction: column; gap: 10px; }
+        .led-row { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .led { width: 20px; height: 20px; border-radius: 50%; background: #ccc; border: 2px solid #999; }
+        .led.active-green { background: #0f0; box-shadow: 0 0 10px #0f0; }
+        .led.active-red { background: #f00; box-shadow: 0 0 10px #f00; }
+        
+        button { padding: 10px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border: none; border-radius: 5px; color: white; }
+        .btn-start { background-color: #28a745; }
+        .btn-start:active { background-color: #1e7e34; }
+        .btn-stop { background-color: #dc3545; }
+        .btn-stop:active { background-color: #c82333; }
+        
+        #error-msg { color: red; font-weight: bold; font-size: 1.2em; height: 25px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <h1>Simulation: Härteprüfstand für Keramik-Fliesen</h1>
+    <p>Beobachte das "Maschinengewehr-Stottern" des Stempels aufgrund der Signalüberschneidung.</p>
+
+    <div class="panel">
+        <div class="led-group">
+            <button class="btn-start" onclick="pressStart()">ST (Start)</button>
+            <button class="btn-stop" onclick="pressNotHalt()">NH (Not-Halt)</button>
+        </div>
+        <div class="led-group">
+            <div class="led-row"><div class="led" id="led-part"></div> S_PART (Fliese da)</div>
+            <div class="led-row"><div class="led" id="led-a-offen"></div> S_REED_A_OFFEN</div>
+            <div class="led-row"><div class="led" id="led-a-zu"></div> S_REED_A_ZU / S_FRAME</div>
+        </div>
+        <div class="led-group">
+            <div class="led-row"><div class="led" id="led-b-oben"></div> S_REED_B_OBEN</div>
+            <div class="led-row"><div class="led" id="led-b-unten"></div> S_REED_B_UNTEN</div>
+        </div>
+    </div>
+    
+    <div id="error-msg"></div>
+
+    <div class="machine">
+        <div class="table"></div>
+        <div class="tile" id="tile"></div>
+        <div class="stamp" id="stamp">
+            <div class="stamp-head"></div>
+        </div>
+        <div class="door" id="door"></div>
+    </div>
+
+    <script>
+        // Anlagen-Zustände
+        let state = {
+            S_PART: true,
+            S_REED_A_OFFEN: true,
+            S_REED_A_ZU: false,
+            S_REED_B_OBEN: true,
+            S_REED_B_UNTEN: false,
+            Y_DOOR: false,
+            Y_TEST: false,
+            running: false,
+            chatterInterval: null
+        };
+
+        const ui = {
+            door: document.getElementById('door'),
+            stamp: document.getElementById('stamp'),
+            tile: document.getElementById('tile'),
+            errorMsg: document.getElementById('error-msg')
+        };
+
+        // Initiale Sensorik setzen
+        updateLEDs();
+
+        function updateLEDs() {
+            document.getElementById('led-part').className = state.S_PART ? 'led active-green' : 'led';
+            document.getElementById('led-a-offen').className = state.S_REED_A_OFFEN ? 'led active-green' : 'led';
+            document.getElementById('led-a-zu').className = state.S_REED_A_ZU ? 'led active-green' : 'led';
+            document.getElementById('led-b-oben').className = state.S_REED_B_OBEN ? 'led active-green' : 'led';
+            document.getElementById('led-b-unten').className = state.S_REED_B_UNTEN ? 'led active-green' : 'led';
+        }
+
+        function pressStart() {
+            if (!state.S_PART || state.running) return;
+            state.running = true;
+            ui.errorMsg.innerText = "Ablauf gestartet. Y_DOOR zieht an.";
+            
+            // 1. Tür schließt (Y_DOOR = 1)
+            state.Y_DOOR = true;
+            state.S_REED_A_OFFEN = false;
+            ui.door.style.right = '250px'; // Tür fährt zu
+            updateLEDs();
+
+            // Warte bis Tür zu ist
+            setTimeout(() => {
+                state.S_REED_A_ZU = true; // S_FRAME ist hier impliziert
+                updateLEDs();
+                ui.errorMsg.innerText = "Tür ist zu. Prüf-Stempel fährt aus.";
+                
+                // 2. Fataler Fehler-Loop startet hier
+                startFlawedLogicLoop();
+            }, 1000);
+        }
+
+        function startFlawedLogicLoop() {
+            // Die fehlerhafte Logik: Stempel fährt aus, wenn Tür zu ist, fährt ein, wenn unten.
+            // Ohne Speicherung (Merker/Schrittkette) führt das zum Stottern.
+            
+            state.chatterInterval = setInterval(() => {
+                if (!state.running) return;
+
+                // Logik-Gleichung: Y_TEST = S_REED_A_ZU AND NOT S_REED_B_UNTEN
+                if (state.S_REED_A_ZU && !state.S_REED_B_UNTEN) {
+                    // Stempel fährt runter
+                    state.Y_TEST = true;
+                    state.S_REED_B_OBEN = false;
+                    ui.stamp.style.top = '170px'; // Fährt runter
+                    
+                    // Simuliere Auftreffen
+                    setTimeout(() => {
+                        if(!state.running) return;
+                        state.S_REED_B_UNTEN = true;
+                        ui.tile.style.background = "repeating-linear-gradient(45deg, #d2691e, #d2691e 10px, #8b4513 10px, #8b4513 20px)"; // Fliese bricht
+                        updateLEDs();
+                        ui.errorMsg.innerText = "SIGNALÜBERSCHNEIDUNG! Stempel stottert!";
+                    }, 50);
+
+                } else if (state.S_REED_B_UNTEN) {
+                    // Stempel erreicht unten -> Ventil schaltet ab -> Feder zieht hoch
+                    state.Y_TEST = false;
+                    state.S_REED_B_UNTEN = false; // Verlässt sofort den Sensor!
+                    ui.stamp.style.top = '150px'; // Zieht minimal hoch
+                    updateLEDs();
+                }
+            }, 100); // 100ms Takt für den Maschinengewehr-Effekt
+        }
+
+        function pressNotHalt() {
+            // Alles spannungsfrei schalten. Federrückstellung übernimmt.
+            state.running = false;
+            clearInterval(state.chatterInterval);
+            
+            state.Y_DOOR = false;
+            state.Y_TEST = false;
+            
+            ui.errorMsg.innerText = "NOT-HALT gedrückt. Anlage fährt in Grundstellung.";
+            ui.errorMsg.style.color = "darkred";
+            
+            // Stempel hoch
+            ui.stamp.style.top = '0px';
+            state.S_REED_B_UNTEN = false;
+            
+            setTimeout(() => {
+                state.S_REED_B_OBEN = true;
+                
+                // Tür auf
+                ui.door.style.right = '0px';
+                state.S_REED_A_ZU = false;
+                updateLEDs();
+                
+                setTimeout(() => {
+                    state.S_REED_A_OFFEN = true;
+                    ui.tile.style.background = "#d2691e"; // Neue Fliese
+                    ui.errorMsg.innerText = "";
+                    ui.errorMsg.style.color = "red";
+                    updateLEDs();
+                }, 1000);
+            }, 200);
+        }
+    </script>
+</body>
+</html>
