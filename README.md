@@ -2,6 +2,11 @@
 
 Dieses Repository dient als automatisches Archiv und Hosting-Plattform für interaktive Unterrichtswerkzeuge, die in **CodePen** erstellt wurden. Dank einer Make.com-Automation werden Pens mit nur einem Klick direkt hierher übertragen, automatisch kategorisiert und veröffentlicht.
 
+## 📖 Ausführliche Anleitungen
+Für die initiale Einrichtung oder Wartung des Systems finden Sie hier die detaillierten Schritt-für-Schritt-Anleitungen:
+* 🔖 **[Lesezeichen (Bookmarklet) erstellen](Lesezeichen%20Erstellen.md)** – So richten Sie den Button in Ihrem Browser ein.
+* ⚙️ **[Make.com Automatisierung einrichten](Make.com-Anleitung.md)** – So bauen Sie die Schnittstelle zwischen Browser und GitHub.
+
 ## 🚀 Der Workflow
 
 Der Prozess ist vollständig automatisiert und besteht aus vier Komponenten:
@@ -18,6 +23,8 @@ Der Prozess ist vollständig automatisiert und besteht aus vier Komponenten:
 
 * `/tools/` – Enthält alle exportierten HTML-Dateien aus CodePen.
 * `index.html` – Die dynamische Startseite (Jekyll), die Tools nach Fachbereichen gruppiert.
+* `Make.com-Anleitung.md` – Setup-Anleitung für die Make.com-Schnittstelle.
+* `Lesezeichen Erstellen.md` – Setup-Anleitung für das Browser-Bookmarklet.
 * `README.md` – Diese Dokumentation.
 
 ## 🛠 Automatisierung & Konventionen
@@ -40,7 +47,7 @@ Das verwendete JavaScript-Bookmarklet führt folgende Schritte aus:
 
 ## 🌐 Live-Ansicht
 Die Mediathek ist für Schüler und Kollegen erreichbar unter:
-👉 **[https://CmoneBK.github.io/CmoneBK-Unterrichtsmaterial/](https://CmoneBK.github.io/CmoneBK-Unterrichtsmaterial/)**
+👉 **[https://CmoneBK.github.io/BKE-Unterrichtsmaterial/](https://CmoneBK.github.io/BKE-Unterrichtsmaterial/)**
 
 ## 🔧 Fehlerbehebung
 - **Titel wird nicht korrekt angezeigt:** Prüfen Sie, ob das Tool im HTML-Code ganz oben die `---` Striche mit dem Titel-Eintrag enthält.
