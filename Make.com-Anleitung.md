@@ -52,9 +52,9 @@ Dieses Modul übernimmt das eigentliche Speichern. Es liegt auf der Hauptlinie (
    * **URL:** Exakt dieselbe URL wie in Schritt 2.
    * **Method:** `PUT`
    * **Headers:** Exakt dieselben zwei Header (`Authorization` und `User-Agent`) wie in Schritt 2.
-   * **Body type:** `Raw`
-   * **Content type:** `JSON (application/json)`
-   * **Request content:** Fügen Sie den folgenden JSON-Code ein:
+   * **Body content type:** `application/json`
+   * **Body intput methode:** `JSON string`
+   * **Body content:** Fügen Sie den folgenden JSON-Code ein:
 
 ```json
 {
