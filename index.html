@@ -1,4 +1,5 @@
 ---
+layout: null
 ---
 <!DOCTYPE html>
 <html lang="de">
@@ -11,7 +12,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f7f6;
             color: #333;
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             padding: 2rem;
         }
@@ -20,11 +21,25 @@
             color: #004a99;
             border-bottom: 3px solid #e67e22;
             padding-bottom: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+        }
+        .category-section {
+            margin-bottom: 40px;
+        }
+        .category-title {
+            font-size: 1.5rem;
+            color: #004a99;
+            border-left: 5px solid #e67e22;
+            padding-left: 15px;
+            margin-bottom: 20px;
+            background: #e9ecef;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            border-radius: 0 4px 4px 0;
         }
         .tool-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 15px;
         }
         .tool-card {
@@ -36,12 +51,15 @@
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: transform 0.2s, box-shadow 0.2s;
-            border-left: 5px solid #004a99;
+            border: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
         }
         .tool-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 12px rgba(0,0,0,0.1);
             background: #f9fbfc;
+            border-color: #004a99;
         }
         .file-name {
             word-wrap: break-word;
@@ -51,20 +69,47 @@
 </head>
 <body>
 
-    <h1>Verfügbare Applikationen</h1>
+    <h1>Unterrichts-Mediathek</h1>
 
-    <div class="tool-grid">
-        {% for page in site.pages %}
-            {% if page.path contains 'tools/' %}
-                <a href="{{ site.baseurl }}{{ page.url }}" class="tool-card">
-                    <span class="file-name">
-                        {{ page.title }}
-                    </span>
-                </a>
-            {% endif %}
-        {% endfor %}
-    </div>
+    {% assign tools = site.pages | where_exp: "item", "item.path contains 'tools/'" %}
+    
+    {% comment %} Zuerst alle Kategorien sammeln {% endcomment %}
+    {% assign categories = "" | split: "," %}
+    {% for p in tools %}
+        {% if p.title contains ":" %}
+            {% assign cat = p.title | split: ":" | first | strip %}
+        {% else %}
+            {% assign cat = "Allgemein" %}
+        {% endif %}
+        {% unless categories contains cat %}
+            {% assign categories = categories | push: cat %}
+        {% endunless %}
+    {% endfor %}
+    {% assign categories = categories | sort %}
+
+    {% comment %} Für jede Kategorie die passenden Tools anzeigen {% endcomment %}
+    {% for category in categories %}
+        <div class="category-section">
+            <h2 class="category-title">{{ category }}</h2>
+            <div class="tool-grid">
+                {% for p in tools %}
+                    {% if p.title contains ":" %}
+                        {% assign current_cat = p.title | split: ":" | first | strip %}
+                        {% assign display_title = p.title | split: ":" | last | strip %}
+                    {% else %}
+                        {% assign current_cat = "Allgemein" %}
+                        {% assign display_title = p.title %}
+                    {% endif %}
+
+                    {% if current_cat == category %}
+                        <a href="{{ site.baseurl }}{{ p.url }}" class="tool-card">
+                            <span class="file-name">{{ display_title }}</span>
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
 
 </body>
 </html>
-
