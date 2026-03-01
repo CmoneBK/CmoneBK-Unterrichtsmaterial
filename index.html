@@ -54,11 +54,11 @@
     <h1>Verfügbare Applikationen</h1>
 
     <div class="tool-grid">
-        {% for file in site.static_files %}
-            {% if file.path contains '/tools/' and file.extname == '.html' %}
-                <a href="{{ site.baseurl }}{{ file.path }}" class="tool-card">
+        {% for page in site.pages %}
+            {% if page.path contains 'tools/' %}
+                <a href="{{ site.baseurl }}{{ page.url }}" class="tool-card">
                     <span class="file-name">
-                        {{ file.name | replace: ".html", "" | replace: "-", " " | capitalize }}
+                        {{ page.title }}
                     </span>
                 </a>
             {% endif %}
@@ -67,3 +67,4 @@
 
 </body>
 </html>
+
