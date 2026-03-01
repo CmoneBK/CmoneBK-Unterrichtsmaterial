@@ -1,0 +1,786 @@
+---
+title: "Fertigungstechnik: Messmittel - Kapazitiver Wegsensor"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Messmittel - Kapazitiver Wegsensor</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --highlight: #2980b9;
+            --steel-light: #ecf0f1;
+            --steel-mid: #bdc3c7;
+            --steel-dark: #7f8c8d;
+            --bg-dark: #eef2f5;
+            --capacitance-color: #00cec9;
+            --oil-color: rgba(241, 196, 15, 0.4);
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1.main-title {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary);
+            letter-spacing: 1px;
+        }
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .readout {
+            font-size: 2.5em;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--highlight);
+            font-weight: bold;
+            background: #eaf2f8;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #d4e6f1;
+            min-width: 250px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.1s;
+        }
+        .readout.error-state {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: #fdedec;
+            text-shadow: 0 0 5px rgba(231, 76, 60, 0.3);
+        }
+        .readout-true-val {
+            font-size: 0.35em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .readout-error-label {
+            font-size: 0.35em;
+            color: var(--accent);
+            margin-top: 5px;
+            font-weight: normal;
+        }
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        select {
+            padding: 12px;
+            font-size: 1.1em;
+            border-radius: 6px;
+            border: 1px solid var(--steel-mid);
+            background: var(--steel-light);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* --- SENSOR GRAFIK --- */
+        .sensor-viewport {
+            position: relative;
+            width: 100%;
+            min-height: 480px;
+            padding: 20px 0;
+            background: #ffffff;
+            border: 2px solid var(--steel-mid);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            box-sizing: border-box;
+            background-image: radial-gradient(#bdc3c7 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* Signal Visualizer (Rechts) */
+        .signal-panel {
+            width: 280px;
+            background: var(--bg-dark);
+            border: 1px solid var(--steel-mid);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 5px;
+        }
+        .data-row strong {
+            color: var(--primary);
+        }
+
+        /* Kapazitäts-Graph (C vs d) */
+        .graph-box {
+            margin-top: 5px;
+            background: #2c3e50;
+            border-radius: 6px;
+            padding: 10px;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .graph-box canvas {
+            width: 100%;
+            height: 140px;
+            background: #1a252f;
+            border-radius: 4px;
+            display: block;
+        }
+        .graph-legend {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.75em;
+            color: #ecf0f1;
+            margin-top: 8px;
+        }
+
+        /* Mechanik (Links) */
+        .mechanics-system {
+            position: relative;
+            width: 260px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sensor Kopf (oben, statisch) */
+        .sensor-head {
+            position: absolute;
+            top: 20px;
+            width: 140px;
+            height: 120px;
+            background: linear-gradient(to right, #7f8c8d, #bdc3c7, #7f8c8d);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .sensor-cable {
+            position: absolute;
+            top: -20px;
+            width: 10px;
+            height: 20px;
+            background: #333;
+        }
+        .sensor-label {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 0.8em;
+            color: #2c3e50;
+            text-align: center;
+        }
+        
+        /* Elektroden-Fläche (Unterseite des Sensors) */
+        .electrode-face {
+            position: absolute;
+            bottom: -2px;
+            width: 100px;
+            height: 10px;
+            background: #fff;
+            border: 2px solid var(--primary);
+            border-bottom: none;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        /* Die aktive Messelektrode in der Mitte */
+        .active-electrode {
+            width: 40px;
+            height: 6px;
+            background: var(--capacitance-color);
+            margin-bottom: 2px;
+        }
+        /* Der Schutzring (Guard Ring) außen */
+        .guard-ring {
+            position: absolute;
+            width: 80px;
+            height: 6px;
+            border-left: 10px solid #95a5a6;
+            border-right: 10px solid #95a5a6;
+            margin-bottom: 2px;
+        }
+
+        /* Messspalt & Elektrisches Feld */
+        .measurement-gap {
+            position: absolute;
+            top: 140px; /* Direkt unter Sensor */
+            width: 100px;
+            /* Höhe wird durch JS gesteuert */
+            height: 100px; 
+            display: flex;
+            justify-content: center;
+            z-index: 5;
+            transition: background-color 0.3s;
+        }
+        /* Elektrische Feldlinien (E-Feld) */
+        .e-field-lines {
+            width: 40px; /* Entspricht der aktiven Elektrode */
+            height: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 4px,
+                rgba(0, 206, 201, 0.4) 4px,
+                rgba(0, 206, 201, 0.4) 6px
+            );
+            transition: opacity 0.1s;
+        }
+
+        /* Werkstück (unten, beweglich) */
+        .target-assembly {
+            position: absolute;
+            /* Top wird durch JS gesteuert */
+            top: 240px; 
+            width: 200px;
+            height: 100px;
+            background: linear-gradient(135deg, #34495e, #2c3e50);
+            border: 2px solid #1a252f;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 10;
+            transition: top 0.1s linear;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3);
+        }
+        .target-surface {
+            width: 100%;
+            height: 10px;
+            background: #ecf0f1;
+            border-bottom: 1px solid #7f8c8d;
+        }
+        .target-label {
+            color: #ecf0f1;
+            margin-top: 30px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .ground-symbol {
+            margin-top: 10px;
+            width: 20px;
+            height: 2px;
+            background: #fff;
+            position: relative;
+        }
+        .ground-symbol::before { content: ""; position: absolute; top: 4px; left: 4px; width: 12px; height: 2px; background: #fff; }
+        .ground-symbol::after { content: ""; position: absolute; top: 8px; left: 8px; width: 4px; height: 2px; background: #fff; }
+
+        /* --- STEUERUNG --- */
+        .controls {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--steel-light);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            height: 8px;
+            background: var(--steel-mid);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--steel-mid);
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            flex-shrink: 0;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--steel-dark);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider-toggle {
+            background-color: #f39c12; /* Öl Farbe */
+        }
+        input:checked + .slider-toggle:before {
+            transform: translateX(26px);
+        }
+
+        .explanation {
+            background: white;
+            padding: 15px;
+            border-left: 5px solid var(--highlight);
+            border-radius: 4px;
+            font-size: 1.05em;
+            line-height: 1.5;
+        }
+        .explanation.error-box {
+            border-left-color: var(--accent);
+            background: #fdedec;
+        }
+
+        /* --- THEORIE GRID --- */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .info-card {
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .info-card h3 {
+            margin-top: 0;
+            color: #2980b9;
+            font-size: 1.2em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .info-card ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        .info-card li {
+            margin-bottom: 8px;
+        }
+        .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .badge.warning { background: var(--accent); }
+        .badge.success { background: var(--highlight); }
+        .badge.capacitive { background: #00cec9; color: #2d3436; }
+        
+        @media (max-width: 768px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .sensor-viewport { flex-direction: column; gap: 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="main-title">Messmittel - Kapazitiver Wegsensor</h1>
+        
+        <div class="header-panel">
+            <div class="settings">
+                <label for="resolution-select"><strong>Auswerte-Elektronik / Auflösung:</strong></label>
+                <select id="resolution-select">
+                    <option value="0.0001">0,1 µm (0,0001 mm) - Hohe Auflösung</option>
+                    <option value="0.00001">0,01 µm (10 nm) - Ultra-Präzision (Sub-µm)</option>
+                </select>
+            </div>
+            <div class="readout" id="measurement-display">
+                <span class="readout-true-val" id="true-val-label">Wahrer Abstand: 0.25000 mm</span>
+                <span id="main-readout-val">0.2500 mm</span>
+                <span class="readout-error-label" id="error-label" style="display:none;">(Dielektrikum-Fehler! Öl im Spalt)</span>
+            </div>
+        </div>
+
+        <div class="sensor-viewport" id="scale-viewport">
+            
+            <!-- Mechanische Sensor Darstellung -->
+            <div class="mechanics-system">
+                <!-- Sensor Head -->
+                <div class="sensor-head">
+                    <div class="sensor-cable"></div>
+                    <div class="sensor-label">Sensor<br><small>(Messelektrode)</small></div>
+                    <div class="electrode-face">
+                        <div class="guard-ring" title="Schutzring (hält Feldlinien parallel)"></div>
+                        <div class="active-electrode" title="Aktive Messelektrode"></div>
+                    </div>
+                </div>
+
+                <!-- Messspalt mit E-Feld -->
+                <div class="measurement-gap" id="measurement-gap">
+                    <div class="e-field-lines" id="e-field"></div>
+                </div>
+
+                <!-- Simuliertes Bauteil/Werkstück -->
+                <div class="target-assembly" id="target">
+                    <div class="target-surface" title="Geerdetes metallisches Bauteil"></div>
+                    <div class="target-label">Messobjekt (Target)</div>
+                    <div class="ground-symbol" title="Erdung"></div>
+                </div>
+            </div>
+
+            <!-- Signal Visualisierung -->
+            <div class="signal-panel">
+                <div class="data-row">
+                    <span>Dielektrizitätszahl (<math><msub><mi>ε</mi><mi>r</mi></msub></math>):</span>
+                    <strong id="val-epsilon">1.00 (Luft)</strong>
+                </div>
+                <div class="data-row">
+                    <span>Sensorkapazität (C):</span>
+                    <strong id="val-cap" style="color: var(--capacitance-color)">4.00 pF</strong>
+                </div>
+                <div class="data-row">
+                    <span>Analogausgang (U):</span>
+                    <strong id="val-volt">5.000 V</strong>
+                </div>
+                
+                <!-- Kapazitäts-Graph -->
+                <div class="graph-box" title="Zusammenhang Abstand (d) und Kapazität (C)">
+                    <canvas id="graph-canvas" width="260" height="140"></canvas>
+                    <div class="graph-legend">
+                        <span>X: Abstand (d)</span>
+                        <span>Y: Kapazität (C)</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <label for="fine-slider"><strong>Wahrer Abstand / Messspalt (0.020 mm bis 0.500 mm):</strong></label>
+                <!-- Arbeitsbereich eines typischen kapazitiven Sensors ist sehr klein -->
+                <input type="range" id="fine-slider" min="0.02" max="0.50" step="0.00001" value="0.25000">
+            </div>
+
+            <div class="toggle-container">
+                <label class="switch">
+                    <input type="checkbox" id="dielectric-toggle">
+                    <span class="slider-toggle"></span>
+                </label>
+                <div>
+                    <strong>Spalt-Verunreinigung (Ölfilm / Emulsion) simulieren</strong><br>
+                    <small id="dielectric-status" style="color: var(--steel-dark);">Luftspalt rein (ε_r ≈ 1.0). Messung ist ideal.</small>
+                </div>
+            </div>
+            
+            <div class="explanation" id="dynamic-explanation"></div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <span class="badge capacitive">ELEKTRISCH (Berührungslos)</span>
+                <h3>Prinzip & Auflösung</h3>
+                <ul>
+                    <li><strong>Werkzeug:</strong> Kapazitiver Wegsensor</li>
+                    <li><strong>Prinzip:</strong> Plattenkondensator. Der Sensor und das (geerdete) Messobjekt bilden die Elektroden. Die Kapazität $C = \varepsilon_0 \cdot \varepsilon_r \cdot \frac{A}{d}$ ändert sich reziprok ($1/x$) zum Abstand $d$.</li>
+                    <li><strong>Auflösung:</strong> 0,001 mm – 0,00001 mm (1 µm bis 10 nm)</li>
+                    <li><strong>Technik:</strong> Ein Schutzringkondensator (Guard Ring) zwingt die elektrischen Feldlinien der inneren Messelektrode in eine perfekte Parallelität, um Randeffekte zu minimieren. Die Elektronik linearisiert das $1/d$ Signal zu einer propotionalen Ausgangsspannung.</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <span class="badge success">VORTEILE</span>
+                <span class="badge warning">NACHTEILE</span>
+                <h3>Eigenschaften & Einsatz</h3>
+                <ul>
+                    <li><strong>Vorteil:</strong> Völlig berührungslos und verschleißfrei. Keine Rückwirkung/Kraft auf das Bauteil.</li>
+                    <li><strong>Vorteil:</strong> Extrem hohe Auflösung und Bandbreite (dynamische Messungen an rotierenden Wellen).</li>
+                    <li><strong>Nachteil:</strong> Sehr kleiner Arbeitsabstand (meist < 1 mm). Die Messung ist extrem abhängig von der Dielektrizitätskonstante ($\varepsilon_r$) des Spaltmediums. Schmutz, Wasser oder Öl im Spalt verfälschen das Ergebnis massiv!</li>
+                    <li><strong>Einsatzgebiet:</strong> Spindelüberwachung (Rundlauf), Dickenmessung von Folien/Bändern, Positionierung von Linsenstrukturen.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTE ---
+        const slider = document.getElementById('fine-slider');
+        const dielectricToggle = document.getElementById('dielectric-toggle');
+        const resolutionSelect = document.getElementById('resolution-select');
+        const displayContainer = document.getElementById('measurement-display');
+        const trueValLabel = document.getElementById('true-val-label');
+        const mainReadoutVal = document.getElementById('main-readout-val');
+        const errorLabel = document.getElementById('error-label');
+        const dielectricStatus = document.getElementById('dielectric-status');
+        const explanation = document.getElementById('dynamic-explanation');
+        
+        // Visuals
+        const targetAssembly = document.getElementById('target');
+        const measurementGap = document.getElementById('measurement-gap');
+        const eField = document.getElementById('e-field');
+        
+        // Signal Data
+        const valEpsilon = document.getElementById('val-epsilon');
+        const valCap = document.getElementById('val-cap');
+        const valVolt = document.getElementById('val-volt');
+        
+        // Graph Canvas
+        const canvas = document.getElementById('graph-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Konstanten & Sensor Kalibrierung
+        // Wir nehmen an: Bei d = 0.5 mm ist C = 2 pF (mit Luft)
+        // C = k * (epsilon_r / d) -> k = C * d / epsilon_r = 2 * 0.5 / 1 = 1.0
+        const SENSOR_K = 1.0; 
+        const MAX_DIST = 0.5;
+        const MIN_DIST = 0.02;
+        
+        // Visuelle Konstanten
+        const PX_PER_MM = 400; // Maßstab: 0.5mm = 200px
+        const SENSOR_BOTTOM_Y = 140; // Y-Koordinate der Sensor-Unterkante
+
+        let currentRes = 0.0001; // Default 0.1 µm
+
+        // --- HAUPT UPDATE FUNKTION ---
+        function calculateAndRender() {
+            let trueDist = parseFloat(slider.value);
+            const isOilOn = dielectricToggle.checked;
+            
+            // Dielektrizitätszahl: Luft ~ 1.0, Öl ~ 2.2
+            const epsilonR = isOilOn ? 2.2 : 1.0;
+
+            // 1. PHYSIK: Kapazität berechnen (C = k * e_r / d)
+            let capacitance = SENSOR_K * (epsilonR / trueDist);
+
+            // 2. SENSOR-ELEKTRONIK: Misst Kapazität, linearisiert zu Abstand
+            // Der Sensor ist auf e_r = 1.0 (Luft) kalibriert!
+            // Er rechnet intern: d_measured = k * 1.0 / C_measured
+            let measuredDist = SENSOR_K * 1.0 / capacitance;
+            
+            // Rundung basierend auf der Auflösung des Verstärkers
+            let displayRead = Math.round(measuredDist / currentRes) * currentRes;
+            
+            // Analogausgang Spannung (Linearisiert: 0V bei 0mm, 10V bei 0.5mm)
+            // Auch das basiert auf dem *gemessenen* Abstand!
+            let voltageOut = (measuredDist / MAX_DIST) * 10.0;
+
+            // Formatierung
+            const decimals = currentRes === 0.0001 ? 4 : 5;
+            trueValLabel.textContent = `Wahrer Abstand: ${trueDist.toFixed(5)} mm`;
+            mainReadoutVal.textContent = displayRead.toFixed(decimals) + " mm";
+            
+            valEpsilon.textContent = isOilOn ? "2.20 (Öl/Emulsion)" : "1.00 (Luft)";
+            valCap.textContent = capacitance.toFixed(2) + " pF";
+            valVolt.textContent = voltageOut.toFixed(3) + " V";
+
+            // --- UI Updates Status ---
+            if (isOilOn) {
+                displayContainer.classList.add('error-state');
+                errorLabel.style.display = 'block';
+                dielectricStatus.textContent = "Öl/Emulsion im Spalt (ε_r = 2.2). Kapazität steigt massiv!";
+                dielectricStatus.style.color = "#d35400";
+                explanation.classList.add('error-box');
+                measurementGap.style.backgroundColor = "var(--oil-color)";
+            } else {
+                displayContainer.classList.remove('error-state');
+                errorLabel.style.display = 'none';
+                dielectricStatus.textContent = "Luftspalt rein (ε_r ≈ 1.0). Messung ist ideal.";
+                dielectricStatus.style.color = "var(--steel-dark)";
+                explanation.classList.remove('error-box');
+                measurementGap.style.backgroundColor = "transparent";
+            }
+
+            // --- MECHANIK VISUALISIERUNG ---
+            // Target Position anpassen (Abstand visuell skalieren)
+            const gapHeightPx = trueDist * PX_PER_MM;
+            measurementGap.style.height = gapHeightPx + 'px';
+            targetAssembly.style.top = (SENSOR_BOTTOM_Y + gapHeightPx) + 'px';
+
+            // E-Feld Opazität anpassen (je näher, desto dichter/stärker)
+            // Normalisiert auf max Distanz
+            let fieldStrength = 1 - (trueDist / MAX_DIST);
+            eField.style.opacity = 0.3 + (fieldStrength * 0.7);
+
+            // --- ERKLÄRUNGSTEXT BERECHNEN ---
+            let explainText = "";
+            if (isOilOn) {
+                explainText = `<strong>MESSFEHLER DURCH DIELEKTRIKUM:</strong><br>`;
+                explainText += `Der Sensor misst eine Kapazität von <strong>${capacitance.toFixed(2)} pF</strong>. Da die Elektronik auf Luft ($\varepsilon_r=1$) kalibriert ist, ordnet sie diese extrem hohe Kapazität einem winzigen Abstand von <strong>${measuredDist.toFixed(4)} mm</strong> zu!<br><br>`;
+                explainText += `<em>Der Messwert ist drastisch verfälscht, obwohl der wahre Abstand ${trueDist.toFixed(4)} mm beträgt.</em>`;
+            } else {
+                explainText = `<strong>Funktionsweise:</strong><br>`;
+                explainText += `Die Kapazität ($C = ${capacitance.toFixed(2)} pF$) steigt hyperbelförmig an, je kleiner der Abstand ($d = ${trueDist.toFixed(4)} mm$) wird.<br><br>`;
+                explainText += `Die Sensorelektronik nutzt einen invertierenden Verstärker, um dieses nicht-lineare Signal zu linearisieren, sodass die Ausgangsspannung ($U = ${voltageOut.toFixed(3)} V$) streng proportional zum gemessenen Abstand ist.`;
+            }
+            explanation.innerHTML = explainText;
+
+            // Graph neu zeichnen
+            drawGraph(trueDist, capacitance, isOilOn);
+        }
+
+        // --- GRAPH RENDERER ---
+        function drawGraph(currentD, currentC, isOilOn) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const w = canvas.width;
+            const h = canvas.height;
+            
+            // Achsen und Grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            // Y-Grid
+            for(let i=0; i<h; i+=20) { ctx.moveTo(0, i); ctx.lineTo(w, i); }
+            // X-Grid
+            for(let i=0; i<w; i+=30) { ctx.moveTo(i, 0); ctx.lineTo(i, h); }
+            ctx.stroke();
+
+            // Koordinatensystem Ursprung unten links
+            const padX = 20;
+            const padY = h - 20;
+
+            // X: Abstand d (0 bis 0.5 mm)
+            // Y: Kapazität C (0 bis ~50 pF)
+            const mapX = (d) => padX + (d / MAX_DIST) * (w - padX - 10);
+            const mapY = (c) => padY - (c / 50) * (padY - 10); // Max Y = 50 pF für Skalierung
+
+            // Zeichne Referenz-Kurve (Luft, e_r = 1)
+            ctx.strokeStyle = '#bdc3c7';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            for (let d = MIN_DIST; d <= MAX_DIST; d += 0.01) {
+                let c = SENSOR_K * (1.0 / d);
+                let x = mapX(d);
+                let y = mapY(c);
+                if (d === MIN_DIST) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset
+
+            // Zeichne Öl-Kurve, falls aktiv (e_r = 2.2)
+            if (isOilOn) {
+                ctx.strokeStyle = '#f39c12';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                for (let d = MIN_DIST; d <= MAX_DIST; d += 0.01) {
+                    let c = SENSOR_K * (2.2 / d);
+                    let x = mapX(d);
+                    let y = mapY(c);
+                    if (d === MIN_DIST) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // Zeichne aktuellen Punkt
+            const ptX = mapX(currentD);
+            const ptY = mapY(currentC);
+            
+            // Hilfslinien zum Punkt
+            ctx.strokeStyle = 'var(--capacitance-color)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(ptX, padY);
+            ctx.lineTo(ptX, ptY);
+            ctx.lineTo(padX, ptY);
+            ctx.stroke();
+
+            // Der Punkt selbst
+            ctx.fillStyle = isOilOn ? '#e74c3c' : 'var(--capacitance-color)';
+            ctx.beginPath();
+            ctx.arc(ptX, ptY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Text Labels an den Achsen
+            ctx.fillStyle = '#ecf0f1';
+            ctx.font = '10px sans-serif';
+            ctx.fillText("d", w - 10, padY + 12);
+            ctx.fillText("C", 5, 10);
+        }
+
+        // --- EVENT LISTENERS ---
+        slider.addEventListener('input', calculateAndRender);
+        
+        dielectricToggle.addEventListener('change', () => {
+            calculateAndRender();
+        });
+        
+        resolutionSelect.addEventListener('change', (e) => {
+            currentRes = parseFloat(e.target.value);
+            slider.step = currentRes;
+            calculateAndRender();
+        });
+
+        // Initialisierung
+        calculateAndRender();
+
+    </script>
+</body>
+</html>
