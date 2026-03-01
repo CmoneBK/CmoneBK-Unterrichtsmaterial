@@ -1,0 +1,947 @@
+---
+title: "Fertigungstechnik: Messmittel - Auflichtverfahren (Achsenabschnittverfahren)"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Messmittel - Auflichtverfahren (Achsenabschnittverfahren)</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e74c3c;
+            --highlight: #2980b9;
+            --steel-light: #ecf0f1;
+            --steel-mid: #bdc3c7;
+            --steel-dark: #7f8c8d;
+            --bg-dark: #eef2f5;
+            --ringlight: #f1c40f; /* Warmes/Neutrales Auflicht */
+            --ringlight-glow: rgba(241, 196, 15, 0.5);
+            --metal-color: #95a5a6;
+            --knife-color: #dfe6e9;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 1050px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1.main-title {
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 2.2em;
+            padding-bottom: 15px;
+            border-bottom: 3px solid var(--primary);
+            letter-spacing: 1px;
+        }
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .readout {
+            font-size: 2.5em;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--highlight);
+            font-weight: bold;
+            background: #eaf2f8;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #d4e6f1;
+            min-width: 250px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.1s;
+        }
+        .readout.error-state {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: #fdedec;
+            text-shadow: 0 0 5px rgba(231, 76, 60, 0.3);
+        }
+        .readout-true-val {
+            font-size: 0.35em;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .readout-error-label {
+            font-size: 0.35em;
+            color: var(--accent);
+            margin-top: 5px;
+            font-weight: normal;
+        }
+        .settings-row {
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+        }
+        .settings {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex: 1;
+        }
+        select {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: 1px solid var(--steel-mid);
+            background: var(--steel-light);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        /* --- SENSOR GRAFIK --- */
+        .sensor-viewport {
+            position: relative;
+            width: 100%;
+            height: 480px; 
+            background: #ffffff;
+            border: 2px solid var(--steel-mid);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            background-image: 
+                linear-gradient(rgba(189, 195, 199, 0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(189, 195, 199, 0.2) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        /* Mechanik (Links) */
+        .mechanics-system {
+            position: relative;
+            width: 350px;
+            height: 100%;
+            border-right: 1px dashed var(--steel-mid);
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Arbeitstisch (Unten) */
+        .work-table {
+            position: absolute;
+            bottom: 20px;
+            width: 260px;
+            height: 30px;
+            background: linear-gradient(to right, #7f8c8d, #95a5a6, #7f8c8d);
+            border: 2px solid var(--primary);
+            border-radius: 4px;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        /* Prismenaufnahme für das Gewinde */
+        .prism-mount {
+            position: absolute;
+            bottom: 50px;
+            width: 40px;
+            height: 40px;
+            background: #34495e;
+            border: 2px solid #1a252f;
+            border-radius: 2px;
+            clip-path: polygon(0 100%, 100% 100%, 100% 40%, 50% 0, 0 40%);
+            z-index: 11;
+        }
+        .prism-left { left: 80px; }
+        .prism-right { right: 80px; }
+
+        /* Das Werkstück (Gewindespindel) */
+        .thread-workpiece {
+            position: absolute;
+            bottom: 80px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 220px;
+            height: 30px;
+            background: repeating-linear-gradient(
+                -45deg,
+                #bdc3c7,
+                #bdc3c7 8px,
+                #7f8c8d 8px,
+                #7f8c8d 12px
+            );
+            border-top: 2px solid #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+            border-radius: 2px;
+            z-index: 15;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.4);
+        }
+        
+        /* Messschneide (Knife edge) */
+        .measuring-knife-container {
+            position: absolute;
+            bottom: 115px; /* Knapp über dem Gewinde */
+            left: 175px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 18;
+            transition: left 0.1s;
+        }
+        .knife-holder {
+            width: 14px;
+            height: 40px;
+            background: linear-gradient(to right, #ecf0f1, #bdc3c7);
+            border: 1px solid var(--primary);
+            border-bottom: none;
+        }
+        .knife-edge {
+            width: 14px;
+            height: 20px;
+            background: linear-gradient(to right, #ecf0f1, #bdc3c7);
+            border: 1px solid var(--primary);
+            border-top: none;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            /* Gravur Linie für Achsenebene */
+            position: relative;
+        }
+        .knife-edge::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 6px; width: 1px; height: 18px;
+            background: rgba(231, 76, 60, 0.8); /* Rote Referenzlinie */
+        }
+
+        /* Mikroskop-Optik (Oben) */
+        .optic-assembly {
+            position: absolute;
+            top: 40px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 20;
+        }
+        .optic-tube {
+            width: 60px;
+            height: 80px;
+            background: linear-gradient(to right, #95a5a6, #ecf0f1, #95a5a6);
+            border: 2px solid var(--primary);
+            border-bottom: none;
+        }
+        .optic-lens {
+            width: 45px;
+            height: 15px;
+            background: linear-gradient(to right, #34495e, #2c3e50);
+            border: 2px solid var(--primary);
+            border-radius: 0 0 8px 8px;
+            position: relative;
+        }
+        /* Ringlicht (Auflichtbeleuchtung) um die Linse herum */
+        .ring-light {
+            position: absolute;
+            bottom: -5px;
+            left: -15px;
+            width: 75px;
+            height: 12px;
+            background: rgba(241, 196, 15, 0.2);
+            border: 2px solid var(--ringlight);
+            border-radius: 5px;
+            box-shadow: 0 5px 20px var(--ringlight-glow);
+            z-index: -1;
+            transition: opacity 0.2s;
+        }
+        .optic-label {
+            margin-top: -65px;
+            font-weight: bold;
+            font-size: 0.8em;
+            color: var(--primary);
+            text-align: center;
+            z-index: 25;
+        }
+
+        /* SVG für Lichtstrahlen (Auflichtkegel nach unten) */
+        .optics-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Signal Visualizer (Rechts - Kamera Feed) */
+        .signal-panel {
+            width: calc(100% - 370px);
+            margin: 15px;
+            background: var(--bg-dark);
+            border: 1px solid var(--steel-mid);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            z-index: 10;
+            box-sizing: border-box;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em; 
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 5px;
+        }
+        .data-row strong {
+            color: var(--primary);
+        }
+
+        /* Kamera Livebild */
+        .camera-box {
+            margin-top: 5px;
+            background: #2c3e50;
+            border-radius: 6px;
+            padding: 10px;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .camera-title {
+            color: #ecf0f1;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .camera-status {
+            font-weight: bold;
+            color: #2ed573;
+        }
+        .camera-box canvas {
+            width: 100%;
+            height: 100%;
+            min-height: 180px;
+            background: #111; /* Dunkelgrau für Auflicht-Hintergrund */
+            border-radius: 4px;
+            display: block;
+            border: 2px solid #1a252f;
+            box-sizing: border-box;
+        }
+
+        /* --- STEUERUNG --- */
+        .controls {
+            margin-top: 25px;
+            padding: 20px;
+            background: var(--steel-light);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            height: 8px;
+            background: var(--steel-mid);
+            border-radius: 4px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--highlight);
+            cursor: pointer;
+        }
+        
+        .toggle-group-row {
+            display: flex;
+            gap: 15px;
+        }
+        @media (max-width: 768px) {
+            .toggle-group-row { flex-direction: column; }
+            .settings-row { flex-direction: column; }
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--steel-mid);
+            flex: 1;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            flex-shrink: 0;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--steel-dark);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        #knife-toggle:checked + .slider-toggle { background-color: var(--highlight); }
+        #knife-toggle:checked + .slider-toggle:before { transform: translateX(26px); }
+
+        .explanation {
+            background: white;
+            padding: 15px;
+            border-left: 5px solid var(--highlight);
+            border-radius: 4px;
+            font-size: 1.05em;
+            line-height: 1.5;
+        }
+        .explanation.error-box {
+            border-left-color: var(--accent);
+            background: #fdedec;
+        }
+
+        /* --- THEORIE GRID --- */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .info-card {
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .info-card h3 {
+            margin-top: 0;
+            color: #2980b9;
+            font-size: 1.2em;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .info-card ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+        .info-card li {
+            margin-bottom: 8px;
+        }
+        .badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .badge.warning { background: var(--accent); }
+        .badge.success { background: var(--highlight); }
+        .badge.optical-auflicht { background: #f39c12; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="main-title">Fertigungstechnik: Messmittel - Auflichtverfahren (Achsenabschnittverfahren)</h1>
+        
+        <div class="header-panel">
+            <div class="settings-row">
+                <div class="settings">
+                    <label for="resolution-select"><strong>Auswerte-Auflösung:</strong></label>
+                    <select id="resolution-select">
+                        <option value="0.001">1 µm (0,001 mm) - Präzision</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="readout" id="measurement-display">
+                <span class="readout-true-val" id="true-val-label">Wahrer Flankendurchmesser: 12.500 mm</span>
+                <span id="main-readout-val">12.500 mm</span>
+                <span class="readout-error-label" id="error-label" style="display:none;">(Gewindesteigung verzerrt optische Kante!)</span>
+            </div>
+        </div>
+
+        <div class="sensor-viewport" id="scale-viewport">
+            
+            <!-- Mechanische System Darstellung -->
+            <div class="mechanics-system">
+                
+                <!-- SVG für Auflichtstrahlen -->
+                <svg class="optics-svg" id="optics-svg">
+                    <!-- Lichtkegel vom Ringlicht nach unten auf das Gewinde/Schneide -->
+                    <polygon points="135,130 215,130 240,320 110,320" fill="var(--ringlight-glow)" id="svg-cone" />
+                </svg>
+
+                <!-- Mikroskop Optik (Auflicht) -->
+                <div class="optic-assembly" id="optic-assembly">
+                    <div class="optic-tube"></div>
+                    <div class="optic-lens" title="Messobjektiv">
+                        <div class="ring-light" id="ring-light" title="Ring-Auflicht Beleuchtung"></div>
+                    </div>
+                    <div class="optic-label">Auflicht-Kamera</div>
+                </div>
+
+                <!-- Mechanik Tisch und Objekt -->
+                <div class="prism-mount prism-left"></div>
+                <div class="prism-mount prism-right"></div>
+                
+                <div class="thread-workpiece" id="workpiece" title="Gewindespindel"></div>
+                
+                <!-- Bewegliche Messschneide -->
+                <div class="measuring-knife-container" id="knife-assembly" style="display: none;">
+                    <div class="knife-holder"></div>
+                    <div class="knife-edge" title="Messschneide (exakt in der Achsebene)"></div>
+                </div>
+
+                <div class="work-table"></div>
+            </div>
+
+            <!-- Signal Visualisierung (Kamera Bild) -->
+            <div class="signal-panel">
+                <div class="data-row">
+                    <span>Messmethode:</span>
+                    <strong id="val-method" style="color: var(--accent)">Direkte Silhouette (Falsch)</strong>
+                </div>
+                <div class="data-row">
+                    <span>Bildqualität Kante:</span>
+                    <strong id="val-edge-status" style="color: var(--accent)">Mehrfachkanten (Steigungsfehler)</strong>
+                </div>
+                
+                <!-- Kamera Livebild -->
+                <div class="camera-box" title="Livebild der Auflicht-Kamera">
+                    <div class="camera-title">
+                        <span>Auflicht Livebild (Softwareauswertung)</span>
+                        <span class="camera-status" id="camera-status" style="color: var(--accent);">ERROR</span>
+                    </div>
+                    <!-- Canvas rendert Gewindeflanke oder Messschneide -->
+                    <canvas id="camera-canvas"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="controls">
+            <div class="slider-group">
+                <label for="align-slider">
+                    <strong>Zustellung der Messschneide zur Flanke (-50 µm bis +50 µm):</strong>
+                    <span id="align-val-text">0 µm (Perfekt)</span>
+                </label>
+                <input type="range" id="align-slider" min="-0.05" max="0.05" step="0.001" value="0.000">
+            </div>
+
+            <div class="toggle-group-row">
+                <div class="toggle-container">
+                    <label class="switch">
+                        <input type="checkbox" id="knife-toggle">
+                        <span class="slider-toggle"></span>
+                    </label>
+                    <div>
+                        <strong>Achsenschnittverfahren (Messschneide) aktivieren</strong><br>
+                        <small id="knife-status" style="color: var(--steel-dark);">Deaktiviert. Kamera misst Gewinde direkt.</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="explanation" id="dynamic-explanation"></div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-card">
+                <span class="badge optical-auflicht">OPTISCH (Auflichtverfahren)</span>
+                <h3>Prinzip & Technik</h3>
+                <ul>
+                    <li><strong>Problem bei Gewinden:</strong> Ein Gewinde steigt spiralförmig an (Helix). Schaut eine Kamera direkt darauf, verdeckt der vordere Gewindegang die eigentlich wichtige Profilwurzel in der Mitte. Das Schattenbild ist verzerrt.</li>
+                    <li><strong>Achsenschnitt-Lösung:</strong> Man legt eine physische, messerscharfe Stahlklinge (Messschneide) exakt in die Mittel-Achse des Gewindes.</li>
+                    <li><strong>Auflicht:</strong> Das Mikroskop beleuchtet die Schneide von oben. Die Kamera misst nicht mehr das unscharfe Gewinde, sondern die perfekt scharfe Kante (Gravurstrich) der eingeführten Messschneide!</li>
+                </ul>
+            </div>
+            <div class="info-card">
+                <span class="badge success">VORTEILE</span>
+                <span class="badge warning">NACHTEILE</span>
+                <h3>Eigenschaften & Einsatz</h3>
+                <ul>
+                    <li><strong>Vorteil:</strong> Hochpräzise Messung an komplexen 3D-Körpern (Gewinde, Zahnräder) möglich, die im einfachen Durchlicht versagen.</li>
+                    <li><strong>Vorteil:</strong> Das Auflicht macht feine Oberflächenstrukturen (Gravuren, Ritzlinien auf der Schneide) sichtbar, die als Referenz dienen.</li>
+                    <li><strong>Nachteil:</strong> Erfordert komplexe, mechanische Ausrichtung der Messschneiden. Langsames Verfahren; benötigt geschultes Personal.</li>
+                    <li><strong>Einsatzgebiet:</strong> Gewindemessung (Flankendurchmesser, Steigung), Vermessung von Schneidwerkzeugen und komplexen Konturen.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM ELEMENTE ---
+        const alignSlider = document.getElementById('align-slider');
+        const knifeToggle = document.getElementById('knife-toggle');
+        const resolutionSelect = document.getElementById('resolution-select');
+        
+        const displayContainer = document.getElementById('measurement-display');
+        const trueValLabel = document.getElementById('true-val-label');
+        const mainReadoutVal = document.getElementById('main-readout-val');
+        const errorLabel = document.getElementById('error-label');
+        
+        const knifeStatus = document.getElementById('knife-status');
+        const explanation = document.getElementById('dynamic-explanation');
+        const alignValText = document.getElementById('align-val-text');
+        
+        const valMethod = document.getElementById('val-method');
+        const valEdgeStatus = document.getElementById('val-edge-status');
+        const cameraStatus = document.getElementById('camera-status');
+        
+        // Mechanik Visuals
+        const knifeAssembly = document.getElementById('knife-assembly');
+        const opticsSvg = document.getElementById('optics-svg');
+        const svgCone = document.getElementById('svg-cone');
+        const ringLight = document.getElementById('ring-light');
+        
+        // Canvas Setup
+        const canvas = document.getElementById('camera-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 24; 
+            canvas.height = canvas.parentElement.clientHeight - 35; 
+        }
+        window.addEventListener('resize', resizeCanvas);
+        setTimeout(resizeCanvas, 10);
+
+        // --- KONSTANTEN ---
+        let currentRes = 0.001;
+        const TRUE_DIAMETER = 12.500; // Wahrer Flankendurchmesser in mm
+        const THREAD_ERROR = 0.045; // Physikalischer Fehler durch Helix-Verzerrung bei Direktmessung
+
+        // --- HAUPT UPDATE FUNKTION ---
+        function calculateAndRender() {
+            let alignGap = parseFloat(alignSlider.value); // Spalt zwischen Schneide und Flanke in mm
+            let isKnifeOn = knifeToggle.checked;
+            
+            // Text Updates UI
+            alignValText.textContent = (alignGap * 1000).toFixed(0) + " µm " + (alignGap === 0 ? "(Perfekt)" : "");
+            
+            let measuredDiam = 0;
+            let isErrorState = false;
+
+            // 1. PHYSIK & BERECHNUNG
+            if (!isKnifeOn) {
+                // DIREKTE MESSUNG (Falsch bei Gewinden)
+                // Wegen des Steigungswinkels wirft das Gewinde einen Schatten, der weiter außen liegt.
+                measuredDiam = TRUE_DIAMETER + THREAD_ERROR;
+                isErrorState = true;
+                
+                knifeAssembly.style.display = 'none';
+                
+                valMethod.textContent = "Direkte Silhouette (Falsch)";
+                valMethod.style.color = "var(--accent)";
+                valEdgeStatus.textContent = "Verzerrt durch Gewindesteigung";
+                valEdgeStatus.style.color = "var(--accent)";
+                
+                knifeStatus.textContent = "Deaktiviert. Kamera misst Gewinde direkt (Fehlerhaft!).";
+                knifeStatus.style.color = "var(--steel-dark)";
+                
+                alignSlider.disabled = true; // Slider macht ohne Schneide keinen Sinn
+                alignValText.textContent = "---";
+            } else {
+                // ACHSENSCHNITTVERFAHREN (Korrekt, aber abhängig von Justierung)
+                // Die Kamera misst die Position der Schneide. Wenn ein Spalt existiert (alignGap),
+                // addiert sich dieser Spalt (x2 für den Durchmesser) zum Ergebnis.
+                measuredDiam = TRUE_DIAMETER + (alignGap * 2);
+                
+                // Fehlerzustand, wenn die Ausrichtung nicht gut ist (z.B. > 5µm Spalt)
+                isErrorState = Math.abs(alignGap) > 0.005;
+                
+                knifeAssembly.style.display = 'flex';
+                // Mechanische Animation der Schneide (Visuell minimal nach links/rechts schieben)
+                const baseLeft = 175;
+                knifeAssembly.style.left = (baseLeft + (alignGap * 150)) + 'px';
+                
+                valMethod.textContent = "Achsenschnitt (Auflicht)";
+                valMethod.style.color = "var(--highlight)";
+                
+                if (isErrorState) {
+                    valEdgeStatus.textContent = "Scharf, aber Schneide dejustiert!";
+                    valEdgeStatus.style.color = "#f39c12";
+                } else {
+                    valEdgeStatus.textContent = "Scharf & Perfekt justiert";
+                    valEdgeStatus.style.color = "#27ae60";
+                }
+                
+                knifeStatus.textContent = "Aktiviert. Messschneide liegt in der Achsebene.";
+                knifeStatus.style.color = "var(--highlight)";
+                
+                alignSlider.disabled = false;
+            }
+
+            // Runden auf Sensor-Auflösung
+            let displayRead = Math.round(measuredDiam / currentRes) * currentRes;
+            
+            // UI Updates State
+            trueValLabel.textContent = `Wahrer Flankendurchmesser: ${TRUE_DIAMETER.toFixed(3)} mm`;
+            mainReadoutVal.textContent = displayRead.toFixed(3) + " mm";
+
+            if (!isKnifeOn) {
+                displayContainer.classList.add('error-state');
+                errorLabel.style.display = 'block';
+                errorLabel.textContent = "(Messfehler! Gewindesteigung verzerrt optische Kante)";
+                cameraStatus.textContent = "ERROR";
+                cameraStatus.style.color = "var(--accent)";
+                explanation.className = "explanation error-box";
+            } else if (isErrorState) {
+                displayContainer.classList.add('error-state');
+                errorLabel.style.display = 'block';
+                errorLabel.textContent = "(Ausrichtungsfehler! Schneide liegt nicht plan an)";
+                cameraStatus.textContent = "WARNUNG";
+                cameraStatus.style.color = "#f39c12";
+                displayContainer.style.borderColor = "#f39c12"; // Manuelles override für Warnung
+                mainReadoutVal.style.color = "#f39c12";
+                explanation.className = "explanation";
+                explanation.style.borderLeftColor = "#f39c12";
+            } else {
+                displayContainer.classList.remove('error-state');
+                displayContainer.style.borderColor = "var(--highlight)"; // Reset
+                mainReadoutVal.style.color = "var(--highlight)"; // Reset
+                errorLabel.style.display = 'none';
+                cameraStatus.textContent = "OK";
+                cameraStatus.style.color = "#2ed573";
+                explanation.className = "explanation";
+                explanation.style.borderLeftColor = "var(--highlight)";
+            }
+
+            // --- ERKLÄRUNGSTEXT ---
+            let explainText = "";
+            if (!isKnifeOn) {
+                explainText = `<strong>MESSFEHLER: DIREKTE GEWINDEMESSUNG</strong><br>`;
+                explainText += `Das Mikroskop blickt direkt auf das Gewinde. Wegen der schraubenförmigen Steigung der Gewindegänge (Helix) verdecken die vorderen Flankenbereiche die tatsächliche Gewindemitte in der Achsebene.<br><br>`;
+                explainText += `<strong>Folge:</strong> Im Kamera-Bild (rechts) sieht die Software mehrere überlagerte Schattenlinien. Die Kante ist "schwammig" und die Software misst den Durchmesser um <strong>+${(THREAD_ERROR).toFixed(3)} mm</strong> zu groß!`;
+            } else if (isErrorState) {
+                explainText = `<strong>JUSTIERFEHLER DER MESSSCHNEIDE</strong><br>`;
+                explainText += `Das Achsenschnittverfahren ist aktiv. Die Kamera blickt nun auf die scharfe Kante (rote Referenzlinie) der Messschneide, anstatt auf das trübe Gewinde. Das Bild ist gestochen scharf.<br><br>`;
+                explainText += `<strong>Problem:</strong> Die Schneide wurde mechanisch noch nicht sauber an die Gewindeflanke herangefahren. Es existiert ein Spalt von ${(alignGap*1000).toFixed(0)} µm, was das Messergebnis verfälscht. <em>(Bewege den Slider auf 0 µm!)</em>`;
+            } else {
+                explainText = `<strong>PERFEKTE MESSUNG: ACHSENSCHNITT</strong><br>`;
+                explainText += `Die Messschneide liegt nun flächig und spaltfrei an der Gewindeflanke an.<br><br>`;
+                explainText += `Das Auflicht (Beleuchtung von oben durch das Objektiv) lässt die stählerne Messschneide hell erstrahlen. Die Kamera ignoriert das unscharfe Gewinde im Hintergrund und orientiert sich ausschließlich an der <strong>gestochen scharfen Referenzlinie</strong> der Schneide. So gelingt eine Messung im Sub-Mikrometerbereich!`;
+            }
+            explanation.innerHTML = explainText;
+
+            // Trigger Canvas Render
+            requestAnimationFrame(() => drawCameraCanvas(isKnifeOn, alignGap));
+        }
+
+        // --- CAMERA CANVAS RENDERER ---
+        function drawCameraCanvas(isKnifeOn, alignGap) {
+            if(!canvas.width || canvas.width < 50) resizeCanvas();
+            const w = canvas.width;
+            const h = canvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // 1. Hintergrund zeichnen (Auflicht auf Metall)
+            // Auflicht auf etwas Tieferliegendem (Gewindegrund) ist meist etwas dunkler
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.save();
+            
+            if (!isKnifeOn) {
+                // ZEICHNE: Verwaschenes Gewindeprofil (Fehlerhafte Direktmessung)
+                
+                // Wir zeichnen eine Gewindeflanke (Winkel ca 60 Grad)
+                // Da es eine Helix ist, zeichnen wir mehrere halb-transparente Flanken versetzt,
+                // um die Unschärfe und Überlagerung der vorderen/hinteren Gänge zu simulieren.
+                
+                const drawFlank = (offsetX, alpha) => {
+                    ctx.fillStyle = `rgba(149, 165, 166, ${alpha})`; // Metallisches Grau
+                    ctx.beginPath();
+                    // Flanke von links unten nach rechts oben
+                    ctx.moveTo(cx - 50 + offsetX, h);
+                    ctx.lineTo(cx + 80 + offsetX, 0); // Schräge Flanke
+                    ctx.lineTo(w, 0);
+                    ctx.lineTo(w, h);
+                    ctx.fill();
+                };
+
+                // Überlagerungen für den "Schwammigen" Effekt der Gewindesteigung
+                drawFlank(-20, 0.3); // Hinterer Gang
+                drawFlank(-10, 0.5); 
+                drawFlank(0, 0.8);   // Hauptebene
+                drawFlank(10, 0.5);  // Vorderer Gang (Verdeckt die Sicht!)
+                drawFlank(20, 0.3);
+                
+                // Software Overlay (ROI) - Sucht in der Unschärfe
+                ctx.strokeStyle = 'rgba(231, 76, 60, 0.8)';
+                ctx.setLineDash([3, 3]);
+                ctx.strokeRect(cx - 60, cy - 20, 150, 40);
+                ctx.setLineDash([]);
+                
+                // Falsche, schwankende Kanten-Erkennung (Zick-Zack Linie)
+                ctx.strokeStyle = '#e74c3c';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx - 5, cy - 20);
+                ctx.lineTo(cx + 10, cy);
+                ctx.lineTo(cx + 5, cy + 20);
+                ctx.stroke();
+
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText("Keine scharfe Kante! (Falsches Maß)", cx - 50, cy - 30);
+
+            } else {
+                // ZEICHNE: Achsenschnittverfahren (Mit scharfer Messschneide)
+                
+                // Hintergrund-Gewinde stark abgedunkelt/unscharf (da wir auf die Schneide fokussieren)
+                ctx.filter = 'blur(4px)';
+                ctx.fillStyle = '#1a252f';
+                ctx.beginPath();
+                ctx.moveTo(cx - 50, h);
+                ctx.lineTo(cx + 80, 0); 
+                ctx.lineTo(w, 0);
+                ctx.lineTo(w, h);
+                ctx.fill();
+                ctx.filter = 'none';
+
+                // Zeichne die hochpräzise Messschneide (Stahlkeil)
+                // Die Schneide kommt z.B. von oben rechts und legt sich an die Flanke an.
+                
+                // Ausrichtungsgap in Pixel konvertieren (visuell stark vergrößert für die UI)
+                let gapPx = alignGap * 800; // 0.05 mm -> 40px Visueller Spalt
+                
+                const knifeEdgeX_bottom = cx - 50 - gapPx; 
+                const knifeEdgeX_top = cx + 80 - gapPx;
+                
+                ctx.fillStyle = '#dfe6e9'; // Helles, reflektierendes Auflicht-Metall
+                ctx.beginPath();
+                // Die 60-Grad Spitze der Schneide
+                ctx.moveTo(knifeEdgeX_bottom, h);
+                ctx.lineTo(knifeEdgeX_top, 0); 
+                ctx.lineTo(0, 0);
+                ctx.lineTo(0, h);
+                ctx.fill();
+                
+                // Feine Referenzlinie auf der Messschneide (oft lasergraviert)
+                // Diese Linie nutzt die Software als exakte Messkante!
+                const refOffsetX = -15; // 15px von der Spitze entfernt
+                ctx.strokeStyle = 'rgba(231, 76, 60, 0.7)'; // Rote Auflicht-Linie
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(knifeEdgeX_bottom + refOffsetX, h);
+                ctx.lineTo(knifeEdgeX_top + refOffsetX, 0);
+                ctx.stroke();
+
+                // Spalt-Visualisierung (Wenn nicht 0)
+                if (Math.abs(alignGap) > 0.001) {
+                    ctx.fillStyle = '#f1c40f';
+                    ctx.font = 'bold 12px sans-serif';
+                    // Text im Spalt
+                    ctx.fillText("SPALT!", cx + 15 - gapPx/2, cy + 50);
+                }
+
+                // Software Overlay (ROI)
+                // Das ROI fokussiert sich jetzt exakt auf die rote Referenzlinie der Schneide
+                const roiLeft = cx + refOffsetX - 30 - gapPx;
+                ctx.strokeStyle = 'rgba(52, 152, 219, 0.8)';
+                ctx.setLineDash([3, 3]);
+                ctx.strokeRect(roiLeft, cy - 30, 80, 60);
+                ctx.setLineDash([]);
+                
+                // Erkannte Kante durch Software (Grün oder Orange bei Fehler)
+                const isError = Math.abs(alignGap) > 0.005;
+                ctx.strokeStyle = isError ? '#f39c12' : '#27ae60';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(knifeEdgeX_bottom + refOffsetX, cy + 30);
+                ctx.lineTo(knifeEdgeX_top + refOffsetX, cy - 30);
+                ctx.stroke();
+
+                ctx.fillStyle = isError ? '#f39c12' : '#27ae60';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText(isError ? "Schneide dejustiert" : "Kante erkannt (Perfekt)", roiLeft, cy - 40);
+            }
+            
+            ctx.restore();
+
+            // Fadenkreuz des Bildschirms (Zentrum)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+        }
+
+        // --- EVENT LISTENERS ---
+        alignSlider.addEventListener('input', calculateAndRender);
+        knifeToggle.addEventListener('change', calculateAndRender);
+        
+        resolutionSelect.addEventListener('change', (e) => {
+            currentRes = parseFloat(e.target.value);
+            calculateAndRender();
+        });
+
+        // Initialisierung
+        calculateAndRender();
+
+    </script>
+</body>
+</html>
