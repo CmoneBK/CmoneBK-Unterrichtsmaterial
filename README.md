@@ -47,7 +47,7 @@ Das verwendete JavaScript-Bookmarklet führt folgende Schritte aus:
 
 ## 🌐 Live-Ansicht
 Die Mediathek ist für Schüler und Kollegen erreichbar unter:
-👉 **[https://CmoneBK.github.io/BKE-Unterrichtsmaterial/](https://CmoneBK.github.io/BKE-Unterrichtsmaterial/)**
+👉 **[https://CmoneBK.github.io/CmoneBK-Unterrichtsmaterial/](https://CmoneBK.github.io/BKE-Unterrichtsmaterial/)**
 
 ## 🔧 Fehlerbehebung
 - **Titel wird nicht korrekt angezeigt:** Prüfen Sie, ob das Tool im HTML-Code ganz oben die `---` Striche mit dem Titel-Eintrag enthält.
