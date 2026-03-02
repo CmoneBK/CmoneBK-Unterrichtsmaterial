@@ -1,0 +1,541 @@
+---
+title: "3D Gesamtrundlauf - Dreistufige Welle auf Prismen"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Gesamtrundlauf - Dreistufige Welle auf Prismen</title>
+    <style>
+        :root {
+            --bg-dark: #1e272e;
+            --panel-bg: rgba(44, 62, 80, 0.9);
+            --accent: #e74c3c;
+            --text: #ecf0f1;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+        }
+        #ui-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none; /* Klicks gehen durch auf die 3D Szene */
+        }
+        .panel {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            pointer-events: auto; /* UI ist wieder anklickbar */
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        h1 { margin: 0 0 5px 0; font-size: 1.2rem; text-align: center; }
+        h2 { margin: 0 0 15px 0; font-size: 0.9rem; text-align: center; color: #bdc3c7; font-weight: normal;}
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+        label { font-size: 0.85rem; margin-bottom: 5px; color: #bdc3c7; }
+        input[type="range"] { width: 100%; cursor: pointer; }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .stat-box { text-align: center; width: 48%; }
+        .stat-box .value { font-size: 1.4rem; font-weight: bold; color: #3498db; }
+        .stat-box .value.total { color: var(--accent); }
+        button {
+            width: 100%;
+            background: #34495e;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button:hover { background: #e74c3c; }
+        #graph-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 10px;
+            pointer-events: auto;
+        }
+        canvas { display: block; }
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+            pointer-events: none;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        /* Custom Scrollbar for Panel */
+        .panel::-webkit-scrollbar { width: 6px; }
+        .panel::-webkit-scrollbar-track { background: transparent; }
+        .panel::-webkit-scrollbar-thumb { background: #7f8c8d; border-radius: 3px; }
+    </style>
+    <!-- Three.js Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+<div id="ui-container">
+    <div class="panel">
+        <h1>Gesamtrundlauf (Total Runout)</h1>
+        <h2>Dreistufige Welle auf Prismen</h2>
+        
+        <div class="control-group">
+            <label>Exzentrizität Mittelteil: <span id="val-ecc">5</span> µm</label>
+            <input type="range" id="eccentricity" min="0" max="100" step="1" value="5">
+        </div>
+        <div class="control-group">
+            <label>Konizität Mittelteil: <span id="val-taper">0</span> µm</label>
+            <input type="range" id="taper" min="0" max="200" step="1" value="0">
+        </div>
+        <div class="control-group">
+            <label>Formfehler (Dreischlag): <span id="val-form">2</span> µm</label>
+            <input type="range" id="form-error" min="0" max="80" step="1" value="2">
+        </div>
+        <div class="control-group">
+            <label>Drehgeschwindigkeit:</label>
+            <input type="range" id="rot-speed" min="0.01" max="0.2" step="0.01" value="0.02">
+        </div>
+        <div class="control-group">
+            <label>Axialer Vorschub:</label>
+            <input type="range" id="feed-speed" min="0.001" max="0.05" step="0.001" value="0.005">
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <label>Aktuell (µm)</label>
+                <div class="value" id="current-val">0.0</div>
+            </div>
+            <div class="stat-box">
+                <label>Gesamtrundlauf (µm)</label>
+                <div class="value total" id="total-runout">0.0</div>
+            </div>
+        </div>
+        
+        <button id="reset-btn">Messung & Graph Zurücksetzen</button>
+    </div>
+</div>
+
+<div id="graph-container" class="panel">
+    <label style="display:block; text-align:center; margin-bottom:10px; color:#bdc3c7; font-size:0.9rem;">Messverlauf & Toleranzband</label>
+    <canvas id="graphCanvas" width="400" height="150"></canvas>
+</div>
+
+<div id="instructions">🖱️ Links-Klick: Drehen | Rechts-Klick: Verschieben | Scroll: Zoom</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        
+        // --- 1. TEXTUR-GENERIERUNG ---
+        function createMetalTextureWithStripe() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            
+            ctx.fillStyle = '#95a5a6';
+            ctx.fillRect(0, 0, 1024, 1024);
+            
+            for(let i=0; i < 4000; i++) {
+                ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
+                ctx.fillRect(0, Math.random() * 1024, 1024, Math.random() * 2 + 0.5);
+            }
+
+            ctx.fillStyle = '#c0392b';
+            ctx.fillRect(480, 0, 64, 1024); 
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            return texture;
+        }
+
+        // --- 1.5 ZIFFERNBLATT-TEXTUR GENERIEREN ---
+        function createDialTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1024;
+            canvas.height = 1024;
+            const ctx = canvas.getContext('2d');
+            const center = 512;
+            const radius = 460;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, 1024, 1024);
+
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 15;
+            ctx.beginPath();
+            ctx.arc(center, center, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.translate(center, center);
+            ctx.fillStyle = '#2c3e50';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.font = 'bold 42px Arial';
+
+            for (let i = 0; i < 100; i++) {
+                const angle = (i / 100) * Math.PI * 2 - Math.PI / 2; 
+                ctx.save();
+                ctx.rotate(angle);
+
+                if (i % 10 === 0) {
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -radius + 15);
+                    ctx.lineTo(0, -radius + 60);
+                    ctx.stroke();
+                    
+                    ctx.save();
+                    ctx.translate(0, -radius + 100);
+                    ctx.rotate(-angle);
+                    ctx.fillText(i.toString(), 0, 0);
+                    ctx.restore();
+                } else {
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(0, -radius + 15);
+                    ctx.lineTo(0, -radius + 40);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+
+            ctx.font = 'italic 32px Arial';
+            ctx.fillStyle = '#7f8c8d';
+            ctx.fillText('0.001 mm', 0, -120);
+            ctx.fillText('100 µm / U', 0, 120);
+
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // --- 2. THREE.JS SZENE SETUP ---
+        const VISUAL_SCALE = 0.02; 
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1e272e);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(20, 15, 25);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(0, 0, 0);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 20, 10);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+        const spotLight = new THREE.SpotLight(0xffffff, 0.7);
+        spotLight.position.set(-15, 10, 15);
+        scene.add(spotLight);
+
+        // --- 3. DREISTUFIGE WELLE & PRISMEN ---
+        const shaftMaterial = new THREE.MeshStandardMaterial({
+            color: 0xaaaaaa,
+            metalness: 0.6,
+            roughness: 0.4,
+            map: createMetalTextureWithStripe()
+        });
+        const prismMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50, roughness: 0.7 });
+
+        const bearingRadius = 2.5;
+        const bearingLength = 6;
+        const middleBaseRadius = 3.5;
+        const middleLength = 14;
+        
+        const posLeft = -(middleLength/2 + bearingLength/2);
+        const posRight = (middleLength/2 + bearingLength/2);
+
+        const shaftGroup = new THREE.Group();
+        shaftGroup.rotation.x = Math.PI / 2; 
+        scene.add(shaftGroup);
+
+        const leftBearingGeo = new THREE.CylinderGeometry(bearingRadius, bearingRadius, bearingLength, 64);
+        const leftBearing = new THREE.Mesh(leftBearingGeo, shaftMaterial);
+        leftBearing.position.y = posLeft; 
+        leftBearing.castShadow = true;
+        shaftGroup.add(leftBearing);
+
+        const rightBearingGeo = new THREE.CylinderGeometry(bearingRadius, bearingRadius, bearingLength, 64);
+        const rightBearing = new THREE.Mesh(rightBearingGeo, shaftMaterial);
+        rightBearing.position.y = posRight;
+        rightBearing.castShadow = true;
+        shaftGroup.add(rightBearing);
+
+        // --- DYNAMISCHER MITTELTEIL (MIT FORMFEHLER) ---
+        let middleMesh;
+        function updateMiddleSection() {
+            if (middleMesh) shaftGroup.remove(middleMesh);
+            
+            const taper_um = parseFloat(document.getElementById('taper').value);
+            const taper_visual = taper_um * VISUAL_SCALE;
+
+            const radiusTop = middleBaseRadius + taper_visual/2; 
+            const radiusBottom = middleBaseRadius - taper_visual/2; 
+            
+            // Höhere Segmentzahl notwendig für weiche Formfehler-Verformung!
+            const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, middleLength, 128, 32); 
+            
+            // Formfehler anwenden (Verbiegung der Geometrie)
+            const form_um = parseFloat(document.getElementById('form-error').value);
+            const form_visual = form_um * VISUAL_SCALE;
+
+            if (form_visual > 0) {
+                const pos = geometry.attributes.position;
+                for (let i = 0; i < pos.count; i++) {
+                    let x = pos.getX(i);
+                    let y = pos.getY(i); // Lokale Y-Achse ist die Längsachse (vor der Rotation)
+                    let z = pos.getZ(i);
+                    
+                    let r = Math.sqrt(x*x + z*z);
+                    
+                    // Modifiziere nur die Außenhülle, nicht die Endkappen
+                    if (r > middleBaseRadius - 1.0) {
+                        let angle = Math.atan2(z, x);
+                        
+                        // "Dreischlag"-Profil simulieren (3 Wellen pro Umdrehung) mit leichtem Längsdrall (y * 1.5)
+                        let dr = form_visual * Math.sin(3 * angle + y * 1.5);
+                        
+                        pos.setX(i, x + Math.cos(angle) * dr);
+                        pos.setZ(i, z + Math.sin(angle) * dr);
+                    }
+                }
+                geometry.computeVertexNormals(); // Lichtbrechung korrigieren
+            }
+
+            middleMesh = new THREE.Mesh(geometry, shaftMaterial);
+            middleMesh.castShadow = true;
+            
+            const ecc_um = parseFloat(document.getElementById('eccentricity').value);
+            const ecc_visual = ecc_um * VISUAL_SCALE;
+            middleMesh.position.set(ecc_visual, 0, 0); 
+            
+            shaftGroup.add(middleMesh);
+        }
+        updateMiddleSection();
+
+        // Massive V-Blöcke
+        function createVBlock(zPos) {
+            const vGroup = new THREE.Group();
+            const leftSide = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), prismMaterial);
+            leftSide.rotation.z = Math.PI / 4; leftSide.position.set(-2.8, -4, 0); leftSide.receiveShadow = true;
+            const rightSide = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), prismMaterial);
+            rightSide.rotation.z = -Math.PI / 4; rightSide.position.set(2.8, -4, 0); rightSide.receiveShadow = true;
+            const base = new THREE.Mesh(new THREE.BoxGeometry(10, 4, 4), prismMaterial);
+            base.position.set(0, -6.5, 0); base.receiveShadow = true;
+            vGroup.add(leftSide, rightSide, base);
+            vGroup.position.z = zPos;
+            scene.add(vGroup);
+        }
+
+        createVBlock(posLeft);
+        createVBlock(posRight);
+
+        // --- 4. MESSUHR (Taster) ---
+        const probeGroup = new THREE.Group();
+        scene.add(probeGroup);
+
+        const gaugeHeight = middleBaseRadius + 6.5; // Gehäuse sitzt etwas höher
+        
+        // Ziffernblatt-Gehäuse
+        const gaugeMat = new THREE.MeshStandardMaterial({ color: 0xbdc3c7, metalness: 0.5, roughness: 0.3 });
+        const gaugeBody = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.6, 0.4, 64), gaugeMat);
+        gaugeBody.rotation.x = Math.PI / 2;
+        gaugeBody.position.set(0, gaugeHeight, 0); 
+        probeGroup.add(gaugeBody);
+        
+        const dialFace = new THREE.Mesh(new THREE.CircleGeometry(1.5, 64), new THREE.MeshBasicMaterial({ map: createDialTexture() }));
+        dialFace.position.set(0, gaugeHeight, 0.21);
+        probeGroup.add(dialFace);
+        
+        const glass = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.05, 64), new THREE.MeshPhysicalMaterial({ 
+            color: 0xffffff, transparent: true, opacity: 0.15, roughness: 0, clearcoat: 1 
+        }));
+        glass.rotation.x = Math.PI / 2;
+        glass.position.set(0, gaugeHeight, 0.3);
+        probeGroup.add(glass);
+
+        // Nadel
+        const needleGroup = new THREE.Group();
+        needleGroup.position.set(0, gaugeHeight, 0.25);
+        const pointerShape = new THREE.Shape();
+        pointerShape.moveTo(-0.05, -0.3); pointerShape.lineTo(0.05, -0.3);
+        pointerShape.lineTo(0.01, 1.25); pointerShape.lineTo(-0.01, 1.25); pointerShape.closePath();
+        const pointer = new THREE.Mesh(new THREE.ShapeGeometry(pointerShape), new THREE.MeshBasicMaterial({ color: 0xe74c3c }));
+        needleGroup.add(pointer);
+        const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.05, 32), new THREE.MeshBasicMaterial({ color: 0x2c3e50 }));
+        pin.rotation.x = Math.PI / 2; needleGroup.add(pin);
+        probeGroup.add(needleGroup);
+
+        // Schaft (Stem)
+        const stemGeo = new THREE.CylinderGeometry(0.15, 0.15, 1, 32);
+        stemGeo.translate(0, 0.5, 0); // Origin an die Unterkante schieben (damit scale nach oben wächst)
+        const stem = new THREE.Mesh(stemGeo, new THREE.MeshStandardMaterial({ color: 0x7f8c8d, metalness: 0.8 }));
+        probeGroup.add(stem);
+        
+        // Tastkugel
+        const tip = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 32), new THREE.MeshStandardMaterial({ color: 0xe74c3c, roughness: 0.2 }));
+        probeGroup.add(tip);
+
+        // --- 5. MESS-LOGIK ---
+        const raycaster = new THREE.Raycaster();
+        const rayDirection = new THREE.Vector3(0, -1, 0);
+
+        const measureLimit = middleLength / 2 - 0.5;
+        let zPos = -measureLimit;
+        let zDir = 1;
+        
+        let maxVal = -Infinity;
+        let minVal = Infinity;
+        const history = [];
+        const maxHistoryLength = 400;
+
+        function resetMeasurement() {
+            maxVal = -Infinity; minVal = Infinity; history.length = 0;
+            zPos = -measureLimit; zDir = 1;
+            document.getElementById('current-val').innerText = "0.00";
+            document.getElementById('total-runout').innerText = "0.00";
+        }
+
+        // --- BUGFIX: Sauberes Mapping der IDs verhindert den TypeError ---
+        const sliderMap = {
+            'eccentricity': 'val-ecc',
+            'taper': 'val-taper',
+            'form-error': 'val-form'
+        };
+
+        Object.keys(sliderMap).forEach(sliderId => {
+            document.getElementById(sliderId).addEventListener('input', (e) => {
+                document.getElementById(sliderMap[sliderId]).innerText = e.target.value;
+                updateMiddleSection();
+                resetMeasurement();
+            });
+        });
+        
+        document.getElementById('reset-btn').addEventListener('click', resetMeasurement);
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // 2D Graph
+        const graphCanvas = document.getElementById('graphCanvas');
+        const gCtx = graphCanvas.getContext('2d');
+        
+        function drawGraph() {
+            gCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            const w = graphCanvas.width; const h = graphCanvas.height;
+            const midY = h / 2; const scaleY = 0.5; 
+            
+            gCtx.beginPath(); gCtx.moveTo(0, midY); gCtx.lineTo(w, midY);
+            gCtx.strokeStyle = 'rgba(255,255,255,0.2)'; gCtx.setLineDash([5, 5]); gCtx.stroke(); gCtx.setLineDash([]);
+            
+            if (history.length > 2 && maxVal > -Infinity && minVal < Infinity) {
+                const yTop = midY - maxVal * scaleY; const yBottom = midY - minVal * scaleY;
+                gCtx.fillStyle = 'rgba(231, 76, 60, 0.2)'; gCtx.fillRect(0, yTop, w, yBottom - yTop);
+                gCtx.fillStyle = '#e74c3c'; gCtx.font = '10px Arial';
+                gCtx.fillText(`MAX: ${maxVal.toFixed(1)} µm`, 5, yTop - 5); 
+                gCtx.fillText(`MIN: ${minVal.toFixed(1)} µm`, 5, yBottom + 12);
+            }
+            
+            gCtx.beginPath(); gCtx.strokeStyle = '#3498db'; gCtx.lineWidth = 2;
+            for (let i = 0; i < history.length; i++) {
+                const x = (i / maxHistoryLength) * w; const y = midY - history[i] * scaleY;
+                if (i === 0) gCtx.moveTo(x, y); else gCtx.lineTo(x, y);
+            }
+            gCtx.stroke();
+        }
+
+        // --- 6. ANIMATIONS-LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            const rotSpeed = parseFloat(document.getElementById('rot-speed').value);
+            const feedSpeed = parseFloat(document.getElementById('feed-speed').value);
+            
+            shaftGroup.rotation.y += rotSpeed;
+
+            zPos += zDir * feedSpeed;
+            if (zPos > measureLimit || zPos < -measureLimit) zDir *= -1;
+            probeGroup.position.z = zPos;
+
+            const rayOrigin = new THREE.Vector3(0, middleBaseRadius + 10, zPos);
+            raycaster.set(rayOrigin, rayDirection);
+            const intersects = raycaster.intersectObject(middleMesh);
+
+            if (intersects.length > 0) {
+                const surfaceY = intersects[0].point.y;
+                
+                // Kugel berührt die Oberfläche exakt
+                tip.position.set(0, surfaceY + 0.2, 0); 
+                
+                // Der Schaft sitzt auf der Kugel und skaliert seine Höhe dynamisch hoch bis zur Mitte des Ziffernblattgehäuses
+                stem.position.set(0, surfaceY + 0.2, 0);
+                stem.scale.set(1, gaugeHeight - (surfaceY + 0.2), 1);
+                
+                // Abweichung berechnen
+                const deviation_visual = surfaceY - middleBaseRadius;
+                const deviation_um = deviation_visual / VISUAL_SCALE;
+
+                const rotations = deviation_um / 100;
+                needleGroup.rotation.z = -rotations * Math.PI * 2; 
+
+                if (deviation_um > maxVal) maxVal = deviation_um;
+                if (deviation_um < minVal) minVal = deviation_um;
+
+                document.getElementById('current-val').innerText = deviation_um.toFixed(1);
+                document.getElementById('total-runout').innerText = (maxVal - minVal).toFixed(1);
+
+                history.push(deviation_um);
+                if (history.length > maxHistoryLength) history.shift();
+            }
+
+            drawGraph();
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    });
+</script>
+
+</body>
+</html>
