@@ -1,0 +1,758 @@
+---
+title: "Fertigungstechnik: Form- und Lagetoleranzen - Rundheitsmessung"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Form- und Lagetoleranzen - Rundheitsmessung</title>
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --panel-bg: #ffffff;
+            --text-main: #2d3436;
+            --accent-blue: #0984e3;
+            --caliper-color: #e17055;
+            --probe-color: #00b894;
+            --max-color: #d63031;
+            --min-color: #0984e3;
+            --border-color: #dfe6e9;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: var(--text-main);
+            border-bottom: 3px solid var(--accent-blue);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+        }
+
+        .description {
+            background: #e8f4fd;
+            border-left: 5px solid var(--accent-blue);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
+        }
+
+        .controls-panel {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .control-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        label {
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .val-badge {
+            background: var(--bg-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 1.1em;
+            border: 1px solid var(--border-color);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 1.05em;
+            color: var(--caliper-color);
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--caliper-color);
+            cursor: pointer;
+        }
+
+        .btn-action {
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 14px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 5px;
+            box-shadow: 0 4px 6px rgba(108, 92, 231, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-action:hover {
+            background: #5b4bc4;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(108, 92, 231, 0.3);
+        }
+
+        .btn-action:disabled {
+            background: #a29bfe;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .canvas-panel {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        canvas {
+            background: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        .dashboard {
+            width: 100%;
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .metric-card {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid;
+            background: var(--bg-color);
+            transition: all 0.3s ease;
+        }
+
+        .metric-card.caliper { border-color: var(--caliper-color); }
+        .metric-card.probe { border-color: var(--probe-color); }
+
+        .metric-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #636e72;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .metric-value {
+            font-size: 1.8rem;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .metric-card.caliper .metric-value { color: var(--caliper-color); }
+        .metric-card.probe .metric-value { color: var(--probe-color); }
+
+        .hint {
+            font-size: 0.85rem;
+            color: #636e72;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <h1>Form- und Lagetoleranzen - Rundheitsmessung</h1>
+    
+    <div class="description">
+        Willkommen im interaktiven Labor für Formtoleranzen! Diese Applikation vereint alle wesentlichen Aspekte der <strong>Rundheitsmessung (nach ISO 1101)</strong> in einer dynamischen Simulation:
+        <ul style="margin-top: 10px; margin-bottom: 0; padding-left: 25px; line-height: 1.5;">
+            <li><strong>Messverfahren-Vergleich:</strong> Erlebe, warum der zuschaltbare 2-Punkt-Messschieber bei einem "Gleichdick" (ungerade Wellenzahl) versagt, während die Radiustastung den echten Fehler aufdeckt.</li>
+            <li><strong>Toleranzzone (RONt):</strong> Beobachte live den Abstand zwischen minimal umschließendem Hüllkreis (rot) und einbeschriebenem Pferchkreis (blau).</li>
+            <li><strong>Realistische Oberflächen:</strong> Simuliere feine Rattermarken und Fehlerstrukturen mittels des "Chaos"-Reglers.</li>
+            <li><strong>Der Auswertungs-Algorithmus:</strong> Klicke auf den Button, um live zu sehen, wie moderne Software durch iteratives Suchen das perfekte Referenzzentrum (Minimum Zone Circle) in einer zuvor zentrumsfreien Punktewolke findet.</li>
+        </ul>
+    </div>
+
+    <div class="layout-grid">
+        <div class="controls-panel">
+            <button id="btnExplain" class="btn-action">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                Software-Auswertung animieren
+            </button>
+
+            <div class="control-group" style="background: #fff3e0; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7; margin-top: 5px;">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="showCaliper">
+                    <strong>Messschieber zuschalten</strong>
+                </label>
+                <div class="hint" style="margin-top: 8px;">2-Punkt-Messung aktivieren/deaktivieren.</div>
+            </div>
+
+            <div class="control-group">
+                <label>Formfehler (Tiefe) <span class="val-badge" id="ampVal">15 µm</span></label>
+                <input type="range" id="amplitude" min="0" max="40" value="15">
+            </div>
+            
+            <div class="control-group">
+                <label>Anzahl der Wellen <span class="val-badge" id="lobesVal">3</span></label>
+                <input type="range" id="lobes" min="2" max="7" value="3">
+            </div>
+
+            <div class="control-group">
+                <label>Chaos / Rauschen <span class="val-badge" id="noiseVal">0 µm</span></label>
+                <input type="range" id="noise" min="0" max="20" value="0">
+            </div>
+
+            <div class="control-group">
+                <label>Drehgeschwindigkeit <span class="val-badge" id="speedVal">1.5</span></label>
+                <input type="range" id="speed" min="0" max="4" step="0.1" value="1.5">
+            </div>
+        </div>
+
+        <div class="canvas-panel">
+            <div class="dashboard">
+                <div class="metric-card caliper" id="caliperCard">
+                    <div class="metric-title">Messschieber (Durchmesser)</div>
+                    <div class="metric-value" id="caliperReading">0.00 mm</div>
+                    <div class="hint">Simulierte Zweipunktmessung</div>
+                </div>
+                <div class="metric-card probe">
+                    <div class="metric-title">Formtester (Aktueller Radius)</div>
+                    <div class="metric-value" id="probeReading">0.00 µm</div>
+                    <div class="hint">Abweichung vom perfekten Kreis</div>
+                </div>
+            </div>
+
+            <canvas id="simCanvas" width="650" height="420"></canvas>
+            <canvas id="graphCanvas" width="650" height="220"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const simCanvas = document.getElementById('simCanvas');
+        const ctx = simCanvas.getContext('2d');
+        const graphCanvas = document.getElementById('graphCanvas');
+        const graphCtx = graphCanvas.getContext('2d');
+
+        // UI Elements
+        const ampSlider = document.getElementById('amplitude');
+        const lobesSlider = document.getElementById('lobes');
+        const noiseSlider = document.getElementById('noise');
+        const speedSlider = document.getElementById('speed');
+        const showCaliperCheckbox = document.getElementById('showCaliper');
+        const btnExplain = document.getElementById('btnExplain');
+        
+        const ampVal = document.getElementById('ampVal');
+        const lobesVal = document.getElementById('lobesVal');
+        const noiseVal = document.getElementById('noiseVal');
+        const speedVal = document.getElementById('speedVal');
+        
+        const caliperReading = document.getElementById('caliperReading');
+        const probeReading = document.getElementById('probeReading');
+        const caliperCard = document.getElementById('caliperCard');
+
+        // State variables
+        let angle = 0;
+        const R0 = 100; // Basisradius visuell
+        const cx = 325; // Zentrum X (Wahrer Mittelpunkt)
+        const cy = 230; // Zentrum Y (Wahrer Mittelpunkt)
+        
+        // Tracking for stabilization (Anti-Flicker)
+        let prevMaxAngle = 0;
+        let prevMinAngle = 0;
+        let smoothedMaxProbe = null;
+        let smoothedMinProbe = null;
+
+        // Animation State for the "Explanation Mode"
+        let isExplaining = false;
+        let explainPhase = 0;
+        let explainProgress = 0;
+        let frozenAngle = 0;
+        let fakeCx = cx;
+        let fakeCy = cy;
+        const FAKE_OFFSET_X = 25;
+        const FAKE_OFFSET_Y = -35;
+
+        // Graphing data
+        const graphWidth = 650;
+        let caliperHistory = new Array(graphWidth).fill(0);
+        let probeHistory = new Array(graphWidth).fill(0);
+
+        function updateUI() {
+            ampVal.innerText = ampSlider.value + " µm";
+            lobesVal.innerText = lobesSlider.value;
+            noiseVal.innerText = noiseSlider.value + " µm";
+            speedVal.innerText = speedSlider.value;
+
+            if (showCaliperCheckbox.checked) {
+                caliperCard.classList.remove('hidden');
+            } else {
+                caliperCard.classList.add('hidden');
+            }
+        }
+
+        // Event Listeners
+        ampSlider.addEventListener('input', updateUI);
+        lobesSlider.addEventListener('input', updateUI);
+        noiseSlider.addEventListener('input', updateUI);
+        speedSlider.addEventListener('input', updateUI);
+        showCaliperCheckbox.addEventListener('change', updateUI);
+
+        btnExplain.addEventListener('click', () => {
+            if (isExplaining) return;
+            isExplaining = true;
+            explainPhase = 1;
+            explainProgress = 0;
+            frozenAngle = angle; // Friere das Bauteil ein
+            
+            // Setze den falschen Mittelpunkt
+            fakeCx = cx + FAKE_OFFSET_X;
+            fakeCy = cy + FAKE_OFFSET_Y;
+            
+            btnExplain.disabled = true;
+            btnExplain.innerHTML = "Berechnung läuft...";
+            
+            // UI Regler sperren während der Animation
+            ampSlider.disabled = true;
+            lobesSlider.disabled = true;
+            noiseSlider.disabled = true;
+        });
+
+        function getChaoticNoise(materialAngleRad, intensity) {
+            if (intensity === 0) return 0;
+            let noise = Math.sin(materialAngleRad * 43) * 0.5 
+                      + Math.cos(materialAngleRad * 17) * 0.3 
+                      + Math.sin(materialAngleRad * 89) * 0.2;
+            return noise * intensity;
+        }
+
+        // Schritt 1: Generiere die Form mit hoher Auflösung gegen Quantisierungs-Zittern
+        function generateContourPoints(amplitude, lobes, noiseLevel, currentAngle) {
+            let points = [];
+            const STEPS = 1080; // Sehr feine Auflösung (3 Punkte pro Grad)
+            for (let i = 0; i < STEPS; i++) {
+                let matRad = (i / STEPS) * Math.PI * 2;
+                let r = R0 + amplitude * Math.cos(lobes * matRad) + getChaoticNoise(matRad, noiseLevel);
+                
+                // Wahre Position im Raum (relativ zum wahren Zentrum cx, cy)
+                let worldRad = matRad + currentAngle;
+                let x = cx + r * Math.cos(worldRad);
+                let y = cy + r * Math.sin(worldRad);
+                points.push({x, y, matRad, worldRad});
+            }
+            return points;
+        }
+
+        // Schritt 2: Stabilisierte Auswertung der Toleranzzone
+        function evaluateToleranceZone(points, testCx, testCy) {
+            let maxR = -Infinity;
+            let minR = Infinity;
+
+            // 1. Absolute Maxima und Minima finden
+            for (let pt of points) {
+                let dx = pt.x - testCx;
+                let dy = pt.y - testCy;
+                let r = Math.sqrt(dx*dx + dy*dy);
+                pt.testR = r; // zwischenspeichern
+
+                if (r > maxR) maxR = r;
+                if (r < minR) minR = r;
+            }
+
+            // 2. Anti-Flackern: Den Punkt priorisieren, der dem Punkt vom letzten Frame am nächsten liegt.
+            // Erlaubt das Verhindern von Springen zwischen zwei identischen Wellenbergen
+            let bestMaxPt = points[0];
+            let bestMinPt = points[0];
+            let bestMaxDist = Infinity;
+            let bestMinDist = Infinity;
+            const EPSILON = 0.05; // Gruppierungs-Toleranz in Pixeln
+
+            for (let pt of points) {
+                if (Math.abs(pt.testR - maxR) < EPSILON) {
+                    let diff = Math.abs(pt.worldRad - prevMaxAngle) % (2 * Math.PI);
+                    let dist = diff > Math.PI ? (2 * Math.PI) - diff : diff;
+                    if (dist < bestMaxDist) {
+                        bestMaxDist = dist;
+                        bestMaxPt = pt;
+                    }
+                }
+                if (Math.abs(pt.testR - minR) < EPSILON) {
+                    let diff = Math.abs(pt.worldRad - prevMinAngle) % (2 * Math.PI);
+                    let dist = diff > Math.PI ? (2 * Math.PI) - diff : diff;
+                    if (dist < bestMinDist) {
+                        bestMinDist = dist;
+                        bestMinPt = pt;
+                    }
+                }
+            }
+
+            // Winkel für nächsten Frame merken
+            prevMaxAngle = bestMaxPt.worldRad;
+            prevMinAngle = bestMinPt.worldRad;
+
+            return { 
+                maxR: maxR, // Wahrer maximaler Radius für die Kreisgröße
+                minR: minR, 
+                maxPt: bestMaxPt, // Stabilisierter Punkt für die Linie
+                minPt: bestMinPt 
+            };
+        }
+
+        // Easing-Funktion für weiche Bewegung
+        function easeInOutQuad(t) {
+            return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+        }
+
+        function drawScene() {
+            let amplitude = parseFloat(ampSlider.value);
+            let lobes = parseInt(lobesSlider.value);
+            let noiseLevel = parseFloat(noiseSlider.value);
+            let speed = parseFloat(speedSlider.value);
+            let showCaliper = showCaliperCheckbox.checked;
+
+            ctx.clearRect(0, 0, simCanvas.width, simCanvas.height);
+
+            // -- ANIMATIONS-LOGIK --
+            let currentAngle = angle;
+            let calcCx = cx; 
+            let calcCy = cy;
+            let overlayText = "";
+
+            if (isExplaining) {
+                currentAngle = frozenAngle; 
+                
+                if (explainPhase === 1) {
+                    calcCx = fakeCx;
+                    calcCy = fakeCy;
+                    overlayText = "1. Rohe Kontur erfasst (Zentrum noch unbekannt / falsch)";
+                    explainProgress += 0.008;
+                    if (explainProgress > 1) { explainPhase = 2; explainProgress = 0; }
+                } 
+                else if (explainPhase === 2) {
+                    let ease = easeInOutQuad(explainProgress);
+                    calcCx = fakeCx + (cx - fakeCx) * ease;
+                    calcCy = fakeCy + (cy - fakeCy) * ease;
+                    overlayText = "2. Software verschiebt Zentrum, um RONt zu minimieren...";
+                    explainProgress += 0.005; 
+                    if (explainProgress > 1) { explainPhase = 3; explainProgress = 0; }
+                } 
+                else if (explainPhase === 3) {
+                    calcCx = cx;
+                    calcCy = cy;
+                    overlayText = "3. Optimum (Minimum Zone Circle) gefunden!";
+                    explainProgress += 0.008;
+                    if (explainProgress > 1.2) { 
+                        isExplaining = false; 
+                        explainPhase = 0;
+                        btnExplain.disabled = false;
+                        btnExplain.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Software-Auswertung animieren`;
+                        ampSlider.disabled = false;
+                        lobesSlider.disabled = false;
+                        noiseSlider.disabled = false;
+                    }
+                }
+            } else {
+                if (speed > 0) angle += speed * 0.015;
+                if (angle > Math.PI * 2) angle -= Math.PI * 2;
+            }
+
+            // 1. Konturpunkte berechnen
+            let points = generateContourPoints(amplitude, lobes, noiseLevel, currentAngle);
+
+            // 2. Toleranzzone evaluieren
+            let shapeData = evaluateToleranceZone(points, calcCx, calcCy);
+
+            let toolAlpha = isExplaining ? 0.15 : 1.0;
+
+            // 3. Zeichne das eigentliche Bauteil (Zuerst)
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.closePath();
+            
+            let gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, R0 + amplitude + noiseLevel);
+            gradient.addColorStop(0, '#ecf0f1');
+            gradient.addColorStop(1, '#bdc3c7');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            ctx.strokeStyle = '#2d3436';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // 4. Toleranzzone Hintergrund
+            ctx.beginPath();
+            ctx.arc(calcCx, calcCy, shapeData.maxR, 0, Math.PI * 2);
+            ctx.arc(calcCx, calcCy, shapeData.minR, 0, Math.PI * 2, true);
+            ctx.fillStyle = 'rgba(0, 184, 148, 0.05)';
+            ctx.fill();
+
+            // 5. Äußerer Hüllkreis (ROT)
+            ctx.beginPath();
+            ctx.arc(calcCx, calcCy, shapeData.maxR, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(214, 48, 49, 0.8)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([6, 6]);
+            ctx.stroke();
+
+            // 6. Innerer Pferchkreis (BLAU)
+            ctx.beginPath();
+            ctx.arc(calcCx, calcCy, shapeData.minR, 0, Math.PI * 2);
+            ctx.strokeStyle = 'rgba(9, 132, 227, 0.8)';
+            ctx.stroke();
+            ctx.setLineDash([]); 
+
+            // 7. Konstruktionslinien
+            ctx.beginPath(); ctx.moveTo(calcCx, calcCy); ctx.lineTo(shapeData.maxPt.x, shapeData.maxPt.y);
+            ctx.strokeStyle = 'rgba(214, 48, 49, 0.5)'; ctx.lineWidth = 1; ctx.stroke();
+
+            ctx.beginPath(); ctx.moveTo(calcCx, calcCy); ctx.lineTo(shapeData.minPt.x, shapeData.minPt.y);
+            ctx.strokeStyle = 'rgba(9, 132, 227, 0.5)'; ctx.stroke();
+
+            // Markante Punkte
+            ctx.beginPath(); ctx.arc(shapeData.maxPt.x, shapeData.maxPt.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#d63031'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+            ctx.beginPath(); ctx.arc(shapeData.minPt.x, shapeData.minPt.y, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#0984e3'; ctx.fill(); ctx.stroke();
+
+            // Das aktuell berechnete Zentrum
+            ctx.beginPath();
+            ctx.arc(calcCx, calcCy, 6, 0, Math.PI * 2);
+            ctx.fillStyle = isExplaining ? '#6c5ce7' : '#2d3436';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            if (isExplaining) {
+                ctx.beginPath();
+                ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
+                ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
+                ctx.strokeStyle = 'rgba(45, 52, 54, 0.3)';
+                ctx.stroke();
+                
+                ctx.fillStyle = '#6c5ce7';
+                ctx.font = 'bold 14px sans-serif';
+                let currentRONt = shapeData.maxR - shapeData.minR;
+                ctx.fillText(`RONt: ${currentRONt.toFixed(1)} µm`, calcCx + 15, calcCy - 10);
+            }
+
+            // --- Mechanische Werkzeuge ---
+            ctx.globalAlpha = toolAlpha;
+
+            let minX = Infinity;
+            let maxX = -Infinity;
+            for (let pt of points) {
+                if (pt.x < minX) minX = pt.x;
+                if (pt.x > maxX) maxX = pt.x;
+            }
+
+            let matRadUp = -Math.PI / 2 - currentAngle;
+            let exactProbeR = R0 + amplitude * Math.cos(lobes * matRadUp) + getChaoticNoise(matRadUp, noiseLevel);
+            let exactProbeY = cy - exactProbeR;
+
+            if (showCaliper) {
+                ctx.strokeStyle = '#e17055'; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(minX, cy - 120); ctx.lineTo(minX, cy + 120); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(maxX, cy - 120); ctx.lineTo(maxX, cy + 120); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(minX - 20, cy - 100); ctx.lineTo(maxX + 20, cy - 100);
+                ctx.lineWidth = 12; ctx.strokeStyle = 'rgba(225, 112, 85, 0.2)'; ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#00b894'; ctx.lineWidth = 4;
+            let probeTipCenterY = exactProbeY - 5; 
+            ctx.beginPath(); ctx.arc(cx, probeTipCenterY, 5, 0, Math.PI * 2); ctx.fillStyle = '#00b894'; ctx.fill(); 
+            ctx.beginPath(); ctx.moveTo(cx, probeTipCenterY); ctx.lineTo(cx, exactProbeY - 60); ctx.stroke(); 
+            ctx.beginPath(); ctx.arc(cx, exactProbeY - 80, 20, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill(); 
+            ctx.lineWidth = 3; ctx.stroke();
+
+            ctx.globalAlpha = 1.0;
+
+            // --- UI Overlays & Graphen ---
+            let caliperWidth = maxX - minX;
+            let caliperDeviation = caliperWidth - (2 * R0);
+            let probeDeviation = exactProbeR - R0;
+
+            caliperReading.innerText = (50.000 + (caliperDeviation / 1000)).toFixed(3) + " mm";
+            probeReading.innerText = probeDeviation.toFixed(1) + " µm";
+
+            if (speed > 0 && !isExplaining) {
+                caliperHistory.push(caliperDeviation);
+                caliperHistory.shift();
+                probeHistory.push(probeDeviation);
+                probeHistory.shift();
+            }
+
+            drawGraphs(showCaliper);
+
+            if (isExplaining) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillRect(10, 10, simCanvas.width - 20, 45);
+                ctx.fillStyle = '#6c5ce7';
+                ctx.font = 'bold 18px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(overlayText, simCanvas.width / 2, 40);
+                ctx.textAlign = 'left'; 
+            }
+
+            requestAnimationFrame(drawScene);
+        }
+
+        function drawGraphs(showCaliper) {
+            graphCtx.clearRect(0, 0, graphCanvas.width, graphCanvas.height);
+            let midY = graphCanvas.height / 2;
+
+            graphCtx.strokeStyle = '#dfe6e9';
+            graphCtx.lineWidth = 1;
+            graphCtx.beginPath();
+            graphCtx.moveTo(0, midY);
+            graphCtx.lineTo(graphWidth, midY);
+            graphCtx.stroke();
+
+            let scale = 1.5;
+
+            // Graphen-Auswertung
+            let currentMaxProbe = -Infinity;
+            let currentMinProbe = Infinity;
+            for(let val of probeHistory) {
+                if(val > currentMaxProbe) currentMaxProbe = val;
+                if(val < currentMinProbe) currentMinProbe = val;
+            }
+
+            // Glättungsfilter für den Graph, um das Zittern der Messlinien zu eliminieren
+            if (currentMaxProbe > -Infinity && currentMinProbe < Infinity) {
+                if (smoothedMaxProbe === null) {
+                    smoothedMaxProbe = currentMaxProbe;
+                    smoothedMinProbe = currentMinProbe;
+                } else {
+                    smoothedMaxProbe += (currentMaxProbe - smoothedMaxProbe) * 0.15;
+                    smoothedMinProbe += (currentMinProbe - smoothedMinProbe) * 0.15;
+                }
+            }
+
+            if (showCaliper) {
+                graphCtx.beginPath();
+                graphCtx.strokeStyle = 'rgba(225, 112, 85, 0.7)'; 
+                graphCtx.lineWidth = 2;
+                for (let i = 0; i < graphWidth; i++) {
+                    let y = midY - (caliperHistory[i] * scale);
+                    if (i === 0) graphCtx.moveTo(i, y);
+                    else graphCtx.lineTo(i, y);
+                }
+                graphCtx.stroke();
+            }
+
+            graphCtx.beginPath();
+            graphCtx.strokeStyle = isExplaining ? 'rgba(0, 184, 148, 0.3)' : '#00b894';
+            graphCtx.lineWidth = 2;
+            for (let i = 0; i < graphWidth; i++) {
+                let y = midY - (probeHistory[i] * scale);
+                if (i === 0) graphCtx.moveTo(i, y);
+                else graphCtx.lineTo(i, y);
+            }
+            graphCtx.stroke();
+
+            // Messgrenzen zeichnen (mit den geglätteten Werten)
+            if(smoothedMaxProbe !== null) {
+                let yMax = midY - (smoothedMaxProbe * scale);
+                let yMin = midY - (smoothedMinProbe * scale);
+
+                graphCtx.strokeStyle = isExplaining ? 'rgba(0, 184, 148, 0.1)' : 'rgba(0, 184, 148, 0.4)';
+                graphCtx.lineWidth = 1;
+                graphCtx.setLineDash([4, 4]);
+                graphCtx.beginPath(); graphCtx.moveTo(0, yMax); graphCtx.lineTo(graphWidth - 120, yMax); graphCtx.stroke();
+                graphCtx.beginPath(); graphCtx.moveTo(0, yMin); graphCtx.lineTo(graphWidth - 120, yMin); graphCtx.stroke();
+                graphCtx.setLineDash([]);
+
+                let ront = smoothedMaxProbe - smoothedMinProbe;
+                graphCtx.beginPath();
+                graphCtx.moveTo(graphWidth - 140, yMax); graphCtx.lineTo(graphWidth - 140, yMin);
+                graphCtx.moveTo(graphWidth - 145, yMax); graphCtx.lineTo(graphWidth - 135, yMax);
+                graphCtx.moveTo(graphWidth - 145, yMin); graphCtx.lineTo(graphWidth - 135, yMin);
+                
+                graphCtx.strokeStyle = isExplaining ? 'rgba(0, 184, 148, 0.3)' : '#00b894';
+                graphCtx.lineWidth = 2;
+                graphCtx.stroke();
+
+                graphCtx.fillStyle = isExplaining ? 'rgba(45, 52, 54, 0.5)' : '#2d3436';
+                graphCtx.font = 'bold 14px monospace';
+                graphCtx.fillText(`RONt: ${ront.toFixed(1)} µm`, graphWidth - 130, (yMax + yMin) / 2 + 5);
+            }
+        }
+
+        updateUI();
+        drawScene();
+    </script>
+</body>
+</html>
