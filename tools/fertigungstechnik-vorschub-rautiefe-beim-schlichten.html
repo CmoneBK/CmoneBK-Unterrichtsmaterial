@@ -1,0 +1,418 @@
+---
+title: "Fertigungstechnik: Vorschub <-> Rautiefe beim Schlichten"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Vorschub <-> Rautiefe beim Schlichten</title>
+    <!-- Tailwind CSS explizit laden -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; background-color: #f3f4f6; color: #1f2937; margin: 0; padding: 1rem; }
+        .canvas-container { position: relative; width: 100%; aspect-ratio: 2/1; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 0.5rem; overflow: hidden; }
+        canvas { display: block; width: 100%; height: 100%; }
+        input[type=range] { width: 100%; }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8 flex justify-center items-start">
+
+<div class="max-w-7xl w-full mx-auto grid grid-cols-1 md:grid-cols-5 gap-6">
+    
+    <!-- Linke Spalte: Steuerung & Berechnung -->
+    <div class="md:col-span-2 bg-white rounded-xl shadow-lg p-4 md:p-6 border-t-4 border-yellow-500 flex flex-col gap-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800 mb-1">Rautiefen-Rechner</h1>
+            <p class="text-sm text-gray-600 mb-4">Nach den Näherungsformeln beim CNC-Drehen.</p>
+        </div>
+
+        <!-- Modus Auswahl -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <label class="block text-sm font-bold text-gray-700 mb-2">Zielgröße berechnen:</label>
+            <select id="calc-mode" class="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                <option value="f">Vorschub (f) berechnen</option>
+                <option value="Rth">Theoretische Rautiefe (Rth) berechnen</option>
+            </select>
+        </div>
+
+        <div class="space-y-5">
+            <!-- Wendeschneidplatte (Neu) -->
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">Wendeschneidplatte (Form)</label>
+                <select id="insert-type" class="w-full p-2 border border-gray-300 rounded-md bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm">
+                    <option value="V">V-Platte (35° Spitzenwinkel)</option>
+                    <option value="D" selected>D-Platte (55° Spitzenwinkel) - Standard</option>
+                    <option value="C">C-Platte (80° Spitzenwinkel)</option>
+                </select>
+            </div>
+
+            <!-- Eckenradius (Immer Eingabe) -->
+            <div class="pt-2 border-t border-gray-100">
+                <div class="flex justify-between mb-1">
+                    <label class="text-sm font-bold text-gray-700">Eckenradius r<sub>ε</sub> [mm]</label>
+                    <span id="val-re" class="text-sm font-mono text-blue-700 font-bold">0.40</span>
+                </div>
+                <input type="range" id="slider-re" min="0.1" max="2.0" step="0.05" value="0.4" class="w-full accent-blue-600">
+            </div>
+
+            <!-- Rautiefe (Eingabe wenn f berechnet wird) -->
+            <div id="group-rth" class="transition-all duration-300">
+                <div class="flex justify-between mb-1">
+                    <label class="text-sm font-bold text-gray-700">Theor. Rautiefe R<sub>th</sub> [µm]</label>
+                    <span id="val-rth-in" class="text-sm font-mono text-blue-700 font-bold">6.3</span>
+                </div>
+                <input type="range" id="slider-rth" min="0.5" max="50" step="0.1" value="6.3" class="w-full accent-blue-600">
+            </div>
+
+            <!-- Vorschub (Eingabe wenn Rth berechnet wird) -->
+            <div id="group-f" class="hidden transition-all duration-300">
+                <div class="flex justify-between mb-1">
+                    <label class="text-sm font-bold text-gray-700">Vorschub f [mm]</label>
+                    <span id="val-f-in" class="text-sm font-mono text-blue-700 font-bold">0.14</span>
+                </div>
+                <input type="range" id="slider-f" min="0.02" max="1.0" step="0.01" value="0.14" class="w-full accent-blue-600">
+            </div>
+        </div>
+
+        <!-- Ergebnis Box -->
+        <div class="mt-auto bg-green-50 border border-green-200 rounded-lg p-4 shadow-sm">
+            <div class="text-xs text-green-700 font-semibold uppercase tracking-wider mb-2">Aktive Formel</div>
+            <div id="formula-display" class="font-serif text-lg text-center mb-4 text-gray-800">
+                f ≈ &radic;(8 &middot; r<sub>ε</sub> &middot; R<sub>th</sub>)
+            </div>
+            <div class="border-t border-green-200 pt-3 text-center">
+                <div class="text-sm text-gray-600 mb-1">Berechnetes Ergebnis:</div>
+                <div id="result-display" class="text-2xl font-bold text-green-700">
+                    f = 0,142 mm
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rechte Spalte: Canvas Simulation -->
+    <div class="md:col-span-3 flex flex-col gap-4">
+        <div class="bg-white rounded-xl shadow-lg p-4 md:p-6 border-t-4 border-blue-600">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 flex justify-between items-center">
+                <span>Live-Simulation: Zerspanungsprofil</span>
+                <label class="text-sm font-normal flex items-center gap-2 cursor-pointer bg-blue-50 px-3 py-1 rounded-full border border-blue-200 hover:bg-blue-100 transition">
+                    <input type="checkbox" id="exaggerate-y" checked class="w-4 h-4 text-blue-600 rounded">
+                    Y-Achse x20 überhöhen (Sichtbarkeit)
+                </label>
+            </h2>
+            <div class="canvas-container shadow-inner bg-slate-50">
+                <canvas id="simCanvas"></canvas>
+            </div>
+            <p class="text-sm text-gray-500 mt-3">
+                * Das Werkzeug (Wendeschneidplatte) fährt mit dem Vorschub $f$ von links nach rechts. Angezeigt wird das sich daraus ergebende Schnittprofil.
+            </p>
+        </div>
+    </div>
+    
+</div>
+
+<script>
+    // DOM Elemente referenzieren
+    const modeSelect = document.getElementById('calc-mode');
+    const insertTypeSelect = document.getElementById('insert-type');
+    const sliderRe = document.getElementById('slider-re');
+    const sliderRth = document.getElementById('slider-rth');
+    const sliderF = document.getElementById('slider-f');
+    const valRe = document.getElementById('val-re');
+    const valRthIn = document.getElementById('val-rth-in');
+    const valFIn = document.getElementById('val-f-in');
+    const groupRth = document.getElementById('group-rth');
+    const groupF = document.getElementById('group-f');
+    const formulaDisplay = document.getElementById('formula-display');
+    const resultDisplay = document.getElementById('result-display');
+    const exaggerateYCheckbox = document.getElementById('exaggerate-y');
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Aktuelle Werte
+    let state = {
+        mode: 'f',
+        insertType: 'D',
+        re: 0.4,
+        f: 0.142,
+        rth_um: 6.3,
+        rth_mm: 0.0063
+    };
+
+    // UI Updates und Berechnungslogik
+    function updateLogic() {
+        state.mode = modeSelect.value;
+        state.insertType = insertTypeSelect.value;
+        state.re = parseFloat(sliderRe.value);
+        valRe.textContent = state.re.toFixed(2);
+
+        if (state.mode === 'f') {
+            groupRth.classList.remove('hidden');
+            groupF.classList.add('hidden');
+            formulaDisplay.innerHTML = 'f &approx; &radic;(8 &middot; r<sub>&epsilon;</sub> &middot; R<sub>th</sub>)';
+            
+            state.rth_um = parseFloat(sliderRth.value);
+            valRthIn.textContent = state.rth_um.toFixed(1);
+            state.rth_mm = state.rth_um / 1000;
+            
+            state.f = Math.sqrt(8 * state.re * state.rth_mm);
+            resultDisplay.innerHTML = `f &approx; ${state.f.toFixed(3).replace('.', ',')} mm`;
+
+        } else {
+            groupRth.classList.add('hidden');
+            groupF.classList.remove('hidden');
+            formulaDisplay.innerHTML = 'R<sub>th</sub> = f&sup2; / (8 &middot; r<sub>&epsilon;</sub>)';
+            
+            state.f = parseFloat(sliderF.value);
+            valFIn.textContent = state.f.toFixed(2);
+            
+            state.rth_mm = (state.f * state.f) / (8 * state.re);
+            state.rth_um = state.rth_mm * 1000;
+            
+            resultDisplay.innerHTML = `R<sub>th</sub> &approx; ${state.rth_um.toFixed(2).replace('.', ',')} &micro;m`;
+        }
+        
+        drawSimulation();
+    }
+
+    function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+        canvas.style.width = `${rect.width}px`;
+        canvas.style.height = `${rect.height}px`;
+        drawSimulation();
+    }
+
+    function drawSimulation() {
+        const width = canvas.width / (window.devicePixelRatio || 1);
+        const height = canvas.height / (window.devicePixelRatio || 1);
+        
+        if (width <= 0 || height <= 0 || state.f <= 0) return;
+        
+        ctx.clearRect(0, 0, width, height);
+
+        const f = state.f;
+        const re = state.re;
+        const exactRth = re - Math.sqrt(Math.max(0, re*re - (f/2)*(f/2))); 
+        
+        // Parameter der Wendeschneidplatte bestimmen
+        const kappa_deg = 60; // Optisch ansprechender Einstellwinkel für die Darstellung
+        let epsilon_deg = 55;
+        if (state.insertType === 'V') epsilon_deg = 35;
+        if (state.insertType === 'C') epsilon_deg = 80;
+
+        // Umrechnung in Bogenmaß und Berechnung der geometrischen Schneidenwinkel
+        const gamma_R = kappa_deg * Math.PI / 180;
+        const gamma_L = (kappa_deg + epsilon_deg) * Math.PI / 180;
+        
+        // Normalenvektoren der Schneidkanten (zeigen vom Mittelpunkt zum Tangentenpunkt)
+        const alpha_R = gamma_R - Math.PI / 2;
+        const alpha_L = gamma_L + Math.PI / 2; // Liegt im Bereich > 180°, wird für Arc später normiert
+
+        // Geometrische Hüllfunktion für exakte Fräs-/Drehprofile (auch für extrem großen Vorschub)
+        function getToolY(dx) {
+            const tl_x_rel = re * Math.cos(alpha_L);
+            const tr_x_rel = re * Math.cos(alpha_R);
+            
+            if (dx >= tl_x_rel && dx <= tr_x_rel) {
+                // Punkt liegt im Bereich des Eckenradius (Kreisgleichung)
+                return re - Math.sqrt(re * re - dx * dx);
+            } else if (dx < tl_x_rel) {
+                // Punkt liegt auf der linken Nebenschneide
+                const tl_y_rel = re + re * Math.sin(alpha_L);
+                return tl_y_rel + (dx - tl_x_rel) * Math.tan(gamma_L);
+            } else {
+                // Punkt liegt auf der rechten Hauptschneide
+                const tr_y_rel = re + re * Math.sin(alpha_R);
+                return tr_y_rel + (dx - tr_x_rel) * Math.tan(gamma_R);
+            }
+        }
+
+        const numScallops = 6; 
+        const paddingX = width * 0.1;
+        const usableWidth = width - 2 * paddingX;
+        const pxPerMmX = usableWidth / (numScallops * f);
+        
+        const exaggerate = exaggerateYCheckbox.checked;
+        const pxPerMmY = pxPerMmX * (exaggerate ? 20 : 1);
+
+        const originX = paddingX + (f/2) * pxPerMmX;
+        const originY = height * 0.65;
+
+        function map(x, y) {
+            return {
+                cx: originX + x * pxPerMmX,
+                cy: originY - y * pxPerMmY 
+            };
+        }
+
+        // --- 1. WERKSTÜCK ZEICHNEN ---
+        ctx.beginPath();
+        let startMapped = map(-0.5*f, -height/pxPerMmY);
+        ctx.moveTo(startMapped.cx, height); 
+        ctx.lineTo(startMapped.cx, map(-0.5*f, 0).cy);
+
+        const stepMm = usableWidth / pxPerMmX / (width * 1.5); 
+        for (let x = -0.5 * f; x <= (numScallops - 0.5) * f; x += stepMm) {
+            // Finde die geringste Tiefe über alle Werkzeugdurchgänge (Hüllkurve)
+            let min_y = 100; 
+            for (let pass = -1; pass <= numScallops + 1; pass++) {
+                let y_pass = getToolY(x - pass * f);
+                if (y_pass < min_y) min_y = y_pass;
+            }
+            let pt = map(x, min_y);
+            ctx.lineTo(pt.cx, pt.cy);
+        }
+        
+        let endMapped = map((numScallops - 0.5) * f, 0);
+        ctx.lineTo(endMapped.cx, height);
+        ctx.closePath();
+        
+        ctx.fillStyle = '#bfdbfe'; 
+        ctx.fill();
+        ctx.strokeStyle = '#1e3a8a'; 
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // --- 2. WERKZEUG WENDESCHNEIDPLATTE ZEICHNEN ---
+        const toolIndex = numScallops - 2; 
+        
+        // Dynamische Körperhöhe abhängig von Zoomstufe
+        const h_body = Math.max(re * 2, (originY / pxPerMmY) + 0.5); 
+        
+        // Tangentenpunkte in lokalen Tool-Koordinaten
+        const tr_x_rel = re * Math.cos(alpha_R);
+        const tr_y_rel = re + re * Math.sin(alpha_R);
+        const tl_x_rel = re * Math.cos(alpha_L);
+        const tl_y_rel = re + re * Math.sin(alpha_L);
+
+        // Obere Schnittpunkte für den Werkzeugkörper
+        const top_R_x = tr_x_rel + (h_body - tr_y_rel) / Math.tan(gamma_R);
+        const top_L_x = tl_x_rel + (h_body - tl_y_rel) / Math.tan(gamma_L);
+
+        ctx.beginPath();
+        // Rechte Kante
+        let startPt = map(toolIndex * f + top_R_x, h_body);
+        ctx.moveTo(startPt.cx, startPt.cy);
+        ctx.lineTo(map(toolIndex * f + tr_x_rel, tr_y_rel).cx, map(toolIndex * f + tr_x_rel, tr_y_rel).cy);
+        
+        // Eckenradius (von Rechts nach Links zeichnen)
+        const steps = 60;
+        let start_a = alpha_R;
+        let end_a = alpha_L > Math.PI ? alpha_L - 2*Math.PI : alpha_L; // Normierung auf negative Winkel für Zeichenfolge
+        
+        for(let i=1; i<=steps; i++) {
+            let a = start_a + (end_a - start_a) * (i / steps);
+            let pt = map(toolIndex * f + Math.cos(a) * re, re + Math.sin(a) * re);
+            ctx.lineTo(pt.cx, pt.cy);
+        }
+        
+        // Linke Kante
+        ctx.lineTo(map(toolIndex * f + top_L_x, h_body).cx, map(toolIndex * f + top_L_x, h_body).cy);
+        ctx.closePath();
+
+        // Farbverlauf für Metallic-Look der Schneidplatte
+        let grad = ctx.createLinearGradient(
+            map(toolIndex * f + top_L_x, h_body).cx, map(toolIndex * f + top_L_x, h_body).cy, 
+            startPt.cx, startPt.cy
+        );
+        grad.addColorStop(0, '#fef08a'); 
+        grad.addColorStop(0.5, '#fde047'); 
+        grad.addColorStop(1, '#eab308'); 
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.strokeStyle = '#a16207'; 
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Optional: Befestigungsloch (nur dezent andeuten, wenn die Ansicht nicht überhöht verzerrt ist)
+        if (!exaggerate) {
+            ctx.beginPath();
+            let holeY = Math.max(re * 2.5, h_body * 0.5);
+            let holeRadius = Math.min(0.8, re * 0.8); // Lochgröße passt sich an den Eckenradius an
+            ctx.arc(
+                map(toolIndex * f, holeY).cx, 
+                map(toolIndex * f, holeY).cy, 
+                holeRadius * pxPerMmX, 
+                0, Math.PI * 2
+            );
+            ctx.fillStyle = '#f3f4f6';
+            ctx.fill();
+            ctx.strokeStyle = '#d1d5db';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // --- 3. BEMAßUNG ---
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#374151'; 
+        ctx.fillStyle = '#374151';
+        ctx.font = '14px sans-serif';
+
+        function drawArrow(x1, y1, x2, y2) {
+            const headlen = 8; 
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headlen * Math.cos(angle - Math.PI / 6), y2 - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(x2 - headlen * Math.cos(angle + Math.PI / 6), y2 - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.fill();
+        }
+
+        // Vorschub f Pfeil
+        const fY = exactRth + (f*0.2); 
+        const peak1 = map(1.5 * f, fY);
+        const peak2 = map(2.5 * f, fY);
+        
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(map(1.5 * f, exactRth).cx, map(1.5 * f, exactRth).cy); ctx.lineTo(peak1.cx, peak1.cy - 10);
+        ctx.moveTo(map(2.5 * f, exactRth).cx, map(2.5 * f, exactRth).cy); ctx.lineTo(peak2.cx, peak2.cy - 10);
+        ctx.stroke(); ctx.setLineDash([]);
+
+        drawArrow(peak1.cx + 5, peak1.cy, peak2.cx, peak2.cy);
+        drawArrow(peak2.cx - 5, peak2.cy, peak1.cx, peak1.cy);
+        ctx.textAlign = 'center'; ctx.fillText('f', (peak1.cx + peak2.cx) / 2, peak1.cy - 8);
+
+        // Rautiefe Rth Pfeil
+        const rthX = 0.5 * f; 
+        const valley = map(rthX, 0);
+        const peakLevel = map(rthX, exactRth);
+
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(valley.cx - 20, valley.cy); ctx.lineTo(valley.cx + 40, valley.cy);
+        ctx.moveTo(peakLevel.cx - 20, peakLevel.cy); ctx.lineTo(peakLevel.cx + 40, peakLevel.cy);
+        ctx.stroke(); ctx.setLineDash([]);
+
+        if (Math.abs(valley.cy - peakLevel.cy) > 15) {
+            drawArrow(valley.cx + 20, valley.cy + 15, valley.cx + 20, valley.cy);
+            drawArrow(peakLevel.cx + 20, peakLevel.cy - 15, peakLevel.cx + 20, peakLevel.cy);
+        }
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#dc2626'; ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Rth', peakLevel.cx + 25, (valley.cy + peakLevel.cy) / 2);
+    }
+
+    // Event Listener anbinden
+    modeSelect.addEventListener('change', updateLogic);
+    insertTypeSelect.addEventListener('change', updateLogic);
+    sliderRe.addEventListener('input', updateLogic);
+    sliderRth.addEventListener('input', updateLogic);
+    sliderF.addEventListener('input', updateLogic);
+    exaggerateYCheckbox.addEventListener('change', drawSimulation);
+    window.addEventListener('resize', resizeCanvas);
+
+    // Init
+    updateLogic();
+    setTimeout(resizeCanvas, 50);
+
+</script>
+
+</body>
+</html>
