@@ -1,0 +1,380 @@
+---
+title: "Fertigungstechnik: Beurteilung Bedingungen für die Fertigung"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Beurteilung Bedingungen für die Fertigung</title>
+    <style>
+        :root {
+            --primary: #1e3a8a; /* Deep blue */
+            --primary-light: #eff6ff;
+            --secondary: #475569;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --border: #e2e8f0;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .page-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            margin-top: 0;
+        }
+
+        .layout-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Result Section - Fixed Right */
+        .result-card {
+            flex: 0 0 350px; /* Feste Breite auf Desktop */
+            position: sticky;
+            top: 20px; /* Bleibt beim Scrollen oben haften */
+            background: var(--primary);
+            color: white;
+            text-align: center;
+            z-index: 100;
+            margin-bottom: 20px;
+        }
+
+        .result-card h2 {
+            margin: 0 0 10px 0;
+            color: #fff;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .result-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 15px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-advice {
+            display: inline-block;
+            background: #fff;
+            color: var(--primary);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            width: 100%;
+        }
+
+        .score-display {
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        /* Responsive Layout für Result Card */
+        @media (max-width: 900px) {
+            .layout-container {
+                flex-direction: column;
+            }
+            .result-card {
+                flex: auto;
+                width: 100%;
+                position: sticky;
+                bottom: 20px;
+                top: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div class="header">
+        <h1>Beurteilung der Bedingungen für die Fertigung</h1>
+        <p>Ganzheitliche Beurteilung nach Zerspanungsrichtlinien (ohne direkte Vc-Vorgabe)</p>
+    </div>
+
+    <div class="layout-container">
+        <!-- Linke Spalte: Eingabefelder -->
+        <div class="main-content">
+            
+            <!-- Sektion 1: Schneideneingriff -->
+            <div class="card">
+                <h2 class="card-title">1. Art des Schneideneingriffs</h2>
+                <div class="form-group">
+                    <label for="eingriff">Wählen Sie das Profil des Schnittes:</label>
+                    <select id="eingriff" onchange="calculateResult()">
+                        <option value="glatt" selected>Glatter, gleichmäßiger Schnitt, vorbearbeitete Oberfläche</option>
+                        <option value="wechselnd">Wechselnde Schnitttiefe, Guss- oder Schmiedehaut</option>
+                        <option value="unterbrochen">Ungleichmäßiger Schnitt mit Unterbrechungen (z.B. Nuten, Bohrungen)</option>
+                    </select>
+                    <div class="help-text">Bestimmt die Grundbelastung der Werkzeugschneide (konstant vs. schlagartig).</div>
+                </div>
+            </div>
+
+            <!-- Sektion 2: Detaillierte Stabilitätskriterien -->
+            <div class="card">
+                <h2 class="card-title">2. Detaillierte Stabilitäts- & Umfeldfaktoren</h2>
+                <div class="score-display">Berechnete Systemstabilität: <span id="stabilityScoreTxt">0</span>/12</div>
+                
+                <div class="grid-2">
+                    <!-- Maschine -->
+                    <div class="form-group">
+                        <label for="maschine">Zustand & Stabilität der Maschine</label>
+                        <select id="maschine" onchange="calculateResult()">
+                            <option value="3">Sehr starr, neuwertig, CNC mit Dämpfung (Optimal)</option>
+                            <option value="2" selected>Guter Standardzustand, normale Spindellagerung</option>
+                            <option value="1">Ältere Maschine, leichte Vibrationen möglich</option>
+                            <option value="0">Ausgeschlagene Führungen, instabil, Konventionell leicht</option>
+                        </select>
+                        <div class="help-text">Beeinflusst die Schwingungsübertragung auf die Schneide.</div>
+                    </div>
+
+                    <!-- Werkstückgeometrie -->
+                    <div class="form-group">
+                        <label for="geometrie">Geometrie des Werkstücks</label>
+                        <select id="geometrie" onchange="calculateResult()">
+                            <option value="3">Sehr kompakt, dickwandig (L/D-Verhältnis < 2)</option>
+                            <option value="2" selected>Normale Proportionen, ausreichend eigenstabil</option>
+                            <option value="1">Dünnwandig oder lang (L/D-Verhältnis 3 bis 5)</option>
+                            <option value="0">Sehr lang, extrem dünnwandig, filigran (L/D > 5)</option>
+                        </select>
+                        <div class="help-text">Eigenstabilität des Bauteils gegen Schnittkräfte.</div>
+                    </div>
+
+                    <!-- Einspannung -->
+                    <div class="form-group">
+                        <label for="einspannung">Art der Einspannung</label>
+                        <select id="einspannung" onchange="calculateResult()">
+                            <option value="3">Kurze, starre Spannung (z.B. hartes Spannfutter, abstützt durch Lünette/Reitstock)</option>
+                            <option value="2" selected>Standard-Spannung, ausreichende Haltekraft</option>
+                            <option value="1">Längere Auskragung, nur einseitig gespannt</option>
+                            <option value="0">Fliegende Spannung bei großer Länge, instabile Vorrichtung</option>
+                        </select>
+                        <div class="help-text">Kraftschluss und Abstützung des Bauteils.</div>
+                    </div>
+
+                    <!-- Kühlmittel -->
+                    <div class="form-group">
+                        <label for="kuehlung">Kühlmitteleinsatz</label>
+                        <select id="kuehlung" onchange="calculateResult()">
+                            <option value="3">Hochdruck-Innenkühlung (IKZ) oder optimale Spülung</option>
+                            <option value="2" selected>Ausreichende externe Überflutungskühlung / saubere MMS</option>
+                            <option value="1">Schlechte Kühlmittelzufuhr, Spritzwasser</option>
+                            <option value="0">Trockenbearbeitung (obwohl Kühlung werkstoffbedingt nötig wäre)</option>
+                        </select>
+                        <div class="help-text">Thermische Stabilität und Spanabfuhr.</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Rechte Spalte: Ergebnis (Fixiert) -->
+        <div class="card result-card" id="resultCard">
+            <h2>Gesamtbeurteilung nach Richtlinie</h2>
+            <div class="result-value" id="finalResult">Bitte Kriterien auswählen</div>
+            
+            <div class="action-advice" id="actionAdvice">
+                Parameter berechnen...
+            </div>
+            <div style="margin-top: 25px; font-size: 0.85rem; opacity: 0.8;">
+                *Gemäß Tabelle: Spalte <span id="matrixColumnInfo" style="font-weight: bold;">[Spalte]</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Die exakte Matrix aus dem Referenzbild
+    const tableMatrix = {
+        "glatt": {
+            "++": "günstige Bearbeitungsbedingungen",
+            "+": "normale Bearbeitungsbedingungen",
+            "-": "normale bis ungünstige Bearbeitungsbedingungen"
+        },
+        "wechselnd": {
+            "++": "günstige bis normale Bearbeitungsbedingungen",
+            "+": "normale Bearbeitungsbedingungen",
+            "-": "ungünstige Bearbeitungsbedingungen"
+        },
+        "unterbrochen": {
+            "++": "normale Bearbeitungsbedingungen",
+            "+": "ungünstige Bearbeitungsbedingungen",
+            "-": "sehr ungünstige Bearbeitungsbedingungen"
+        }
+    };
+
+    function calculateResult() {
+        // 1. Eingriff-Art auslesen
+        const eingriff = document.getElementById('eingriff').value;
+
+        // 2. Stabilitäts-Score berechnen
+        const vMaschine = parseInt(document.getElementById('maschine').value);
+        const vGeometrie = parseInt(document.getElementById('geometrie').value);
+        const vEinspannung = parseInt(document.getElementById('einspannung').value);
+        const vKuehlung = parseInt(document.getElementById('kuehlung').value);
+
+        const totalScore = vMaschine + vGeometrie + vEinspannung + vKuehlung;
+        document.getElementById('stabilityScoreTxt').innerText = totalScore;
+
+        // 3. Score auf Matrix-Spalten mappen
+        let columnCategory = "+"; 
+        let columnDisplay = "+ (Normale Stabilität)";
+
+        if (totalScore >= 10) {
+            columnCategory = "++";
+            columnDisplay = "++ (Hohe Stabilität)";
+        } else if (totalScore <= 5) {
+            columnCategory = "-";
+            columnDisplay = "- (Geringe Stabilität)";
+        }
+
+        document.getElementById('matrixColumnInfo').innerText = columnDisplay;
+
+        // 4. Matrix abfragen
+        const resultText = tableMatrix[eingriff][columnCategory];
+
+        // 5. Ratschlag ausgeben und Farbe anpassen
+        let adviceText = "";
+        let bgColor = "";
+
+        if (resultText.includes("sehr ungünstige")) {
+            adviceText = "Achtung: Startwert für v_c stark reduzieren!";
+            bgColor = "#b91c1c"; // Dark Red
+        } else if (resultText === "ungünstige Bearbeitungsbedingungen" || resultText === "normale bis ungünstige Bearbeitungsbedingungen") {
+            adviceText = "Startwert für v_c reduzieren (kleineres v_c wählen).";
+            bgColor = "#ea580c"; // Orange
+        } else if (resultText === "normale Bearbeitungsbedingungen") {
+            adviceText = "Tabellen-Startwert für v_c beibehalten.";
+            bgColor = "#0284c7"; // Blue
+        } else if (resultText === "günstige bis normale Bearbeitungsbedingungen") {
+            adviceText = "Startwert für v_c kann tendenziell leicht erhöht werden.";
+            bgColor = "#059669"; // Green
+        } else if (resultText === "günstige Bearbeitungsbedingungen") {
+            adviceText = "Optimal: Startwert für v_c erhöhen (größeres v_c möglich).";
+            bgColor = "#16a34a"; // Bright Green
+        }
+
+        // 6. UI Aktualisieren
+        document.getElementById('finalResult').innerText = resultText;
+        document.getElementById('actionAdvice').innerText = adviceText;
+        document.getElementById('resultCard').style.backgroundColor = bgColor;
+    }
+
+    // Initiale Berechnung
+    window.onload = calculateResult;
+</script>
+
+</body>
+</html>
