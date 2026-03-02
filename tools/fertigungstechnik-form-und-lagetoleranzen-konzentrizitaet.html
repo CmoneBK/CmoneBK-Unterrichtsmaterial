@@ -1,0 +1,336 @@
+---
+title: "Fertigungstechnik: Form- und Lagetoleranzen - Konzentrizität"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Form- und Lagetoleranzen - Konzentrizität</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --datum: #27ae60;
+            --contour: #34495e;
+            --lines: #bdc3c7;
+            --median: #2980b9;
+            --tolerance: #c0392b;
+            --bg: #ecf0f1;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app-container {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            overflow: hidden;
+        }
+        .canvas-section {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid #ddd;
+        }
+        canvas {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            margin-top: 10px;
+        }
+        .control-section {
+            padding: 25px;
+            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        h2 { margin-top: 0; color: var(--primary); font-size: 1.5rem; }
+        .step-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 12px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #e0e6ed;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            border-left: 4px solid transparent;
+        }
+        button:hover { background: #d1d8e0; }
+        button.active {
+            background: #fff;
+            border-left: 4px solid var(--median);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .slider-group {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+        input[type="range"] { width: 100%; margin-bottom: 15px; }
+        .info-panel {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #1a4a5a;
+            line-height: 1.5;
+            min-height: 120px;
+        }
+        .metrics {
+            margin-top: auto;
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .value-highlight { font-weight: bold; color: var(--tolerance); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="canvas-section">
+        <canvas id="simCanvas" width="600" height="600"></canvas>
+    </div>
+    
+    <div class="control-section">
+        <h2>Messablauf Konzentrizität</h2>
+        
+        <div class="step-buttons">
+            <button class="step-btn active" data-step="1">1. Bezugsachse definieren</button>
+            <button class="step-btn" data-step="2">2. Realkontur erfassen</button>
+            <button class="step-btn" data-step="3">3. Gegenüberliegende Punkte</button>
+            <button class="step-btn" data-step="4">4. Medianpunkte berechnen</button>
+            <button class="step-btn" data-step="5">5. Toleranzzone prüfen</button>
+        </div>
+
+        <div class="slider-group">
+            <label>Exzentrizität (Versatz) <span id="valOffset">10</span></label>
+            <input type="range" id="paramOffset" min="0" max="40" value="10">
+            
+            <label>Formfehler (Gleichdick) <span id="valLobing">8</span></label>
+            <input type="range" id="paramLobing" min="0" max="30" value="8">
+            
+            <label>Rauheit / Rauschen <span id="valNoise">3</span></label>
+            <input type="range" id="paramNoise" min="0" max="10" value="3">
+        </div>
+
+        <div class="info-panel" id="infoText">
+            <strong>Schritt 1:</strong> Zunächst wird die Bezugsachse (Datum) ermittelt. Sie bildet den perfekten, theoretischen Mittelpunkt (0,0) unseres Koordinatensystems, gegen den gemessen wird.
+        </div>
+
+        <div class="metrics">
+            <div class="metric-row">
+                <span>Max. Median-Abstand:</span>
+                <span id="metricDist">0.00</span>
+            </div>
+            <div class="metric-row" style="border-top: 1px solid #ddd; padding-top: 5px; margin-top: 5px;">
+                <span>Berechnete Konzentrizität:</span>
+                <span id="metricConc" class="value-highlight">0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // UI Elements
+    const btns = document.querySelectorAll('.step-btn');
+    const infoText = document.getElementById('infoText');
+    const sliders = ['Offset', 'Lobing', 'Noise'].map(id => document.getElementById('param' + id));
+    
+    // State
+    let currentStep = 1;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const nominalRadius = 180;
+    const numPoints = 360; // 1 Punkt pro Grad
+    let contourPoints = [];
+    let medianPoints = [];
+
+    const descriptions = {
+        1: "<strong>Schritt 1: Bezugsachse.</strong> Das Koordinatenmessgerät (KMG) oder Formmessgerät bestimmt die Achse des Bezugselements (z.B. ein Lagerzapfen). Dies ist unser grüner Nullpunkt.",
+        2: "<strong>Schritt 2: Realkontur.</strong> Hunderte Einzelpunkte werden auf der zu prüfenden Oberfläche angetastet. Diese reale Kontur hat Formfehler, Rauheit und einen Versatz zur Bezugsachse.",
+        3: "<strong>Schritt 3: Gegenüberliegende Punkte.</strong> Das System zieht gedachte Linien durch den angetasteten Mittelpunkt und ordnet jedem Messpunkt exakt seinen gegenüberliegenden Punkt (180° versetzt) zu.",
+        4: "<strong>Schritt 4: Medianpunkte.</strong> Für jedes Punktepaar wird exakt die rechnerische Mitte gebildet. Bei einem perfekten Kreis lägen alle Medianpunkte auf einem einzigen Punkt. Hier entsteht eine Punktewolke.",
+        5: "<strong>Schritt 5: Toleranzzone.</strong> Der am weitesten von der Bezugsachse entfernte Medianpunkt bestimmt den Radius. Die Konzentrizitätstoleranz ist der Durchmesser des kleinsten Kreises um die Bezugsachse, der alle Medianpunkte einschließt."
+    };
+
+    function generateData() {
+        const offset = parseFloat(document.getElementById('paramOffset').value);
+        const lobing = parseFloat(document.getElementById('paramLobing').value);
+        const noise = parseFloat(document.getElementById('paramNoise').value);
+        
+        document.getElementById('valOffset').innerText = offset;
+        document.getElementById('valLobing').innerText = lobing;
+        document.getElementById('valNoise').innerText = noise;
+
+        contourPoints = [];
+        medianPoints = [];
+        
+        // Random noise seed that stays consistent per render cycle
+        let noiseArr = Array.from({length: numPoints}, () => (Math.random() - 0.5) * noise);
+
+        for(let i = 0; i < numPoints; i++) {
+            const angle = (i * Math.PI * 2) / numPoints;
+            
+            // Base shape + Lobing (3-lobe shape is common in centerless grinding) + Noise
+            const r = nominalRadius + Math.sin(angle * 3) * lobing + noiseArr[i];
+            
+            // Apply offset (eccentricity)
+            const x = centerX + offset + r * Math.cos(angle);
+            const y = centerY + r * Math.sin(angle);
+            
+            contourPoints.push({x, y});
+        }
+
+        // Calculate median points
+        let maxMedianDist = 0;
+        const half = numPoints / 2;
+        
+        for(let i = 0; i < half; i++) {
+            const p1 = contourPoints[i];
+            const p2 = contourPoints[i + half];
+            
+            const mx = (p1.x + p2.x) / 2;
+            const my = (p1.y + p2.y) / 2;
+            
+            medianPoints.push({x: mx, y: my});
+            
+            const dist = Math.sqrt(Math.pow(mx - centerX, 2) + Math.pow(my - centerY, 2));
+            if(dist > maxMedianDist) maxMedianDist = dist;
+        }
+
+        document.getElementById('metricDist').innerText = maxMedianDist.toFixed(2) + " µm";
+        // Concentricity is a diameter tolerance zone
+        document.getElementById('metricConc').innerText = (maxMedianDist * 2).toFixed(2) + " µm";
+        
+        return maxMedianDist;
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const maxDist = generateData();
+
+        // 1. Bezugsachse (Immer sichtbar)
+        ctx.beginPath();
+        ctx.strokeStyle = '#27ae60';
+        ctx.lineWidth = 2;
+        ctx.moveTo(centerX - 20, centerY); ctx.lineTo(centerX + 20, centerY);
+        ctx.moveTo(centerX, centerY - 20); ctx.lineTo(centerX, centerY + 20);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, 4, 0, Math.PI*2);
+        ctx.fillStyle = '#27ae60';
+        ctx.fill();
+
+        if(currentStep >= 2) {
+            // Realkontur zeichnen
+            ctx.beginPath();
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            contourPoints.forEach((p, i) => {
+                if(i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+        }
+
+        if(currentStep >= 3) {
+            // Verbindungslinien der gegenüberliegenden Punkte
+            // Um das Bild nicht zu überladen, zeichnen wir nur jeden 10. Punkt
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(189, 195, 199, 0.4)';
+            ctx.lineWidth = 1;
+            const step = currentStep === 3 ? 10 : 30; // Weniger Linien in Schritt 4&5 zur Übersicht
+            for(let i = 0; i < contourPoints.length / 2; i += step) {
+                const p1 = contourPoints[i];
+                const p2 = contourPoints[i + contourPoints.length / 2];
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+            }
+            ctx.stroke();
+        }
+
+        if(currentStep >= 4) {
+            // Medianpunkte zeichnen
+            medianPoints.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 2, 0, Math.PI*2);
+                ctx.fillStyle = '#2980b9';
+                ctx.fill();
+            });
+        }
+
+        if(currentStep === 5) {
+            // Toleranzzone zeichnen (Roter Kreis um Bezugsachse)
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(192, 57, 43, 0.8)';
+            ctx.fillStyle = 'rgba(192, 57, 43, 0.1)';
+            ctx.lineWidth = 2;
+            ctx.arc(centerX, centerY, maxDist, 0, Math.PI*2);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Pfeil für den maximalen Radius
+            ctx.beginPath();
+            ctx.strokeStyle = '#c0392b';
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(centerX + maxDist, centerY);
+            ctx.stroke();
+        }
+    }
+
+    // Event Listeners
+    btns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            btns.forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            currentStep = parseInt(e.target.dataset.step);
+            infoText.innerHTML = descriptions[currentStep];
+            draw();
+        });
+    });
+
+    sliders.forEach(s => s.addEventListener('input', draw));
+
+    // Init
+    draw();
+</script>
+
+</body>
+</html>
