@@ -1,0 +1,744 @@
+---
+title: "Fertigungstechnik: Hauptnutzungszeit beim Drehen"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Hauptnutzungszeit beim Drehen</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #2980b9;
+            --accent-hover: #3498db;
+            --bg-color: #f4f7f6;
+            --panel-bg: #ffffff;
+            --text: #333333;
+            --border: #cccccc;
+            --success-bg: #e8f4f8;
+            --dim-red: #e74c3c;
+            --dim-text: #c0392b;
+            --workpiece: #aed6f1;
+            --workpiece-border: #2980b9;
+            --workpiece-dashed: #d4e6f1;
+            --tool: #f1c40f;
+            --tool-border: #d35400;
+            --math-green: #16a085;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        h1, h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background-color: var(--panel-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        .form-section {
+            background: #fdfdfd;
+            border: 1px solid #ebebeb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .form-group label {
+            flex: 0 0 45%;
+            font-weight: 600;
+            font-size: 14px;
+            color: #34495e;
+        }
+
+        .form-group input, .form-group select {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.1);
+        }
+
+        .form-group .unit {
+            position: absolute;
+            right: 12px;
+            color: #95a5a6;
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .machine-toggle {
+            display: flex;
+            background: #ecf0f1;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .machine-toggle label {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #7f8c8d;
+            transition: 0.3s;
+        }
+
+        .machine-toggle input[type="radio"] { display: none; }
+
+        .machine-toggle input[type="radio"]:checked + label {
+            background: var(--accent);
+            color: white;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .hidden { display: none !important; }
+
+        /* Visualisierungs-Bereich */
+        .visual-container {
+            background-color: #fff;
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 260px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        svg { width: 100%; height: auto; max-height: 250px; }
+        .dim-line { stroke: var(--dim-red); stroke-width: 1.5; }
+        .dim-text { fill: var(--dim-text); font-size: 13px; font-weight: bold; font-family: 'Segoe UI', sans-serif; }
+        .workpiece { fill: var(--workpiece); stroke: var(--workpiece-border); stroke-width: 2; }
+        .workpiece-dashed { fill: var(--workpiece-dashed); stroke: var(--workpiece-border); stroke-width: 1.5; stroke-dasharray: 4,4; }
+        .tool { fill: var(--tool); stroke: var(--tool-border); stroke-width: 1.5; }
+        .centerline { stroke: #7f8c8d; stroke-width: 1; stroke-dasharray: 10,5,2,5; }
+        
+        /* Ergebnisse und Rechenwege */
+        .results {
+            background-color: var(--success-bg);
+            border-top: 5px solid var(--accent);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .results-header {
+            padding: 15px 20px;
+            background: rgba(41, 128, 185, 0.05);
+            border-bottom: 1px solid #d1e5ed;
+            text-align: center;
+        }
+
+        .results-header h2 { margin: 0 0 5px 0; font-size: 20px; }
+        .result-hint { font-size: 13px; color: #7f8c8d; margin: 0; }
+
+        .result-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #d1e5ed;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .result-item:hover { background-color: #d1e5ed; }
+        .result-item:last-child { border-bottom: none; }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+        }
+
+        .result-row span.label-text { color: #34495e; font-weight: 500; }
+        .result-row span.val { font-weight: 700; color: var(--primary); font-size: 18px; }
+        .result-row .click-icon {
+            font-size: 11px;
+            color: var(--accent);
+            background: #fff;
+            padding: 3px 7px;
+            border-radius: 12px;
+            margin-left: 12px;
+            border: 1px solid rgba(41, 128, 185, 0.3);
+            vertical-align: middle;
+        }
+
+        .formula-box {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fcfcfc;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 14px;
+            color: #2c3e50;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.03);
+            line-height: 1.6;
+        }
+
+        .formula-box div { margin-bottom: 8px; }
+        .formula-box div:last-child { margin-bottom: 0; }
+        .formula-box .einsetz-schritt { color: var(--math-green); font-weight: bold; padding: 0 2px;}
+        .formula-title { font-size: 12px; color: #95a5a6; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+        
+        /* Responsive */
+        @media (max-width: 850px) {
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Hauptnutzungszeit beim Drehen</h1>
+    
+    <div class="container" id="app-container">
+        <!-- Linke Spalte: Eingaben -->
+        <div>
+            <!-- Maschinenauswahl -->
+            <div class="machine-toggle">
+                <input type="radio" id="mach_konv" name="maschine" value="konv" onchange="updateUI()" checked>
+                <label for="mach_konv">Konventionell (n = konst.)</label>
+                
+                <input type="radio" id="mach_cnc" name="maschine" value="cnc" onchange="updateUI()">
+                <label for="mach_cnc">CNC (v<sub>c</sub> = konst.)</label>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">Verfahren & Kontur</div>
+                <div class="form-group">
+                    <label for="verfahren">Drehverfahren:</label>
+                    <select id="verfahren" onchange="updateUI()">
+                        <option value="laengs">Längsrunddrehen</option>
+                        <option value="quer">Querplandrehen</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="kontur">Ausführung:</label>
+                    <select id="kontur" onchange="updateUI()">
+                        <!-- Wird durch JS dynamisch gefüllt -->
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">Werkstück-Geometrie</div>
+                <div class="form-group" id="grp_d">
+                    <label for="d">Außen-/Anfangs-Ø (d):</label>
+                    <input type="number" id="d" step="0.1" value="42" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+                
+                <div class="form-group hidden" id="grp_d1">
+                    <label for="d1">Innen-Ø (d₁):</label>
+                    <input type="number" id="d1" step="0.1" value="20" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+
+                <div class="form-group hidden" id="grp_de">
+                    <label for="de">Enddurchmesser (d<sub>e</sub>):</label>
+                    <input type="number" id="de" step="0.1" value="38" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+
+                <div class="form-group" id="grp_l">
+                    <label for="l">Werkstücklänge (l):</label>
+                    <input type="number" id="l" step="0.1" value="50" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+
+                <div class="form-group" id="grp_la">
+                    <label for="la">Anlaufweg (l<sub>a</sub>):</label>
+                    <input type="number" id="la" step="0.1" value="2" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+
+                <div class="form-group" id="grp_lu">
+                    <label for="lu">Überlaufweg (l<sub>u</sub>):</label>
+                    <input type="number" id="lu" step="0.1" value="2" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">Schnittbedingungen</div>
+                <div class="form-group">
+                    <label for="vc">Schnittgeschw. (v<sub>c</sub>):</label>
+                    <input type="number" id="vc" step="1" value="130" oninput="berechnen()">
+                    <span class="unit">m/min</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="f">Vorschub (f):</label>
+                    <input type="number" id="f" step="0.01" value="0.3" oninput="berechnen()">
+                    <span class="unit">mm</span>
+                </div>
+
+                <div class="form-group">
+                    <label for="i">Anzahl Schnitte (i):</label>
+                    <input type="number" id="i" step="1" value="1" oninput="berechnen()">
+                    <span class="unit">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rechte Spalte: Visualisierung & Ergebnisse -->
+        <div>
+            <div class="visual-container" id="svg-container">
+                <div id="vis-badge" style="position: absolute; top: 10px; left: 10px; background: #34495e; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; letter-spacing: 1px;">KONVENTIONELL</div>
+                
+                <!-- SVGs für die Visualisierung -->
+                <!-- 1. Längs ohne Ansatz -->
+                <svg id="svg_laengs_ohne" viewBox="0 0 300 200" class="hidden">
+                    <line x1="20" y1="100" x2="280" y2="100" class="centerline" />
+                    <!-- Rohkontur / Zerspantes Material (Sichtbar bei CNC d_e) -->
+                    <rect x="50" y="60" width="140" height="80" class="workpiece-dashed" id="svg_laengs_ohne_roh" />
+                    <!-- Fertigkontur -->
+                    <rect x="50" y="70" width="140" height="60" class="workpiece" id="svg_laengs_ohne_fertig" />
+                    
+                    <line x1="200" y1="60" x2="200" y2="140" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" id="dim_d_laengs_ohne" />
+                    <text x="205" y="105" class="dim-text">d</text>
+                    
+                    <line x1="170" y1="70" x2="170" y2="130" class="dim-line hidden" marker-start="url(#arrow)" marker-end="url(#arrow)" id="dim_de_laengs_ohne" />
+                    <text x="175" y="105" class="dim-text hidden" id="text_de_laengs_ohne">d_e</text>
+
+                    <line x1="40" y1="30" x2="210" y2="30" class="dim-line" />
+                    <text x="120" y="25" class="dim-text">L</text>
+                    <line x1="50" y1="35" x2="50" y2="25" class="dim-line" />
+                    <line x1="190" y1="35" x2="190" y2="25" class="dim-line" />
+                    <text x="40" y="48" class="dim-text" style="font-size:11px">l_u</text>
+                    <text x="120" y="48" class="dim-text" style="font-size:11px">l</text>
+                    <text x="195" y="48" class="dim-text" style="font-size:11px">l_a</text>
+                    
+                    <polygon points="210,55 230,55 210,75" class="tool" />
+                    <line x1="230" y1="65" x2="250" y2="65" class="dim-line" marker-start="url(#arrow)" />
+                </svg>
+
+                <!-- 2. Längs mit Ansatz -->
+                <svg id="svg_laengs_mit" viewBox="0 0 300 200" class="hidden">
+                    <line x1="20" y1="100" x2="280" y2="100" class="centerline" />
+                    <polygon points="50,40 100,40 100,60 190,60 190,140 100,140 100,160 50,160" class="workpiece-dashed" id="svg_laengs_mit_roh" />
+                    <polygon points="50,40 100,40 100,70 190,70 190,130 100,130 100,160 50,160" class="workpiece" id="svg_laengs_mit_fertig" />
+                    
+                    <line x1="200" y1="60" x2="200" y2="140" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                    <text x="205" y="105" class="dim-text">d</text>
+
+                    <line x1="170" y1="70" x2="170" y2="130" class="dim-line hidden" marker-start="url(#arrow)" marker-end="url(#arrow)" id="dim_de_laengs_mit" />
+                    <text x="175" y="105" class="dim-text hidden" id="text_de_laengs_mit">d_e</text>
+
+                    <line x1="100" y1="30" x2="210" y2="30" class="dim-line" />
+                    <text x="150" y="25" class="dim-text">L</text>
+                    <line x1="100" y1="35" x2="100" y2="25" class="dim-line" />
+                    <line x1="190" y1="35" x2="190" y2="25" class="dim-line" />
+                    <text x="140" y="48" class="dim-text" style="font-size:11px">l</text>
+                    <text x="195" y="48" class="dim-text" style="font-size:11px">l_a</text>
+                    
+                    <polygon points="210,55 230,55 210,75" class="tool" />
+                </svg>
+
+                <!-- 3. Quer Vollzylinder ohne Ansatz -->
+                <svg id="svg_quer_voll_ohne" viewBox="0 0 300 200" class="hidden">
+                    <line x1="20" y1="100" x2="280" y2="100" class="centerline" />
+                    <rect x="100" y="40" width="80" height="120" class="workpiece" />
+                    <line x1="190" y1="40" x2="190" y2="160" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                    <text x="200" y="105" class="dim-text">d</text>
+                    <line x1="180" y1="20" x2="180" y2="100" class="dim-line" />
+                    <text x="165" y="60" class="dim-text">L</text>
+                    <polygon points="195,30 215,30 195,50" class="tool" />
+                    <line x1="195" y1="20" x2="195" y2="30" class="dim-line" /> <text x="185" y="15" class="dim-text" style="font-size:10px">l_a</text>
+                </svg>
+
+                <!-- 4. Quer Vollzylinder mit Ansatz -->
+                <svg id="svg_quer_voll_mit" viewBox="0 0 300 200" class="hidden">
+                    <line x1="20" y1="100" x2="280" y2="100" class="centerline" />
+                    <polygon points="100,40 140,40 140,70 180,70 180,130 140,130 140,160 100,160" class="workpiece" />
+                    <line x1="190" y1="40" x2="190" y2="160" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                    <text x="200" y="105" class="dim-text">d</text>
+                    <line x1="150" y1="70" x2="150" y2="130" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                    <text x="155" y="105" class="dim-text">d₁</text>
+                    <line x1="180" y1="20" x2="180" y2="70" class="dim-line" />
+                    <text x="165" y="45" class="dim-text">L</text>
+                    <polygon points="195,30 215,30 195,50" class="tool" />
+                </svg>
+
+                <!-- 5. Quer Hohlzylinder -->
+                <svg id="svg_quer_hohl" viewBox="0 0 300 200" class="hidden">
+                    <line x1="20" y1="100" x2="280" y2="100" class="centerline" />
+                    <polygon points="100,40 180,40 180,70 100,70" class="workpiece" />
+                    <polygon points="100,130 180,130 180,160 100,160" class="workpiece" />
+                    <line x1="190" y1="40" x2="190" y2="160" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                    <text x="200" y="105" class="dim-text">d</text>
+                    <line x1="160" y1="70" x2="160" y2="130" class="dim-line" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+                    <text x="165" y="105" class="dim-text">d₁</text>
+                    <line x1="180" y1="20" x2="180" y2="80" class="dim-line" />
+                    <text x="165" y="50" class="dim-text">L</text>
+                    <polygon points="195,30 215,30 195,50" class="tool" />
+                    <text x="182" y="78" class="dim-text" style="font-size:10px">l_u</text>
+                </svg>
+
+                <svg style="display: none;">
+                    <defs>
+                        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#e74c3c" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+
+            <!-- Ergebnisse -->
+            <div class="results">
+                <div class="results-header">
+                    <h2>Auswertung</h2>
+                    <p class="result-hint">Klicke auf eine Zeile für den detaillierten Rechenweg</p>
+                </div>
+                
+                <!-- Durchmsser -->
+                <div class="result-item" onclick="toggleFormula('box_d')">
+                    <div class="result-row">
+                        <span class="label-text">Ø für Berechnung (<span id="lbl_d_type">d</span>):</span>
+                        <div><span class="val" id="res_d_val">-</span> <span class="click-icon">Details</span></div>
+                    </div>
+                    <div class="formula-box hidden" id="box_d"></div>
+                </div>
+
+                <!-- Vorschubweg -->
+                <div class="result-item" onclick="toggleFormula('box_L')">
+                    <div class="result-row">
+                        <span class="label-text">Vorschubweg (L):</span>
+                        <div><span class="val" id="res_L">-</span> <span class="click-icon">Details</span></div>
+                    </div>
+                    <div class="formula-box hidden" id="box_L"></div>
+                </div>
+
+                <!-- Drehzahl -->
+                <div class="result-item" onclick="toggleFormula('box_n')">
+                    <div class="result-row">
+                        <span class="label-text" id="lbl_n_type">Drehzahl (n):</span>
+                        <div><span class="val" id="res_n">-</span> <span class="click-icon">Details</span></div>
+                    </div>
+                    <div class="formula-box hidden" id="box_n"></div>
+                </div>
+
+                <!-- Hauptnutzungszeit -->
+                <div class="result-item" onclick="toggleFormula('box_th')" style="background-color: rgba(41, 128, 185, 0.1);">
+                    <div class="result-row">
+                        <span class="label-text">Hauptnutzungszeit (t<sub>h</sub>):</span>
+                        <div><span class="val" id="res_th">-</span> <span class="click-icon">Details</span></div>
+                    </div>
+                    <div class="formula-box hidden" id="box_th"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const konturOptionen = {
+            laengs: [
+                { value: 'ohne', text: 'ohne Ansatz', svg: 'svg_laengs_ohne' },
+                { value: 'mit', text: 'mit Ansatz', svg: 'svg_laengs_mit' }
+            ],
+            quer: [
+                { value: 'voll_ohne', text: 'Vollzylinder ohne Ansatz', svg: 'svg_quer_voll_ohne' },
+                { value: 'voll_mit', text: 'Vollzylinder mit Ansatz', svg: 'svg_quer_voll_mit' },
+                { value: 'hohl', text: 'Hohlzylinder', svg: 'svg_quer_hohl' }
+            ]
+        };
+
+        window.onload = function() {
+            updateKonturDropdown();
+            updateUI();
+        };
+
+        function updateKonturDropdown() {
+            const verfahren = document.getElementById('verfahren').value;
+            const konturSelect = document.getElementById('kontur');
+            konturSelect.innerHTML = '';
+            
+            konturOptionen[verfahren].forEach(opt => {
+                let el = document.createElement('option');
+                el.value = opt.value;
+                el.textContent = opt.text;
+                konturSelect.appendChild(el);
+            });
+        }
+
+        function updateUI() {
+            if (document.activeElement.id === 'verfahren') {
+                updateKonturDropdown();
+            }
+
+            const maschine = document.querySelector('input[name="maschine"]:checked').value;
+            const verfahren = document.getElementById('verfahren').value;
+            const kontur = document.getElementById('kontur').value;
+
+            // UI Badge Update
+            const badge = document.getElementById('vis-badge');
+            if(maschine === 'cnc') {
+                badge.textContent = "CNC (v_c konst.)";
+                badge.style.background = "#27ae60";
+            } else {
+                badge.textContent = "KONVENTIONELL (n konst.)";
+                badge.style.background = "#34495e";
+            }
+
+            // Felder Sichtbarkeit steuern
+            document.getElementById('grp_d1').classList.add('hidden');
+            document.getElementById('grp_de').classList.add('hidden');
+            document.getElementById('grp_l').classList.remove('hidden');
+            document.getElementById('grp_lu').classList.add('hidden');
+
+            if (verfahren === 'laengs') {
+                if (maschine === 'cnc') {
+                    document.getElementById('grp_de').classList.remove('hidden');
+                }
+                if (kontur === 'ohne') {
+                    document.getElementById('grp_lu').classList.remove('hidden'); 
+                }
+            } else if (verfahren === 'quer') {
+                document.getElementById('grp_l').classList.add('hidden'); 
+                if (kontur === 'voll_mit') {
+                    document.getElementById('grp_d1').classList.remove('hidden');
+                } else if (kontur === 'hohl') {
+                    document.getElementById('grp_d1').classList.remove('hidden');
+                    document.getElementById('grp_lu').classList.remove('hidden'); 
+                }
+            }
+
+            // Visualisierungen (SVGs) steuern
+            document.querySelectorAll('.visual-container svg').forEach(svg => {
+                if(svg.id) svg.classList.add('hidden');
+            });
+            const aktiveOption = konturOptionen[verfahren].find(o => o.value === kontur);
+            if(aktiveOption && aktiveOption.svg) {
+                document.getElementById(aktiveOption.svg).classList.remove('hidden');
+            }
+
+            // Spezifische SVG-Details für CNC Längsdrehen ein/ausschalten (d_e Bemaßung)
+            const showDeSvg = (verfahren === 'laengs' && maschine === 'cnc');
+            ['ohne', 'mit'].forEach(k => {
+                const dim = document.getElementById(`dim_de_laengs_${k}`);
+                const text = document.getElementById(`text_de_laengs_${k}`);
+                const roh = document.getElementById(`svg_laengs_${k}_roh`);
+                const fertig = document.getElementById(`svg_laengs_${k}_fertig`);
+                
+                if(dim && text && roh && fertig) {
+                    if (showDeSvg && kontur === k) {
+                        dim.classList.remove('hidden');
+                        text.classList.remove('hidden');
+                        fertig.style.fill = "var(--workpiece)";
+                        roh.style.fill = "var(--workpiece-dashed)";
+                    } else {
+                        dim.classList.add('hidden');
+                        text.classList.add('hidden');
+                        fertig.style.fill = "var(--workpiece)";
+                        roh.style.fill = "var(--workpiece)";
+                    }
+                }
+            });
+
+            berechnen();
+        }
+
+        function getNum(id) {
+            const val = parseFloat(document.getElementById(id).value);
+            return isNaN(val) ? 0 : val;
+        }
+
+        function toggleFormula(id) {
+            const box = document.getElementById(id);
+            if (box.innerHTML.trim() !== "") {
+                box.classList.toggle('hidden');
+            }
+        }
+
+        function setHTML(id, html) { document.getElementById(id).innerHTML = html; }
+        function setText(id, text) { document.getElementById(id).textContent = text; }
+
+        function berechnen() {
+            const maschine = document.querySelector('input[name="maschine"]:checked').value;
+            const verfahren = document.getElementById('verfahren').value;
+            const kontur = document.getElementById('kontur').value;
+            
+            const d = getNum('d');
+            const d1 = getNum('d1');
+            const de = getNum('de');
+            const l = getNum('l');
+            const la = getNum('la');
+            const lu = getNum('lu');
+            const vc = getNum('vc');
+            const f = getNum('f');
+            const i = getNum('i') || 1; 
+
+            let L = 0;
+            let d_relevant = 0;
+            let form_d = "";
+            let form_d_calc = "";
+            let form_L = "";
+            let form_L_calc = "";
+
+            // --- 1. Geometrie (Durchmesser & Vorschubweg) ---
+
+            if (verfahren === 'laengs') {
+                if (maschine === 'cnc') {
+                    setText('lbl_d_type', 'd_m');
+                    d_relevant = (d + de) / 2;
+                    form_d = "d<sub>m</sub> = (d + d<sub>e</sub>) / 2";
+                    form_d_calc = `d<sub>m</sub> = (<span class="einsetz-schritt">${d}</span> + <span class="einsetz-schritt">${de}</span>) / 2 = <b>${d_relevant.toFixed(2)}</b> mm`;
+                } else { // konventionell
+                    setText('lbl_d_type', 'd');
+                    d_relevant = d;
+                    form_d = "Berechnungsdurchmesser = d";
+                    form_d_calc = `d = <b><span class="einsetz-schritt">${d}</span></b> mm`;
+                }
+                
+                if (kontur === 'ohne') {
+                    L = l + la + lu;
+                    form_L = "L = l + l<sub>a</sub> + l<sub>u</sub>";
+                    form_L_calc = `L = <span class="einsetz-schritt">${l}</span> + <span class="einsetz-schritt">${la}</span> + <span class="einsetz-schritt">${lu}</span> = <b>${L.toFixed(2)}</b> mm`;
+                } else if (kontur === 'mit') {
+                    L = l + la;
+                    form_L = "L = l + l<sub>a</sub>";
+                    form_L_calc = `L = <span class="einsetz-schritt">${l}</span> + <span class="einsetz-schritt">${la}</span> = <b>${L.toFixed(2)}</b> mm`;
+                }
+            } 
+            else if (verfahren === 'quer') {
+                setText('lbl_d_type', 'd_m');
+                if (kontur === 'voll_ohne') {
+                    d_relevant = d / 2;
+                    form_d = "d<sub>m</sub> = d / 2";
+                    form_d_calc = `d<sub>m</sub> = <span class="einsetz-schritt">${d}</span> / 2 = <b>${d_relevant.toFixed(2)}</b> mm`;
+                    
+                    L = (d / 2) + la;
+                    form_L = "L = (d / 2) + l<sub>a</sub>";
+                    form_L_calc = `L = (<span class="einsetz-schritt">${d}</span> / 2) + <span class="einsetz-schritt">${la}</span> = <b>${L.toFixed(2)}</b> mm`;
+                } 
+                else if (kontur === 'voll_mit') {
+                    d_relevant = (d + d1) / 2;
+                    form_d = "d<sub>m</sub> = (d + d₁) / 2";
+                    form_d_calc = `d<sub>m</sub> = (<span class="einsetz-schritt">${d}</span> + <span class="einsetz-schritt">${d1}</span>) / 2 = <b>${d_relevant.toFixed(2)}</b> mm`;
+                    
+                    L = ((d - d1) / 2) + la;
+                    form_L = "L = ((d - d₁) / 2) + l<sub>a</sub>";
+                    form_L_calc = `L = ((<span class="einsetz-schritt">${d}</span> - <span class="einsetz-schritt">${d1}</span>) / 2) + <span class="einsetz-schritt">${la}</span> = <b>${L.toFixed(2)}</b> mm`;
+                } 
+                else if (kontur === 'hohl') {
+                    d_relevant = (d + d1) / 2;
+                    form_d = "d<sub>m</sub> = (d + d₁) / 2";
+                    form_d_calc = `d<sub>m</sub> = (<span class="einsetz-schritt">${d}</span> + <span class="einsetz-schritt">${d1}</span>) / 2 = <b>${d_relevant.toFixed(2)}</b> mm`;
+                    
+                    L = ((d - d1) / 2) + la + lu;
+                    form_L = "L = ((d - d₁) / 2) + l<sub>a</sub> + l<sub>u</sub>";
+                    form_L_calc = `L = ((<span class="einsetz-schritt">${d}</span> - <span class="einsetz-schritt">${d1}</span>) / 2) + <span class="einsetz-schritt">${la}</span> + <span class="einsetz-schritt">${lu}</span> = <b>${L.toFixed(2)}</b> mm`;
+                }
+            }
+
+            if(d > 0) {
+                setText('res_d_val', d_relevant.toFixed(2) + " mm");
+                setHTML('box_d', `<span class="formula-title">Formel</span><div>${form_d}</div><span class="formula-title" style="margin-top:10px;">Eingesetzt</span><div>${form_d_calc}</div>`);
+                
+                setText('res_L', L.toFixed(2) + " mm");
+                setHTML('box_L', `<span class="formula-title">Formel</span><div>${form_L}</div><span class="formula-title" style="margin-top:10px;">Eingesetzt</span><div>${form_L_calc}</div>`);
+            }
+
+            // --- 2. Schnittdaten (Drehzahl & Hauptnutzungszeit) ---
+            if(d > 0 && vc > 0) {
+                const n = (vc * 1000) / (Math.PI * d_relevant);
+                
+                // FEHLERBEHEBUNG: Variable d_sym sicher ohne Fehler bestimmen
+                const d_sym = (verfahren === 'laengs' && maschine === 'konv') ? 'd' : 'd<sub>m</sub>';
+                
+                if(maschine === 'cnc') {
+                    setText('lbl_n_type', 'Mittlere Drehzahl (n_m):');
+                    const form_n = `n<sub>m</sub> = (v<sub>c</sub> · 1000) / (π · ${d_sym})`;
+                    const form_n_calc = `n<sub>m</sub> = (<span class="einsetz-schritt">${vc}</span> · 1000) / (π · <span class="einsetz-schritt">${d_relevant.toFixed(2)}</span>) = <b>${Math.round(n)}</b> min⁻¹`;
+                    setText('res_n', Math.round(n) + " min⁻¹");
+                    setHTML('box_n', `<span class="formula-title">Formel (zur Orientierung)</span><div>${form_n}</div><span class="formula-title" style="margin-top:10px;">Eingesetzt</span><div>${form_n_calc}</div>`);
+                } else {
+                    setText('lbl_n_type', 'Drehzahl (n):');
+                    const form_n = `n = (v<sub>c</sub> · 1000) / (π · ${d_sym})`;
+                    const form_n_calc = `n = (<span class="einsetz-schritt">${vc}</span> · 1000) / (π · <span class="einsetz-schritt">${d_relevant.toFixed(2)}</span>) = <b>${Math.round(n)}</b> min⁻¹`;
+                    setText('res_n', Math.round(n) + " min⁻¹");
+                    setHTML('box_n', `<span class="formula-title">Formel</span><div>${form_n}</div><span class="formula-title" style="margin-top:10px;">Eingesetzt</span><div>${form_n_calc}</div>`);
+                }
+
+                if(f > 0) {
+                    let th = 0;
+                    let form_th = "";
+                    let form_th_calc = "";
+
+                    if (maschine === 'cnc') {
+                        // CNC Formel laut Tabellenbuch
+                        th = (Math.PI * d_relevant * L * i) / (vc * 1000 * f);
+                        form_th = `t<sub>h</sub> = [ (π · d<sub>m</sub>) / (v<sub>c</sub> · 1000 · f) ] · (L · i)`;
+                        form_th_calc = `t<sub>h</sub> = [ (π · <span class="einsetz-schritt">${d_relevant.toFixed(2)}</span>) / (<span class="einsetz-schritt">${vc}</span> · 1000 · <span class="einsetz-schritt">${f}</span>) ] · (<span class="einsetz-schritt">${L.toFixed(2)}</span> · <span class="einsetz-schritt">${i}</span>) = <b>${th.toFixed(3)}</b> min`;
+                    } else {
+                        // Konventionell Formel
+                        th = (L * i) / (Math.round(n) * f); 
+                        form_th = `t<sub>h</sub> = (L · i) / (n · f)`;
+                        form_th_calc = `t<sub>h</sub> = (<span class="einsetz-schritt">${L.toFixed(2)}</span> · <span class="einsetz-schritt">${i}</span>) / (<span class="einsetz-schritt">${Math.round(n)}</span> · <span class="einsetz-schritt">${f}</span>) = <b>${th.toFixed(3)}</b> min`;
+                    }
+
+                    setText('res_th', th.toFixed(3) + " min");
+                    setHTML('box_th', `<span class="formula-title">Formel</span><div>${form_th}</div><span class="formula-title" style="margin-top:10px;">Eingesetzt</span><div>${form_th_calc}</div>`);
+                } else {
+                    setText('res_th', "Warte auf Vorschub f..."); setHTML('box_th', "");
+                }
+            } else {
+                setText('res_n', "Warte auf v_c..."); setHTML('box_n', "");
+                setText('res_th', "-"); setHTML('box_th', "");
+            }
+        }
+    </script>
+</body>
+</html>
