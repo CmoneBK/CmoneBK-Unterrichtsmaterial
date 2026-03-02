@@ -1,0 +1,1770 @@
+---
+title: "Fertigungstechnik: Mini Wellen-CAD-Software"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fertigungstechnik: Mini Wellen-CAD-Software</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #2c3e50;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .sidebar {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            width: 500px;
+            flex-shrink: 0;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #1a252f;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .header-group {
+            margin-bottom: 15px;
+            padding: 12px;
+            border: 1px solid #b2bec3;
+            border-radius: 8px;
+            background-color: #e8f4f8;
+        }
+        .header-group h3 {
+            margin: 0 0 10px 0;
+            font-size: 1rem;
+            color: #0984e3;
+        }
+        .segment-group {
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            background-color: #fdfdfd;
+            transition: border-color 0.3s ease;
+        }
+        .segment-group:hover {
+            border-color: #3498db;
+        }
+        .segment-group h3 {
+            margin: 0 0 12px 0;
+            font-size: 1.05rem;
+            color: #2980b9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .input-row label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .input-row input[type="text"] {
+            padding: 5px;
+            border: 1px solid #ccd1d9;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        .input-row input[type="number"], .input-row select {
+            width: 55px;
+            padding: 5px;
+            border: 1px solid #ccd1d9;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .feature-controls {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .feature-controls select {
+            width: 85px;
+        }
+        select option:disabled {
+            color: #bdc3c7;
+            background-color: #f9f9f9;
+        }
+        .chk-dim {
+            cursor: pointer;
+            transform: scale(1.1);
+        }
+        .groove-group {
+            margin-top: 12px;
+            padding: 10px;
+            background-color: #f1f6f8;
+            border-left: 3px solid #0984e3;
+            border-radius: 4px;
+        }
+        .groove-group h4 {
+            margin: 0 0 8px 0;
+            color: #0984e3;
+            font-size: 0.95rem;
+        }
+        .btn-add-groove {
+            background-color: #e0f0ff;
+            color: #0984e3;
+            border: 1px solid #74b9ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .btn-add-groove:hover { background-color: #74b9ff; color: #fff; }
+        .btn-add-custom {
+            background-color: #f39c12;
+            color: #fff;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        .btn-add-custom:hover { background-color: #e67e22; }
+        .custom-form-group {
+            margin-top: 12px;
+            padding: 10px;
+            background-color: #fdf3e7;
+            border-left: 3px solid #f39c12;
+            border-radius: 4px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn-group button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background-color: #3498db;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-group button:hover { background-color: #2980b9; }
+        .btn-group button.btn-remove { background-color: #e74c3c; }
+        .btn-group button.btn-remove:hover { background-color: #c0392b; }
+        .drawing-area {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 600px;
+            overflow-x: auto;
+        }
+        canvas {
+            border: 1px solid #dcdde1;
+            background-color: #ffffff;
+            border-radius: 4px;
+        }
+        .hint {
+            margin-top: 15px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>Wellen-Parameter</h2>
+        
+        <div class="header-group">
+            <h3>Zeichnungskopf</h3>
+            <div class="input-row" style="flex-direction: column; align-items: flex-start;">
+                <label>Allgemeine Angaben:</label>
+                <input type="text" id="generalNotes" value="Alle unbemaßten Radien 1mm" oninput="updateApp()" style="width: 95%;">
+                <!-- NEU: Checkbox für Hilfslinien -->
+                <label style="margin-top:8px; font-weight:normal; cursor:pointer;">
+                    <input type="checkbox" id="showConstruction" checked onchange="updateApp()"> Hilfslinien einblenden
+                </label>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <div class="input-row" style="flex-direction: column; align-items: flex-start; flex: 1;">
+                    <label>Toleranz:</label>
+                    <input type="text" id="tolerance" value="ISO 2768-mK" oninput="updateApp()" style="width: 90%;">
+                </div>
+                <div class="input-row" style="flex-direction: column; align-items: flex-start; flex: 1;">
+                    <label>Werkstoff:</label>
+                    <input type="text" id="material" value="16MnCr5" oninput="updateApp()" style="width: 90%;">
+                </div>
+            </div>
+        </div>
+
+        <div class="hint" style="text-align: left; margin-top: 0; margin-bottom: 10px;">
+            (Reihenfolge: Links nach Rechts. ☑ = Maß anzeigen. Toleranzen mit ; trennen für Stapelung)
+        </div>
+        
+        <div id="segments-container"></div>
+
+        <div class="btn-group">
+            <button onclick="addSegment()">+ Absatz</button>
+            <button class="btn-remove" onclick="removeSegment()">- Absatz</button>
+        </div>
+    </div>
+
+    <div class="drawing-area">
+        <canvas id="shaftCanvas" width="1600" height="1200"></canvas>
+        <div class="hint">
+            Maßpfeile richten sich zwingend an der Flächennormalen (90°) aus. Zoomfaktor skaliert automatisch nach Bauteilgröße.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('shaftCanvas');
+        const ctx = canvas.getContext('2d');
+        let segmentCount = 0;
+        let grooveIdCounter = 0;
+
+        window.addEventListener('wheel', function(e) {
+            const target = e.target;
+            if (target.tagName === 'INPUT' && target.type === 'number') {
+                e.preventDefault(); 
+                const step = parseFloat(target.getAttribute('step')) || 1;
+                const min = parseFloat(target.getAttribute('min'));
+                const max = parseFloat(target.getAttribute('max'));
+                
+                let val = parseFloat(target.value) || 0;
+                let dir = e.deltaY < 0 ? 1 : -1; 
+                let newVal = val + (dir * step);
+                
+                if (!isNaN(min) && newVal < min) newVal = min;
+                if (!isNaN(max) && newVal > max) newVal = max;
+                
+                let dec = step.toString().includes('.') ? step.toString().split('.')[1].length : 0;
+                target.value = newVal.toFixed(dec);
+                
+                target.dispatchEvent(new Event('input', { bubbles: true }));
+                if (target.oninput) target.oninput(e);
+                else if (target.onchange) target.onchange(e);
+                updateApp();
+            }
+            if (target.tagName === 'SELECT') {
+                e.preventDefault(); 
+                let dir = e.deltaY > 0 ? 1 : -1; 
+                let newIndex = target.selectedIndex + dir;
+                
+                while(newIndex >= 0 && newIndex < target.options.length) {
+                    if(!target.options[newIndex].disabled) {
+                        target.selectedIndex = newIndex;
+                        target.dispatchEvent(new Event('change', { bubbles: true }));
+                        if (target.onchange) target.onchange(e);
+                        break;
+                    }
+                    newIndex += dir;
+                }
+            }
+        }, { passive: false });
+
+        function updateApp() {
+            updateDropdowns();
+            drawShaft();
+        }
+
+        function initUI() {
+            addSegment(); addSegment(); addSegment();
+            
+            document.getElementById('l1').value = 40; document.getElementById('d1').value = 25;
+            document.getElementById('l2').value = 80; document.getElementById('d2').value = 45;
+            document.getElementById('l3').value = 35; document.getElementById('d3').value = 20;
+            
+            document.getElementById('tolD2').value = 'h7';
+            document.getElementById('tolL2').value = '+0.1;-0.2';
+            
+            document.getElementById('featL1').value = 'fase'; document.getElementById('valL1').value = 2; document.getElementById('val2L1').value = 45; toggleVal('L', 1);
+            document.getElementById('featR1').value = 'rundung'; document.getElementById('valR1').value = 3; toggleVal('R', 1);
+            
+            document.getElementById('featL3').value = '76'; toggleVal('L', 3);
+            document.getElementById('featR3').value = 'fase'; document.getElementById('valR3').value = 1.5; document.getElementById('val2R3').value = 45; toggleVal('R', 3);
+            document.getElementById('thread3').checked = true; togglePitch(3);
+
+            addGroove(2);
+
+            setTimeout(updateApp, 100);
+        }
+
+        function updateDropdowns() {
+            for (let i = 1; i <= segmentCount; i++) {
+                let d_curr = parseFloat(document.getElementById(`d${i}`).value) || 0;
+                let d_left = (i > 1) ? (parseFloat(document.getElementById(`d${i-1}`).value) || 0) : 0;
+                let d_right = (i < segmentCount) ? (parseFloat(document.getElementById(`d${i+1}`).value) || 0) : 0;
+
+                let isInnerL = d_curr < d_left;
+                let isInnerR = d_curr < d_right;
+                let hasThread = document.getElementById(`thread${i}`).checked;
+
+                updateSelectState(`featL${i}`, isInnerL, hasThread);
+                updateSelectState(`featR${i}`, isInnerR, hasThread);
+            }
+        }
+
+        function updateSelectState(id, isInner, hasThread) {
+            let select = document.getElementById(id);
+            if (!select) return;
+            
+            let val = select.value;
+            let currentOptDisabled = false;
+
+            for (let i = 0; i < select.options.length; i++) {
+                let opt = select.options[i];
+                if (opt.value === '76') {
+                    opt.disabled = !(isInner && hasThread);
+                    if (opt.disabled) opt.title = isInner ? "Nur bei aktivem Gewinde" : "Nur an Innenecken möglich";
+                    else opt.title = "";
+                    if (val === '76' && opt.disabled) currentOptDisabled = true;
+                } else if (opt.value.startsWith('509')) {
+                    opt.disabled = !(isInner && !hasThread);
+                    if (opt.disabled) opt.title = isInner ? "Nur bei Wellen ohne Gewinde" : "Nur an Innenecken möglich";
+                    else opt.title = "";
+                    if (val.startsWith('509') && opt.disabled) currentOptDisabled = true;
+                }
+            }
+
+            if (currentOptDisabled) {
+                select.value = 'none';
+                let side = id.includes('L') ? 'L' : 'R';
+                let num = id.replace('featL', '').replace('featR', '');
+                toggleVal(side, num);
+            }
+        }
+
+        function addSegment() {
+            segmentCount++;
+            const container = document.getElementById('segments-container');
+            const div = document.createElement('div');
+            div.className = 'segment-group';
+            div.id = `segment-group-${segmentCount}`;
+            div.innerHTML = `
+                <h3>
+                    Absatz ${segmentCount}
+                    <div>
+                        <button class="btn-add-groove" onclick="addGroove(${segmentCount})">+ Einstich</button>
+                        <button class="btn-add-custom" onclick="addCustomForm(${segmentCount})">+ Form</button>
+                    </div>
+                </h3>
+                <div class="input-row">
+                    <label>L | Passung:</label>
+                    <div class="feature-controls">
+                        <input type="checkbox" id="showL${segmentCount}" checked class="chk-dim" title="Länge bemaßen" onchange="updateApp()">
+                        <input type="number" id="l${segmentCount}" value="30" min="0" step="1" title="Länge" oninput="updateApp()" style="width:45px;">
+                        <input type="text" id="tolL${segmentCount}" placeholder="+0.1;-0.2" title="Toleranz (z.B. h7 oder +0.1;-0.1)" oninput="updateApp()" style="width:65px;">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label>Ø | Passung:</label>
+                    <div class="feature-controls">
+                        <input type="checkbox" id="showD${segmentCount}" checked class="chk-dim" title="Durchmesser bemaßen" onchange="updateApp()">
+                        <input type="number" id="d${segmentCount}" value="20" min="0" step="1" title="Durchmesser" oninput="updateApp()" style="width:45px;">
+                        <input type="text" id="tolD${segmentCount}" placeholder="h7" title="Toleranz (z.B. h7 oder +0.1;-0.1)" oninput="updateApp()" style="width:65px;">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label><input type="checkbox" id="thread${segmentCount}" onchange="togglePitch(${segmentCount}); updateApp()"> Gewinde</label>
+                    <input type="number" id="pitch${segmentCount}" value="1.5" step="0.1" style="display: none;" title="Steigung P" oninput="updateApp()">
+                </div>
+                <div class="input-row">
+                    <label>Kante L:</label>
+                    <div class="feature-controls">
+                        <input type="checkbox" id="showFeatL${segmentCount}" checked class="chk-dim" title="Bemaßung anzeigen" onchange="updateApp()">
+                        <select id="featL${segmentCount}" onchange="toggleVal('L', ${segmentCount}); updateApp()">
+                            <option value="none">Scharf</option><option value="fase">Fase</option><option value="rundung">Rundung</option>
+                            <option value="509E">Freistich 509E</option><option value="509F">Freistich 509F</option><option value="76">Freistich 76</option>
+                        </select>
+                        <input type="number" id="valL${segmentCount}" value="2" min="0.1" step="0.5" title="Größe" style="display:none; width:40px;" oninput="updateApp()">
+                        <input type="number" id="val2L${segmentCount}" value="45" min="0.1" step="1" title="Winkel / Länge 2" style="display:none; width:40px;" oninput="updateApp()">
+                        <select id="val2TypeL${segmentCount}" style="display:none; width:45px;" onchange="updateApp()">
+                            <option value="deg">°</option><option value="mm">mm</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label>Kante R:</label>
+                    <div class="feature-controls">
+                        <input type="checkbox" id="showFeatR${segmentCount}" checked class="chk-dim" title="Bemaßung anzeigen" onchange="updateApp()">
+                        <select id="featR${segmentCount}" onchange="toggleVal('R', ${segmentCount}); updateApp()">
+                            <option value="none">Scharf</option><option value="fase">Fase</option><option value="rundung">Rundung</option>
+                            <option value="509E">Freistich 509E</option><option value="509F">Freistich 509F</option><option value="76">Freistich 76</option>
+                        </select>
+                        <input type="number" id="valR${segmentCount}" value="2" min="0.1" step="0.5" title="Größe" style="display:none; width:40px;" oninput="updateApp()">
+                        <input type="number" id="val2R${segmentCount}" value="45" min="0.1" step="1" title="Winkel / Länge 2" style="display:none; width:40px;" oninput="updateApp()">
+                        <select id="val2TypeR${segmentCount}" style="display:none; width:45px;" onchange="updateApp()">
+                            <option value="deg">°</option><option value="mm">mm</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="grooves-container-${segmentCount}"></div>
+                <div id="custom-forms-container-${segmentCount}"></div>
+            `;
+            container.appendChild(div);
+            if(segmentCount > 3) updateApp();
+        }
+
+        function removeSegment() {
+            if (segmentCount > 1) {
+                const container = document.getElementById('segments-container');
+                container.removeChild(container.lastChild);
+                segmentCount--;
+                updateApp();
+            }
+        }
+
+        function addGroove(segId) {
+            grooveIdCounter++;
+            const container = document.getElementById(`grooves-container-${segId}`);
+            const div = document.createElement('div');
+            div.className = 'groove-group groove-item';
+            div.id = `groove-${grooveIdCounter}`;
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <h4>Einstich</h4>
+                    <button onclick="this.parentElement.parentElement.remove(); updateApp();" style="padding:2px 6px; background:#e74c3c; color:white; border:none; border-radius:3px; cursor:pointer;">X</button>
+                </div>
+                <div class="input-row">
+                    <label>Pos | Brt | Tol:</label>
+                    <div class="feature-controls">
+                        <input type="number" class="g-pos" value="15" min="0" step="1" title="Position" oninput="updateApp()" style="width:35px;">
+                        <input type="number" class="g-w" value="5" min="0.1" step="1" title="Breite" oninput="updateApp()" style="width:35px;">
+                        <input type="text" class="g-tol-w" placeholder="H11" title="Toleranz Breite" oninput="updateApp()" style="width:45px;">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label>Ø in | Tol:</label>
+                    <div class="feature-controls">
+                        <input type="number" class="g-d" value="30" min="0" step="1" title="Innen-Durchmesser" oninput="updateApp()" style="width:45px;">
+                        <input type="text" class="g-tol-d" placeholder="h11" title="Toleranz Ø" oninput="updateApp()" style="width:60px;">
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label>Oben (OR|OL):</label>
+                    <div class="feature-controls">
+                        <select class="g-f-or" onchange="toggleGrooveVal(this); updateApp()" style="width:55px;">
+                            <option value="none">Scharf</option><option value="fase">Fase</option><option value="rundung">Rundung</option>
+                        </select>
+                        <input type="number" class="g-v-or" value="1" min="0.1" step="0.5" style="display:none; width:30px;" oninput="updateApp()">
+                        <input type="number" class="g-v2-or" value="45" min="0.1" step="1" style="display:none; width:30px;" oninput="updateApp()">
+                        <select class="g-v2t-or" style="display:none; width:40px;" onchange="updateApp()"><option value="deg">°</option><option value="mm">mm</option></select>
+                        <span style="color:#bdc3c7;">|</span>
+                        <select class="g-f-ol" onchange="toggleGrooveVal(this); updateApp()" style="width:55px;">
+                            <option value="none">Scharf</option><option value="fase">Fase</option><option value="rundung">Rundung</option>
+                        </select>
+                        <input type="number" class="g-v-ol" value="1" min="0.1" step="0.5" style="display:none; width:30px;" oninput="updateApp()">
+                        <input type="number" class="g-v2-ol" value="45" min="0.1" step="1" style="display:none; width:30px;" oninput="updateApp()">
+                        <select class="g-v2t-ol" style="display:none; width:40px;" onchange="updateApp()"><option value="deg">°</option><option value="mm">mm</option></select>
+                    </div>
+                </div>
+                <div class="input-row">
+                    <label>Unten (UR|UL):</label>
+                    <div class="feature-controls">
+                        <select class="g-f-ur" onchange="toggleGrooveVal(this); updateApp()" style="width:55px;">
+                            <option value="none">Scharf</option><option value="fase">Fase</option><option value="rundung" selected>Rundung</option>
+                        </select>
+                        <input type="number" class="g-v-ur" value="1" min="0.1" step="0.5" style="display:inline-block; width:30px;" oninput="updateApp()">
+                        <input type="number" class="g-v2-ur" value="45" min="0.1" step="1" style="display:none; width:30px;" oninput="updateApp()">
+                        <select class="g-v2t-ur" style="display:none; width:40px;" onchange="updateApp()"><option value="deg">°</option><option value="mm">mm</option></select>
+                        <span style="color:#bdc3c7;">|</span>
+                        <select class="g-f-ul" onchange="toggleGrooveVal(this); updateApp()" style="width:55px;">
+                            <option value="none">Scharf</option><option value="fase">Fase</option><option value="rundung" selected>Rundung</option>
+                        </select>
+                        <input type="number" class="g-v-ul" value="1" min="0.1" step="0.5" style="display:inline-block; width:30px;" oninput="updateApp()">
+                        <input type="number" class="g-v2-ul" value="45" min="0.1" step="1" style="display:none; width:30px;" oninput="updateApp()">
+                        <select class="g-v2t-ul" style="display:none; width:40px;" onchange="updateApp()"><option value="deg">°</option><option value="mm">mm</option></select>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            updateApp();
+        }
+
+        function togglePitch(num) {
+            document.getElementById(`pitch${num}`).style.display = document.getElementById(`thread${num}`).checked ? 'block' : 'none';
+        }
+
+        function toggleVal(side, num) {
+            const feat = document.getElementById(`feat${side}${num}`).value;
+            const val1 = document.getElementById(`val${side}${num}`);
+            const val2 = document.getElementById(`val2${side}${num}`);
+            const val2t = document.getElementById(`val2Type${side}${num}`);
+            
+            const isFase = feat === 'fase';
+            const isRund = feat === 'rundung';
+            
+            if(val1) val1.style.display = (isFase || isRund) ? 'inline-block' : 'none';
+            if(val2) val2.style.display = isFase ? 'inline-block' : 'none';
+            if(val2t) val2t.style.display = isFase ? 'inline-block' : 'none';
+        }
+
+        function toggleGrooveVal(selectElem) {
+            const val1 = selectElem.nextElementSibling;
+            const val2 = val1.nextElementSibling;
+            const val2t = val2.nextElementSibling;
+            
+            const isFase = selectElem.value === 'fase';
+            const isRund = selectElem.value === 'rundung';
+            
+            if(val1) val1.style.display = (isFase || isRund) ? 'inline-block' : 'none';
+            if(val2) val2.style.display = isFase ? 'inline-block' : 'none';
+            if(val2t) val2t.style.display = isFase ? 'inline-block' : 'none';
+        }
+
+        function addCustomForm(segId) {
+			const container = document.getElementById(`custom-forms-container-${segId}`);
+			const div = document.createElement('div');
+			div.className = 'custom-form-group custom-form-item';
+			div.innerHTML = `
+				<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+					<h4 style="margin:0; color:#e67e22; font-size:0.95rem;">Freie Form</h4>
+					<button onclick="this.parentElement.parentElement.remove(); updateApp();" style="padding:2px 6px; background:#e74c3c; color:white; border:none; border-radius:3px; cursor:pointer;">X</button>
+				</div>
+				<div class="input-row">
+					<label>Typ | Bezug:</label>
+					<div class="feature-controls">
+						<select class="cf-type" onchange="toggleCustomFormType(this); updateApp()" style="width:80px;">
+							<option value="radius">Radius</option>
+							<option value="schraege">Schräge</option>
+						</select>
+						<select class="cf-orient" onchange="updateApp()" style="width:95px;">
+							<option value="horiz">Zylinderfl.</option>
+							<option value="vert">Stirnfläche</option>
+						</select>
+					</div>
+				</div>
+				<div class="input-row">
+					<label>Pos X (v.R.) | Pos Y:</label>
+					<div class="feature-controls">
+						<input type="number" class="cf-posx" value="10" step="1" oninput="updateApp()" style="width:40px;">
+						<span style="color:#bdc3c7;">|</span>
+						<input type="number" class="cf-posy" value="20" step="1" title="Y-Abstand von der Mitte" oninput="updateApp()" style="width:40px;">
+						<label style="margin-left:5px;"><input type="checkbox" class="cf-invert" onchange="updateApp()"> Inv.</label>
+					</div>
+				</div>
+				<div class="input-row cf-params-radius">
+					<label>Radius R:</label>
+					<input type="number" class="cf-r" value="7" min="0.1" step="0.5" oninput="updateApp()" style="width:60px;">
+				</div>
+				<div class="input-row cf-params-schraege" style="display:none;">
+					<label>Winkel | Länge:</label>
+					<div class="feature-controls">
+						<input type="number" class="cf-angle" value="45" step="1" oninput="updateApp()" style="width:40px;">
+						<span style="color:#bdc3c7;">|</span>
+						<input type="number" class="cf-len" value="10" min="0.1" step="1" oninput="updateApp()" style="width:40px;">
+					</div>
+				</div>
+				<div class="input-row" style="margin-top: 6px; border-top: 1px dashed #e1b12c; padding-top: 6px;">
+					<label>Kante 1 | 2:</label>
+					<div class="feature-controls">
+						<select class="cf-edge1" onchange="updateApp()" style="width:80px;" title="Kante Links/Oben">
+							<option value="none">Scharf</option><option value="fase">Fase</option><option value="rad_tan_surf">Rad (a)</option><option value="rad_tan_main">Rad (b)</option><option value="rad_tan_both">Rad(voll)</option>
+						</select>
+						<input type="number" class="cf-e1-val" value="4" min="0.1" step="0.5" oninput="updateApp()" style="width:35px;">
+						<span style="color:#bdc3c7;">|</span>
+						<select class="cf-edge2" onchange="updateApp()" style="width:80px;" title="Kante Rechts/Unten">
+							<option value="none">Scharf</option><option value="fase">Fase</option><option value="rad_tan_surf">Rad (a)</option><option value="rad_tan_main">Rad (b)</option><option value="rad_tan_both">Rad(voll)</option>
+						</select>
+						<input type="number" class="cf-e2-val" value="4" min="0.1" step="0.5" oninput="updateApp()" style="width:35px;">
+					</div>
+				</div>
+			`;
+			container.appendChild(div);
+			updateApp();
+		}
+
+			   
+				   
+				 
+						
+						  
+   
+
+        function applyDenseCustomForms(pts, forms, scale, refX, refLogicalX) {
+			if(forms.length === 0) return pts;
+			let densePts = [];
+			let step = 0.25; 
+			
+			// Gitter verdichten
+			for(let i=0; i<pts.length-1; i++) {
+				let p1 = pts[i]; let p2 = pts[i+1];
+				let dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+				let steps = Math.max(1, Math.ceil(dist / step));
+				for(let j=0; j<steps; j++) {
+					let t = j / steps;
+					densePts.push({
+						x: p1.x + t * (p2.x - p1.x),
+						y: p1.y + t * (p2.y - p1.y),
+						isEdge: j === 0 ? p1.isEdge : false 
+					});
+				}
+			}
+			densePts.push(pts[pts.length-1]);
+
+			forms.forEach(cf => {
+				let cx = refX - (cf.logicalX - refLogicalX) * scale;
+				let cy = cf.posY * scale;
+				let invert = cf.invert;
+				let isHoriz = cf.orient !== 'vert';
+
+				densePts.forEach(pt => {
+					let targetVar = isHoriz ? pt.x - cx : pt.y - cy;
+					let currentDepth = isHoriz ? pt.y : pt.x;
+					let refDepth = isHoriz ? cy : cx;
+					
+					if(cf.type === 'radius') {
+						let r = cf.r * scale;
+						let x_abs = Math.abs(targetVar);
+
+						let isE1 = targetVar < 0; 
+						let eType = isE1 ? cf.edge1 : cf.edge2;
+						let eVal = (isE1 ? cf.e1Val : cf.e2Val) * scale;
+
+						let mainDepthDelta = 0;
+						let D_m = x_abs <= r ? Math.sqrt(Math.max(0, r * r - x_abs * x_abs)) : 0;
+						
+						if (eType !== 'none' && eVal > 0) {
+							let rt = eVal;
+							let D_edge = 0;
+							let use_edge = false;
+							let x_start = r; // Ab hier übernimmt das Kantenfeature
+							let x_end = r;
+							
+							if (eType === 'fase') {
+								x_start = r - rt / 2;
+								x_end = r + rt / 2;
+								let y_start = Math.sqrt(Math.max(0, r*r - x_start*x_start));
+								if (x_abs >= x_start && x_abs <= x_end) {
+									D_edge = y_start - (y_start / (x_end - x_start)) * (x_abs - x_start);
+									use_edge = true;
+								}
+							} else if (eType === 'rad_tan_surf') { // Option a
+								// Tangential zur Oberfläche, startet exakt auf der Kreiskontur
+								x_start = r >= rt ? Math.sqrt(r*r - rt*rt) : 0;
+								let x_c = x_start + rt;
+								let y_c = rt;
+								x_end = x_c;
+								if (x_abs >= x_start && x_abs <= x_end) {
+									let val = rt*rt - Math.pow(x_abs - x_c, 2);
+									D_edge = val >= 0 ? y_c - Math.sqrt(val) : 0;
+									use_edge = true;
+								}
+							} else if (eType === 'rad_tan_main') { // Option b
+								// Tangential zum Kreis, endet kantig auf der Oberfläche
+								let y_c = rt * 0.5;
+								let x_c = Math.sqrt(Math.pow(r+rt, 2) - y_c*y_c);
+								x_start = r * (x_c / (r+rt));
+								x_end = x_c + Math.sqrt(rt*rt - y_c*y_c);
+								if (x_abs >= x_start && x_abs <= x_end) {
+									let val = rt*rt - Math.pow(x_abs - x_c, 2);
+									D_edge = val >= 0 ? y_c - Math.sqrt(val) : 0;
+									use_edge = true;
+								}
+							} else if (eType === 'rad_tan_both') { // Voll
+								// Perfekter Voll-Tangentialer Übergang an beiden Seiten
+								let y_c = rt;
+								let x_c = Math.sqrt(r*r + 2*r*rt);
+								x_start = r * (x_c / (r+rt));
+								x_end = x_c;
+								if (x_abs >= x_start && x_abs <= x_end) {
+									let val = rt*rt - Math.pow(x_abs - x_c, 2);
+									D_edge = val >= 0 ? y_c - Math.sqrt(val) : 0;
+									use_edge = true;
+								}
+							}
+
+							// Strikte Abgrenzung (Piecewise) um Überlappungen zu verbieten
+							if (use_edge) {
+								mainDepthDelta = D_edge;
+							} else if (x_abs < x_start) {
+								mainDepthDelta = D_m;
+							} else {
+								mainDepthDelta = 0;
+							}
+						} else {
+							mainDepthDelta = D_m;
+						}
+
+						if (mainDepthDelta > 0) {
+							let newDepth = 0;
+							let isInside = refDepth < currentDepth;
+							
+							if (!invert) {
+								newDepth = isInside ? refDepth + mainDepthDelta : Math.max(0, refDepth - mainDepthDelta);
+								if (isInside && newDepth > currentDepth) currentDepth = newDepth;
+								else if (!isInside && newDepth < currentDepth) currentDepth = newDepth;
+							} else {
+								newDepth = isInside ? Math.max(0, refDepth - mainDepthDelta) : refDepth + mainDepthDelta;
+								if (isInside && newDepth < currentDepth) currentDepth = newDepth;
+								else if (!isInside && newDepth > currentDepth) currentDepth = newDepth;
+							}
+
+							if (isHoriz) pt.y = currentDepth;
+							else pt.x = currentDepth;
+						}
+					} else if(cf.type === 'schraege') {
+						let len = cf.length * scale;
+						if(Math.abs(targetVar) <= len/2) {
+							let alpha = cf.angle * Math.PI / 180;
+							let delta = Math.tan(alpha) * targetVar; 
+							
+							let newDepth = refDepth + delta;
+							if (!invert) {
+								if (newDepth < currentDepth && newDepth > 0) currentDepth = newDepth;
+							} else {
+								if (newDepth > currentDepth) currentDepth = newDepth;
+							}
+
+							if (isHoriz) pt.y = currentDepth;
+							else pt.x = currentDepth;
+						}
+					}
+				});
+			});
+			return densePts;
+		}
+
+        function getUndercutParams(type, scale) {
+            if (type === '509E') return { uw: Math.max(3 * scale, 5), ud: Math.max(1.2 * scale, 2), text: 'DIN 509-E' };
+            if (type === '509F') return { uw: Math.max(4 * scale, 6), ud: Math.max(1.5 * scale, 3), text: 'DIN 509-F' };
+            if (type === '76')   return { uw: Math.max(4.5 * scale, 7), ud: Math.max(1.8 * scale, 3.5), text: 'DIN 76' };
+            return { uw: 0, ud: 0, text: '' };
+        }
+
+        function getThreadXBounds(finalPts, logicalYTarget, segRightX, segLeftX) {
+            let intersections = [];
+            for (let j = 0; j < finalPts.length - 1; j++) {
+                let p1 = finalPts[j];
+                let p2 = finalPts[j+1];
+                let minY = Math.min(p1.y, p2.y);
+                let maxY = Math.max(p1.y, p2.y);
+                
+                if (logicalYTarget >= minY && logicalYTarget <= maxY) {
+                    if (p1.y !== p2.y) {
+                        let ix = p1.x + (logicalYTarget - p1.y) * (p2.x - p1.x) / (p2.y - p1.y);
+                        if (ix <= segRightX + 0.1 && ix >= segLeftX - 0.1) {
+                            intersections.push(ix);
+                        }
+                    } else if (p1.y === logicalYTarget) {
+                        intersections.push(p1.x, p2.x);
+                    }
+                }
+            }
+            if (intersections.length > 0) {
+                intersections.sort((a,b) => b - a); 
+                let start = Math.min(segRightX, intersections[0]);
+                let end = Math.max(segLeftX, intersections[intersections.length - 1]);
+                return { startX: start, endX: end };
+            }
+            return { startX: segRightX, endX: segLeftX };
+        }
+
+        function applyFeatureExt(pPrev, p, pNext, scale) {
+            let dx1 = p.x - pPrev.x, dy1 = p.y - pPrev.y;
+            let l1 = Math.hypot(dx1, dy1);
+            let ux1 = dx1/l1, uy1 = dy1/l1;
+
+            let dx2 = pNext.x - p.x, dy2 = pNext.y - p.y;
+            let l2 = Math.hypot(dx2, dy2);
+            let ux2 = dx2/l2, uy2 = dy2/l2;
+
+            let Z = ux1 * uy2 - uy1 * ux2;
+            let isInner = Z < -0.01;
+
+            let f = p.feat, origV1 = p.origVal, origV2 = p.val2, v2Type = p.val2Type;
+            let calloutDir = p.forcedDir !== undefined ? p.forcedDir : ((p.side === 'R') ? 1 : -1); 
+
+            if (f === 'none' || (p.val <= 0 && !f.startsWith('509') && f !== '76')) {
+                return { points: [ { x: p.x, y: p.y, isEdge: true } ], anchor: null };
+            }
+
+            let anchor = null;
+
+            if (f === 'fase') {
+                let actualV1 = p.val;
+                let actualV2 = 0;
+                
+                if (v2Type === 'deg') actualV2 = actualV1 * Math.tan(origV2 * Math.PI / 180);
+                else actualV2 = origV2 * scale;
+
+                let d1, d2;
+                if (Math.abs(ux1) > 0.5) { 
+                    d1 = actualV1; d2 = actualV2;
+                } else { 
+                    d1 = actualV2; d2 = actualV1;
+                }
+
+                d1 = Math.min(d1, l1 * 0.95);
+                d2 = Math.min(d2, l2 * 0.95);
+
+                let pStart = { x: p.x - ux1 * d1, y: p.y - uy1 * d1 };
+                let pEnd = { x: p.x + ux2 * d2, y: p.y + uy2 * d2 };
+                
+                let dx = pEnd.x - pStart.x;
+                let dy = pEnd.y - pStart.y;
+                let nx = dy;
+                let ny = -dx;
+                let len = Math.hypot(nx, ny);
+                if (len > 0.001) { nx /= len; ny /= len; }
+
+                let textStr = v2Type === 'deg' ? `${origV1} x ${origV2}°` : `${origV1} x ${origV2}`;
+                let geom = { type: 'fase' };
+                anchor = { x: (pStart.x + pEnd.x) / 2, y: (pStart.y + pEnd.y) / 2, text: textStr, dir: calloutDir, nx: nx, ny: ny, geom: geom };
+                
+                return {
+                    points: [{ x: pStart.x, y: pStart.y, isEdge: true }, { x: pEnd.x, y: pEnd.y, isEdge: true }],
+                    anchor: anchor
+                };
+            }
+
+            if (f === 'rundung') {
+                let actualV = Math.min(p.val, Math.min(l1, l2) * 0.95);
+                let pStart = { x: p.x - ux1 * actualV, y: p.y - uy1 * actualV };
+                let pEnd = { x: p.x + ux2 * actualV, y: p.y + uy2 * actualV };
+                let cx = p.x - ux1 * actualV + ux2 * actualV;
+                let cy = p.y - uy1 * actualV + uy2 * actualV;
+
+                let res = [ { x: pStart.x, y: pStart.y, isEdge: true } ];
+                let aStart = Math.atan2(pStart.y - cy, pStart.x - cx);
+                let aEnd = Math.atan2(pEnd.y - cy, pEnd.x - cx);
+                let diff = aEnd - aStart;
+                while(diff < -Math.PI) diff += 2*Math.PI;
+                while(diff > Math.PI) diff -= 2*Math.PI;
+
+                let steps = 10;
+                for(let i=1; i<steps; i++) {
+                    let a = aStart + diff * (i / steps);
+                    res.push({ x: cx + actualV * Math.cos(a), y: cy + actualV * Math.sin(a), isEdge: false });
+                }
+                res.push({ x: pEnd.x, y: pEnd.y, isEdge: true });
+
+                let aMid = aStart + diff / 2;
+                let mx = cx + actualV * Math.cos(aMid);
+                let my = cy + actualV * Math.sin(aMid);
+                
+                let nx = mx - cx;
+                let ny = my - cy;
+                let len = Math.hypot(nx, ny);
+                if (len > 0.001) { nx /= len; ny /= len; }
+                
+                if (isInner) { nx = -nx; ny = -ny; }
+
+                let geom = { type: 'rundung' };
+                anchor = { x: mx, y: my, text: `R ${origV1}`, dir: calloutDir, nx: nx, ny: ny, geom: geom };
+                return { points: res, anchor: anchor };
+            }
+
+            if (isInner && (f === '509E' || f === '509F' || f === '76')) {
+                let params = getUndercutParams(f, scale);
+                let uw = params.uw, ud = params.ud;
+                let pts = [];
+                
+                let nx = 0;
+                let ny = p.y >= -0.01 ? 1 : -1;
+                let geom = { type: 'freistich' };
+
+                if (Math.abs(ux1) > 0.5) { 
+                    pts = [
+                        { x: p.x - ux1 * uw, y: p.y, isEdge: true },
+                        { x: p.x - ux1 * uw * 0.4, y: p.y - ud, isEdge: true },
+                        { x: p.x, y: p.y - ud, isEdge: true }
+                    ];
+                    let midX = p.x - ux1 * uw * 0.2;
+                    let midY = p.y - ud;
+                    anchor = { x: midX, y: midY, text: params.text, dir: calloutDir, nx: nx, ny: ny, geom: geom };
+                } else {
+                    pts = [
+                        { x: p.x, y: p.y - ud, isEdge: true },
+                        { x: p.x + ux2 * uw * 0.6, y: p.y - ud, isEdge: true },
+                        { x: p.x + ux2 * uw, y: p.y, isEdge: true }
+                    ];
+                    let midX = p.x + ux2 * uw * 0.3;
+                    let midY = p.y - ud;
+                    anchor = { x: midX, y: midY, text: params.text, dir: calloutDir, nx: nx, ny: ny, geom: geom };
+                }
+                return { points: pts, anchor: anchor };
+            }
+
+            return { points: [ { x: p.x, y: p.y, isEdge: true } ], anchor: null };
+        }
+
+        function drawArrow(x, y, angle) {
+            const headlen = 12, angleOffset = Math.PI / 12;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - headlen * Math.cos(angle - angleOffset), y - headlen * Math.sin(angle - angleOffset));
+            ctx.lineTo(x - headlen * Math.cos(angle + angleOffset), y - headlen * Math.sin(angle + angleOffset));
+            ctx.closePath();
+            ctx.fillStyle = '#000'; ctx.fill();
+        }
+
+        function drawDimensionWithTolerance(ctx, mainText, tolText, x, y, align) {
+            ctx.font = '14px "Arial", sans-serif';
+            let mainWidth = ctx.measureText(mainText).width;
+            let tolWidth = 0;
+            let tolTop = "", tolBot = "", isStacked = false;
+
+            if (tolText) {
+                ctx.font = '11px "Arial", sans-serif';
+                if (tolText.includes(';') || tolText.includes('/')) {
+                    let parts = tolText.includes(';') ? tolText.split(';') : tolText.split('/');
+                    tolTop = parts[0].trim();
+                    tolBot = parts[1].trim();
+                    tolWidth = Math.max(ctx.measureText(tolTop).width, ctx.measureText(tolBot).width) + 4;
+                    isStacked = true;
+                } else {
+                    tolWidth = ctx.measureText(" " + tolText).width;
+                }
+            }
+
+            let totalWidth = mainWidth + tolWidth;
+            let startX = x;
+            if (align === 'center') {
+                startX = x - totalWidth / 2;
+            }
+
+            ctx.fillStyle = '#fff';
+            let boxHeight = isStacked ? 22 : 16;
+            let boxY = isStacked ? y - 16 : y - 14;
+            ctx.fillRect(startX - 2, boxY, totalWidth + 4, boxHeight);
+
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'bottom';
+            ctx.font = '14px "Arial", sans-serif';
+            ctx.fillText(mainText, startX, y);
+
+            if (tolText) {
+                ctx.font = '11px "Arial", sans-serif';
+                if (isStacked) {
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(tolTop, startX + mainWidth + 2, y - 7); 
+                    ctx.textBaseline = 'top';
+                    ctx.fillText(tolBot, startX + mainWidth + 2, y - 7); 
+                } else {
+                    ctx.textBaseline = 'bottom';
+                    ctx.fillText(" " + tolText, startX + mainWidth, y);
+                }
+            }
+        }
+
+        function drawVerticalDimension(x, startY, endY, text, tol) {
+            ctx.lineWidth = 1; ctx.strokeStyle = '#000';
+            ctx.beginPath(); ctx.moveTo(x, startY); ctx.lineTo(x, endY); ctx.stroke();
+																						
+            drawArrow(x, startY, -Math.PI / 2); 
+            drawArrow(x, endY, Math.PI / 2);
+
+            ctx.save();
+            ctx.translate(x, (startY + endY) / 2); ctx.rotate(-Math.PI / 2);
+            drawDimensionWithTolerance(ctx, text, tol, 0, -4, 'center');
+												  
+																		   
+															  
+            ctx.restore();
+        }
+
+        function drawHorizontalDimensionLocal(startX, endX, y, text, tol) {
+            ctx.lineWidth = 1; ctx.strokeStyle = '#000';
+            ctx.beginPath(); ctx.moveTo(startX, y); ctx.lineTo(endX, y); ctx.stroke();
+																					   
+            drawArrow(startX, y, Math.PI); 
+            drawArrow(endX, y, 0);
+            drawDimensionWithTolerance(ctx, text, tol, (startX+endX)/2, y - 4, 'center');
+																										 
+												  
+																							   
+																			   
+        }
+
+																										   
+        function drawCalloutSafely(x, y, text, safeYTarget, clearY, dir, nx, ny, featureType) {
+            let yDir = safeYTarget < y ? -1 : 1;
+            let c_ny = -ny; 
+            
+            let p1x = x, p1y = safeYTarget, p2x = x, endX;
+
+
+            if (Math.abs(nx) < 0.01) {
+                // Bei Freistich-Gründen (senkrechte Normale) direkt durchziehen
+                p1x = x;
+                p1y = safeYTarget; 
+                p2x = p1x;
+            } else {
+                // Bei Fasen/Rundungen exakt 15px in Richtung Normalenvektor starten
+                p1x = x + nx * 15;
+                p1y = y + ny * 15; 
+                
+                // Senkrechter Sicherheitsbereich
+                if ((yDir === -1 && p1y > clearY) || (yDir === 1 && p1y < clearY)) {
+                    p1y = clearY; 
+                }
+                
+                // Ein einzelner fließender Knick zur Ablagehöhe
+                p2x = p1x + dir * Math.max(25, Math.abs(safeYTarget - p1y) * 0.6);
+
+						
+                if (dir === 1 && p2x < p1x + 10) p2x = p1x + 10;
+                if (dir === -1 && p2x > p1x - 10) p2x = p1x - 10;
+            }
+
+            endX = p2x + dir * 60;
+
+            if (endX < 10) {
+                let diff = 10 - endX; endX += diff; p2x += diff;
+            } else if (endX > canvas.width - 10) {
+                let diff = endX - (canvas.width - 10); endX -= diff; p2x -= diff;
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            if (Math.abs(nx) >= 0.01) {
+                // Exakt senkrechter Start
+                ctx.lineTo(x + nx * 15, y + ny * 15);
+                ctx.lineTo(p1x, p1y);
+            }
+            ctx.lineTo(p2x, safeYTarget);
+            ctx.lineTo(endX, safeYTarget);
+            ctx.lineWidth = 1; ctx.strokeStyle = '#2c3e50'; ctx.stroke();
+
+            // Arrow zeigt präzise ENTGEGEN dem Normalenvektor (also auf die Oberfläche)
+											
+																									   
+					
+														   
+			 
+			 
+					
+            let arrowAngle = Math.atan2(-ny, -nx);						  
+            const headlen = 9, angleOffset = Math.PI / 8;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - headlen * Math.cos(arrowAngle - angleOffset), y - headlen * Math.sin(arrowAngle - angleOffset));
+            ctx.lineTo(x - headlen * Math.cos(arrowAngle + angleOffset), y - headlen * Math.sin(arrowAngle + angleOffset));
+            ctx.closePath();
+            ctx.fillStyle = '#2c3e50'; ctx.fill();
+            
+            let textX = dir === 1 ? p2x + 5 : p2x - 5;
+            ctx.font = '13px "Arial", sans-serif';
+            ctx.textAlign = dir === 1 ? 'left' : 'right';
+            ctx.textBaseline = 'bottom';
+            ctx.fillStyle = '#000';
+            ctx.fillText(text, textX, safeYTarget - 3);
+        }
+
+        function drawTitleBlock(ctx, material, tolerance, notes) {
+            const tbWidth = 320;
+            const tbHeight = 90;
+            const x = canvas.width - tbWidth - 10;
+            const y = canvas.height - tbHeight - 10;
+
+            ctx.lineWidth = 1.5; ctx.strokeStyle = '#000'; ctx.fillStyle = '#fff';
+            ctx.fillRect(x, y, tbWidth, tbHeight); ctx.strokeRect(x, y, tbWidth, tbHeight);
+
+            ctx.beginPath();
+            ctx.moveTo(x, y + 25); ctx.lineTo(x + tbWidth, y + 25);
+            ctx.moveTo(x, y + 55); ctx.lineTo(x + tbWidth, y + 55);
+            ctx.moveTo(x + 160, y + 25); ctx.lineTo(x + 160, y + 90);
+            ctx.stroke();
+
+            ctx.fillStyle = '#000'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+            ctx.font = '10px "Arial", sans-serif'; ctx.fillText('Allgemeine Angaben:', x + 5, y + 3);
+            ctx.font = '12px "Arial", sans-serif'; ctx.fillText(notes, x + 5, y + 13);
+            ctx.font = '10px "Arial", sans-serif'; ctx.fillText('Allgemeintoleranz:', x + 5, y + 28);
+            ctx.font = '13px "Arial", sans-serif'; ctx.fillText(tolerance, x + 5, y + 40);
+            ctx.font = '10px "Arial", sans-serif'; ctx.fillText('Werkstoff:', x + 165, y + 28);
+            ctx.font = '13px "Arial", sans-serif'; ctx.fillText(material, x + 165, y + 40);
+            ctx.font = '10px "Arial", sans-serif'; ctx.fillText('Benennung:', x + 5, y + 58);
+            ctx.font = '16px "Arial", sans-serif'; ctx.fillText('Welle', x + 5, y + 70);
+
+            const dateStr = new Date().toLocaleDateString('de-DE');
+            ctx.font = '10px "Arial", sans-serif'; ctx.fillText('Datum:', x + 165, y + 58);
+            ctx.font = '13px "Arial", sans-serif'; ctx.fillText(dateStr, x + 165, y + 70);
+        }
+
+        function drawShaft() {
+            const material = document.getElementById('material').value;
+            const tolerance = document.getElementById('tolerance').value;
+            const generalNotes = document.getElementById('generalNotes').value;
+
+            const segments = [];
+            for (let i = 1; i <= segmentCount; i++) {
+                let seg = {
+                    l: Math.max(0, parseFloat(document.getElementById(`l${i}`).value) || 0),
+                    tolL: document.getElementById(`tolL${i}`).value,
+                    d: Math.max(0, parseFloat(document.getElementById(`d${i}`).value) || 0),
+                    tolD: document.getElementById(`tolD${i}`).value,
+                    isThread: document.getElementById(`thread${i}`).checked,
+                    pitch: parseFloat(document.getElementById(`pitch${i}`).value) || 1.5,
+                    featL: document.getElementById(`featL${i}`).value,
+                    valL: parseFloat(document.getElementById(`valL${i}`).value) || 0,
+                    val2L: parseFloat(document.getElementById(`val2L${i}`).value) || 45,
+                    val2TypeL: document.getElementById(`val2TypeL${i}`).value || 'deg',
+                    featR: document.getElementById(`featR${i}`).value,
+                    valR: parseFloat(document.getElementById(`valR${i}`).value) || 0,
+                    val2R: parseFloat(document.getElementById(`val2R${i}`).value) || 45,
+                    val2TypeR: document.getElementById(`val2TypeR${i}`).value || 'deg',
+                    showL: document.getElementById(`showL${i}`).checked,
+                    showD: document.getElementById(`showD${i}`).checked,
+                    showFeatL: document.getElementById(`showFeatL${i}`).checked,
+                    showFeatR: document.getElementById(`showFeatR${i}`).checked,
+                    grooves: []
+                };
+
+                let grooveNodes = document.querySelectorAll(`#grooves-container-${i} .groove-item`);
+                grooveNodes.forEach(gn => {
+                    let gpos = parseFloat(gn.querySelector('.g-pos').value) || 0;
+                    let gw = parseFloat(gn.querySelector('.g-w').value) || 0;
+                    let gtolW = gn.querySelector('.g-tol-w').value || '';
+                    let gd = parseFloat(gn.querySelector('.g-d').value) || 0;
+                    let gtolD = gn.querySelector('.g-tol-d').value || '';
+                    
+                    gpos = Math.max(0, Math.min(gpos, seg.l));
+                    gw = Math.max(0, Math.min(gw, seg.l - gpos));
+                    gd = Math.max(0, Math.min(gd, seg.d));
+
+                    if (gw > 0) {
+                        seg.grooves.push({
+                            pos: gpos, w: gw, tolW: gtolW, d: gd, tolD: gtolD,
+                            featOR: gn.querySelector('.g-f-or').value, 
+                            valOR: parseFloat(gn.querySelector('.g-v-or').value) || 0,
+                            val2OR: parseFloat(gn.querySelector('.g-v2-or').value) || 45,
+                            val2TypeOR: gn.querySelector('.g-v2t-or').value || 'deg',
+                            
+                            featOL: gn.querySelector('.g-f-ol').value, 
+                            valOL: parseFloat(gn.querySelector('.g-v-ol').value) || 0,
+                            val2OL: parseFloat(gn.querySelector('.g-v2-ol').value) || 45,
+                            val2TypeOL: gn.querySelector('.g-v2t-ol').value || 'deg',
+                            
+                            featUR: gn.querySelector('.g-f-ur').value, 
+                            valUR: parseFloat(gn.querySelector('.g-v-ur').value) || 0,
+                            val2UR: parseFloat(gn.querySelector('.g-v2-ur').value) || 45,
+                            val2TypeUR: gn.querySelector('.g-v2t-ur').value || 'deg',
+                            
+                            featUL: gn.querySelector('.g-f-ul').value, 
+                            valUL: parseFloat(gn.querySelector('.g-v-ul').value) || 0,
+                            val2UL: parseFloat(gn.querySelector('.g-v2-ul').value) || 45,
+                            val2TypeUL: gn.querySelector('.g-v2t-ul').value || 'deg'
+                        });
+                    }
+                });
+                seg.grooves.sort((a,b) => a.pos - b.pos);
+                
+                seg.customForms = [];
+                let cfNodes = document.querySelectorAll(`#custom-forms-container-${i} .custom-form-item`);
+                cfNodes.forEach(cn => {
+                    seg.customForms.push({
+						type: cn.querySelector('.cf-type').value,
+						orient: cn.querySelector('.cf-orient').value, // NEU
+						invert: cn.querySelector('.cf-invert').checked,
+						posX: parseFloat(cn.querySelector('.cf-posx').value) || 0,
+						posY: parseFloat(cn.querySelector('.cf-posy').value) || 0,
+						r: parseFloat(cn.querySelector('.cf-r').value) || 0,
+						angle: parseFloat(cn.querySelector('.cf-angle').value) || 0,
+						length: parseFloat(cn.querySelector('.cf-len').value) || 0,
+						edge1: cn.querySelector('.cf-edge1').value, // NEU
+						e1Val: parseFloat(cn.querySelector('.cf-e1-val').value) || 0, // NEU
+						edge2: cn.querySelector('.cf-edge2').value, // NEU
+						e2Val: parseFloat(cn.querySelector('.cf-e2-val').value) || 0  // NEU
+					});
+                });
+                
+                segments.push(seg);
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const totalLength = segments.reduce((sum, seg) => sum + seg.l, 0);
+            const maxDiameter = Math.max(...segments.map(seg => seg.d));
+            if (totalLength === 0 || maxDiameter === 0) return;
+
+            const paddingX = 140, paddingYTop = 180, paddingYBottom = 550; 
+            const usableWidth = canvas.width - 2 * paddingX;
+            const usableHeight = canvas.height - paddingYTop - paddingYBottom;
+            const scaleX = usableWidth / totalLength, scaleY = usableHeight / maxDiameter;
+            const scale = Math.min(scaleX, scaleY) * 0.9; 
+
+            const centerY = paddingYTop + (usableHeight / 2);
+            const RightX = canvas.width - paddingX, LeftX = RightX - (totalLength * scale);
+
+            let basePts = [{ x: RightX, y: 0, feat: 'none', val: 0, origVal: 0, show: false, side: 'N', isGroove: false }];
+            let cx = RightX;
+            let detailViews = [];
+            let detailLetterCode = 65; 
+            
+            for (let i = segments.length - 1; i >= 0; i--) {
+                let seg = segments[i];
+                let R = seg.d / 2 * scale;
+                let nx = cx - seg.l * scale;
+                
+                basePts.push({ x: cx, y: R, feat: seg.featR, val: seg.valR * scale, origVal: seg.valR, val2: seg.val2R, val2Type: seg.val2TypeR, show: seg.showFeatR, side: 'R', isGroove: false });
+                
+                seg.grooves.forEach(g => {
+                    let gx = cx - g.pos * scale;
+                    let gw = g.w * scale;
+                    let gR = g.d / 2 * scale;
+                    
+                    let depth_main = R - gR; 
+                    let cY = centerY - R + depth_main / 2;
+                    let cX = gx - gw / 2;
+                    
+                    // Detail-Zoom Berechnung
+                    let gW_logical = g.w;
+                    let gDepth_logical = (seg.d - g.d) / 2;
+                    let maxLogicalDim = Math.max(gW_logical, gDepth_logical);
+                    
+                    let detailCircleR = 150; // Fest definierter optischer Radius der Detailansicht
+                    let fillFactor = 0.70;   // Nut füllt den Kreis zu ~70% aus
+                    let desiredDimInDetail = (2 * detailCircleR) * fillFactor;
+                    
+                    let localScale = desiredDimInDetail / maxLogicalDim;
+                    let zoomFactor = localScale / scale;
+                    let circleR = detailCircleR / zoomFactor; 
+                    
+                    if (circleR < 15) {
+                        circleR = 15;
+                        zoomFactor = detailCircleR / circleR;
+                        localScale = scale * zoomFactor;
+                    }
+                    
+                    detailViews.push({
+                        letter: String.fromCharCode(detailLetterCode++),
+                        mainX: cX, mainY: cY, circleR: circleR,
+                        groove: g, parentD: seg.d, gw_main: gw,
+                        localScale: localScale, detailCircleR: detailCircleR
+                    });
+
+                    basePts.push({ x: gx, y: R, feat: g.featOR, val: g.valOR * scale, origVal: g.valOR, val2: g.val2OR, val2Type: g.val2TypeOR, show: true, side: 'R', isGroove: true });
+                    basePts.push({ x: gx, y: gR, feat: g.featUR, val: g.valUR * scale, origVal: g.valUR, val2: g.val2UR, val2Type: g.val2TypeUR, show: true, side: 'R', isGroove: true });
+                    basePts.push({ x: gx - gw, y: gR, feat: g.featUL, val: g.valUL * scale, origVal: g.valUL, val2: g.val2UL, val2Type: g.val2TypeUL, show: true, side: 'L', isGroove: true });
+                    basePts.push({ x: gx - gw, y: R, feat: g.featOL, val: g.valOL * scale, origVal: g.valOL, val2: g.val2OL, val2Type: g.val2TypeOL, show: true, side: 'L', isGroove: true });
+                });
+
+                basePts.push({ x: nx, y: R, feat: seg.featL, val: seg.valL * scale, origVal: seg.valL, val2: seg.val2L, val2Type: seg.val2TypeL, show: seg.showFeatL, side: 'L', isGroove: false });
+                cx = nx;
+            }
+            basePts.push({ x: cx, y: 0, feat: 'none', val: 0, origVal: 0, show: false, side: 'N', isGroove: false });
+
+            let cleaned = [basePts[0]];
+            for (let i = 1; i < basePts.length - 1; i++) {
+                let pPrev = cleaned[cleaned.length - 1], pCurr = basePts[i], pNext = basePts[i+1];
+                let dx1 = pCurr.x - pPrev.x, dy1 = pCurr.y - pPrev.y;
+                let dx2 = pNext.x - pCurr.x, dy2 = pNext.y - pCurr.y;
+                if (Math.abs(dx1*dy2 - dy1*dx2) > 0.01) { cleaned.push(pCurr); }
+            }
+            cleaned.push(basePts[basePts.length-1]);																									
+            let finalPts = [ { x: cleaned[0].x, y: cleaned[0].y, isEdge: false } ];
+            let callouts = [];
+            
+            for (let i = 1; i < cleaned.length - 1; i++) {
+                let featureResult = applyFeatureExt(cleaned[i-1], cleaned[i], cleaned[i+1], scale);
+                finalPts.push(...featureResult.points);
+                
+                if (featureResult.anchor && cleaned[i].show && !cleaned[i].isGroove) {
+                    callouts.push({
+                        x: featureResult.anchor.x,
+                        y: centerY - featureResult.anchor.y, 
+                        text: featureResult.anchor.text,
+                        dir: featureResult.anchor.dir,
+                        nx: featureResult.anchor.nx,
+                        ny: -featureResult.anchor.ny,
+                        geom: featureResult.anchor.geom
+                    });
+                }
+            }
+            finalPts.push({ x: cleaned[cleaned.length-1].x, y: cleaned[cleaned.length-1].y, isEdge: false });
+
+            // Apply Custom Forms (Dense Resampling)
+            let globalCustomForms = [];
+            let runL_cf = 0;
+            for (let i = segments.length - 1; i >= 0; i--) {
+                let seg = segments[i];
+                seg.customForms.forEach(cf => {
+                    cf.logicalX = runL_cf + cf.posX;
+                    globalCustomForms.push(cf);
+                });
+                runL_cf += seg.l;
+            }
+            finalPts = applyDenseCustomForms(finalPts, globalCustomForms, scale, RightX, 0);
+
+            // NEU: Bemaßungspfeile (Callouts) an die EXAKTE MITTE der erzeugten Form anheften
+            globalCustomForms.forEach(cf => {
+                let cx = RightX - cf.logicalX * scale;
+                let cy_logical = cf.posY * scale;
+                let cYTop = centerY - cy_logical;
+                
+                // Alle Punkte filtern, die von dieser Form beeinflusst wurden (Liegen auf der Kurve/Linie)
+                let modifiedPts = [];
+                if (cf.type === 'radius') {
+                    let r = cf.r * scale;
+                    modifiedPts = finalPts.filter(pt => Math.abs(Math.hypot(pt.x - cx, pt.y - cy_logical) - r) < 1.0);
+                } else if (cf.type === 'schraege') {
+                    let len = cf.length * scale;
+                    let alpha = cf.angle * Math.PI / 180;
+                    modifiedPts = finalPts.filter(pt => {
+                        // Abstand zur Geraden berechnen
+                        let distToLine = Math.abs(Math.sin(alpha) * (pt.x - cx) - Math.cos(alpha) * (pt.y - cy_logical));
+                        let distToCenter = Math.abs(pt.x - cx);
+                        return distToLine < 1.0 && distToCenter <= len/2;
+                    });
+                }
+                
+                let midPt;
+                if (modifiedPts.length > 0) {
+                    // Die modifizierten Punkte nach X sortieren und exakt den mittleren Punkt greifen
+                    modifiedPts.sort((a,b) => a.x - b.x);
+                    midPt = modifiedPts[Math.floor(modifiedPts.length / 2)];
+                } else {
+                    // Fallback, falls die Form im Leeren liegt
+                    midPt = finalPts[0];
+                    let minDist = Infinity;
+                    finalPts.forEach(pt => {
+                        let dist = Math.abs(pt.x - cx);
+                        if (dist < minDist) { minDist = dist; midPt = pt; }
+                    });
+                }
+                
+                let Px = midPt.x;
+                let Py = centerY - midPt.y; 
+                let nx = 0, ny = -1;
+                
+                if (cf.type === 'radius') {
+                    nx = Px - cx;
+                    ny = Py - cYTop;
+                    let len = Math.hypot(nx, ny);
+                    if (len > 0.001) { nx /= len; ny /= len; }
+                    
+                    if (cf.invert) { nx = -nx; ny = -ny; }
+                    if (ny > 0) { nx = -nx; ny = -ny; } // Stets aus dem Material heraus zeigen
+                    
+                    callouts.push({
+                        x: Px, y: Py, text: `R ${cf.r}`, dir: (nx > 0 ? 1 : -1), nx: nx, ny: ny, geom: { type: 'rundung' }
+                    });
+                } else if (cf.type === 'schraege') {
+                    let alpha = cf.angle * Math.PI / 180;
+                    nx = -Math.sin(alpha);
+                    ny = -Math.cos(alpha); 
+                    if (cf.invert) { nx = -nx; ny = -ny; }
+                    if (ny > 0) { nx = -nx; ny = -ny; }
+                    
+                    callouts.push({
+                        x: Px, y: Py, text: `${cf.angle}° / L${cf.length}`, dir: (nx > 0 ? 1 : -1), nx: nx, ny: ny, geom: { type: 'fase' }
+                    });
+                }
+            });
+
+            // 1. Zeichnen des Umrisses
+            ctx.beginPath();
+            for(let i=0; i<finalPts.length; i++) {
+                if(i===0) ctx.moveTo(finalPts[i].x, centerY - finalPts[i].y);
+                else ctx.lineTo(finalPts[i].x, centerY - finalPts[i].y);
+            }
+            for(let i=finalPts.length-1; i>=0; i--) {
+                ctx.lineTo(finalPts[i].x, centerY + finalPts[i].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#f8f9fa'; ctx.fill();
+            ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.stroke();
+
+            // 2. Innenliegende Sichtkanten
+            ctx.beginPath();
+            for(let i=0; i<finalPts.length; i++) {
+                let pt = finalPts[i];
+                if (pt.isEdge && pt.y > 0.1) {
+                    ctx.moveTo(pt.x, centerY - pt.y); ctx.lineTo(pt.x, centerY + pt.y);
+                }
+            }
+            ctx.stroke();
+
+            // NEU: Konstruktionslinien abhängig von der Checkbox ein-/ausblenden
+            let showConst = document.getElementById('showConstruction') ? document.getElementById('showConstruction').checked : true;
+            if (showConst) {
+                globalCustomForms.forEach(cf => {
+                    let cx = RightX - cf.logicalX * scale;
+                    let cYTop = centerY - cf.posY * scale;
+                    
+                    ctx.save();
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.lineWidth = 1.5;
+                    
+                    if (cf.type === 'radius') {
+                        let r = cf.r * scale;
+                        // Mittelpunktekreuz
+                        ctx.beginPath();
+                        ctx.moveTo(cx - 8, cYTop); ctx.lineTo(cx + 8, cYTop);
+                        ctx.moveTo(cx, cYTop - 8); ctx.lineTo(cx, cYTop + 8);
+                        ctx.stroke();
+                        
+                        // Gestrichelter Kreis
+                        ctx.beginPath();
+                        ctx.arc(cx, cYTop, r, 0, Math.PI * 2);
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                    } else if (cf.type === 'schraege') {
+                        let len = cf.length * scale * 1.5; 
+                        let alpha = cf.angle * Math.PI / 180;
+                        
+                        // Schrägen-Linie durch das Zentrum
+                        ctx.beginPath();
+                        ctx.moveTo(cx - len * Math.cos(alpha), cYTop + len * Math.sin(alpha));
+                        ctx.lineTo(cx + len * Math.cos(alpha), cYTop - len * Math.sin(alpha));
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        
+                        // Roter Zentrumspunkt
+                        ctx.beginPath();
+                        ctx.arc(cx, cYTop, 3, 0, Math.PI*2);
+                        ctx.fillStyle = '#e74c3c';
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+            }
+
+            // 3. Gewinde einzeichnen
+            let currentX = RightX;
+            for (let i = segments.length - 1; i >= 0; i--) {
+                let seg = segments[i];
+                let nx = currentX - seg.l * scale;
+                if (seg.isThread) {
+                    let off = Math.max(seg.pitch * scale, 3);
+                    let logicalYTarget = seg.d/2 * scale - off;
+                    let bounds = getThreadXBounds(finalPts, logicalYTarget, currentX, nx);
+                    let yT = centerY - logicalYTarget;
+                    let yB = centerY + logicalYTarget;
+                    ctx.beginPath(); ctx.lineWidth = 1;
+                    ctx.moveTo(bounds.startX, yT); ctx.lineTo(bounds.endX, yT);
+                    ctx.moveTo(bounds.startX, yB); ctx.lineTo(bounds.endX, yB);
+                    ctx.stroke();
+                }
+                currentX = nx;
+            }
+
+            // 4. Markierungen der Detailansichten auf der Hauptwelle
+            detailViews.forEach(dv => {
+                ctx.beginPath();
+                ctx.arc(dv.mainX, dv.mainY, dv.circleR, 0, Math.PI * 2);
+                ctx.lineWidth = 1; ctx.strokeStyle = '#2c3e50'; ctx.setLineDash([5, 3]);
+                ctx.stroke(); ctx.setLineDash([]);
+
+                ctx.beginPath();
+                let angle = -Math.PI/4;
+                let startX = dv.mainX + dv.circleR * Math.cos(angle);
+                let startY = dv.mainY + dv.circleR * Math.sin(angle);
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(startX + 15, startY - 15);
+                ctx.lineTo(startX + 35, startY - 15);
+                ctx.stroke();
+
+                ctx.font = 'bold 12px "Arial", sans-serif';
+                ctx.fillStyle = '#000'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+                ctx.fillText(dv.letter, startX + 20, startY - 16);
+            });
+
+            // 5. Callouts für die Hauptansicht
+            let maxRadiusScaled = (maxDiameter / 2) * scale;
+            let clearYMain = centerY - maxRadiusScaled - 15;
+            let baseSafeY = centerY - maxRadiusScaled - 40; 
+            
+            callouts.sort((a, b) => Math.abs(a.x - RightX) - Math.abs(b.x - RightX));
+            let placedCallouts = [];
+
+            callouts.forEach(co => {
+                let yTarget = baseSafeY;
+                let overlap = true;
+                let attempts = 0;
+                while (overlap && attempts < 10) {
+                    overlap = false;
+                    for (let pco of placedCallouts) {
+                        let minX1 = Math.min(co.x, co.x + co.dir * 80); let maxX1 = Math.max(co.x, co.x + co.dir * 80);
+                        let minX2 = Math.min(pco.x, pco.x + pco.dir * 80); let maxX2 = Math.max(pco.x, pco.x + pco.dir * 80);
+                        if (Math.max(0, Math.min(maxX1, maxX2) - Math.max(minX1, minX2)) > -5 && Math.abs(yTarget - pco.yTarget) < 18) {
+                            yTarget -= 20; overlap = true;
+                        }
+                    }
+                    attempts++;
+                }
+                co.yTarget = yTarget;
+                placedCallouts.push(co);
+                drawCalloutSafely(co.x, co.y, co.text, co.yTarget, clearYMain, co.dir, co.nx, co.ny, co.geom.type);
+            });
+
+            // 6. Grund-Bemaßung (Längen & Durchmesser)
+            const dimYBase = centerY + maxDiameter * scale / 2 + 50;
+            ctx.beginPath(); ctx.lineWidth = 1; ctx.moveTo(RightX, dimYBase); ctx.lineTo(LeftX, dimYBase); ctx.stroke();
+            ctx.beginPath(); ctx.arc(RightX, dimYBase, 3.5, 0, 2 * Math.PI); ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(RightX, centerY + segments[segments.length-1].d * scale / 2 + 5); ctx.lineTo(RightX, dimYBase + 10); ctx.stroke();
+            ctx.font = '14px "Arial", sans-serif'; ctx.textAlign = 'right'; ctx.fillStyle = '#000';
+            ctx.fillText('0', RightX - 10, dimYBase - 4);
+
+            let runL = 0; currentX = RightX; let dimPoints = [];
+            for (let i = segments.length - 1; i >= 0; i--) {
+                let seg = segments[i];
+                if(seg.l <= 0 || seg.d <= 0) continue;
+                
+                seg.grooves.forEach(g => {
+                    let gx1 = currentX - g.pos * scale;
+                    dimPoints.push({ x: gx1, val: runL + g.pos, tol: '' }); 
+                });
+
+                // NEU: X-Position der Freien Formen bemaßen
+                seg.customForms.forEach(cf => {
+                    let cfx = currentX - cf.posX * scale;
+                    dimPoints.push({ x: cfx, val: runL + cf.posX, tol: '' });
+                });
+
+                runL += seg.l; let tX = currentX - seg.l * scale;
+                if (seg.showL) dimPoints.push({ x: tX, val: runL, tol: seg.tolL });
+                
+                if (seg.showD) {
+                    const midX = currentX - (seg.l * scale) / 2;
+                    const dimText = seg.isThread ? `M ${seg.d} x ${seg.pitch}` : `Ø ${seg.d}`;
+                    drawVerticalDimension(midX, centerY - seg.d * scale / 2, centerY + seg.d * scale / 2, dimText, seg.tolD);
+                }
+                
+                // NEU: Y-Position der Freien Formen bemaßen (Abstand zur Mittellinie)
+                seg.customForms.forEach(cf => {
+                    let cfx = currentX - cf.posX * scale;
+                    let cYTop = centerY - cf.posY * scale;
+                    
+                    // Kurze Hilfslinie nach rechts
+                    ctx.beginPath();
+                    ctx.moveTo(cfx, cYTop);
+                    ctx.lineTo(cfx + 40, cYTop);
+                    ctx.lineWidth = 1; ctx.strokeStyle = '#a4b0be'; ctx.stroke();
+                    
+                    // Vertikales Maß von Mittellinie zum Zentrum
+                    drawVerticalDimension(cfx + 30, centerY, cYTop, String(cf.posY), '');
+                });
+
+                currentX = tX;
+            }
+
+            let uniqueDimPoints = [];
+            dimPoints.forEach(dp => {
+                if (!uniqueDimPoints.some(u => Math.abs(u.x - dp.x) < 0.1)) uniqueDimPoints.push(dp);
+            });
+            uniqueDimPoints.sort((a,b) => b.x - a.x);
+
+            let placedTextsX = [];
+            uniqueDimPoints.forEach(dp => {
+                ctx.beginPath(); ctx.moveTo(dp.x, centerY + maxDiameter * scale / 2 + 5); ctx.lineTo(dp.x, dimYBase + 10); ctx.stroke();
+                drawArrow(dp.x, dimYBase, Math.PI); 
+                let textY = dimYBase - 4;
+                while (placedTextsX.some(p => Math.abs(p.x - dp.x) < 35 && p.y === textY)) textY -= 18; 
+                placedTextsX.push({ x: dp.x, y: textY });
+                
+                drawDimensionWithTolerance(ctx, parseFloat(dp.val.toFixed(2)).toString(), dp.tol, dp.x + 10, textY, 'left');
+            });
+
+            // 7. Echte kreisförmig beschnittene Detailansichten
+            let detailCenterX = 250; 
+            let detailCenterY = canvas.height - 300; 
+
+            detailViews.forEach(dv => {
+                let localScale = dv.localScale;
+                let detailCircleR = dv.detailCircleR;
+
+                let g = dv.groove;
+                let gw = g.w * localScale;
+                let logicalDepth = ((dv.parentD - g.d) / 2) * localScale;
+
+                ctx.font = 'bold 16px "Arial", sans-serif'; ctx.fillStyle = '#000'; ctx.textAlign = 'center';
+                ctx.fillText(`Detail ${dv.letter}`, detailCenterX, detailCenterY - detailCircleR - 60);
+                ctx.font = '12px "Arial", sans-serif';
+                let displayScale = (localScale/scale).toFixed(1).replace('.0','');
+                ctx.fillText(`M ${displayScale}:1`, detailCenterX, detailCenterY - detailCircleR - 45); 
+
+                let yTop = logicalDepth / 2;
+                let yBot = -logicalDepth / 2;
+
+                let pOR = { x: detailCenterX + gw/2, y: yTop, feat: g.featOR, val: g.valOR * localScale, origVal: g.valOR, val2: g.val2OR, val2Type: g.val2TypeOR, side: 'N', forcedDir: 1 };
+                let pUR = { x: detailCenterX + gw/2, y: yBot, feat: g.featUR, val: g.valUR * localScale, origVal: g.valUR, val2: g.val2UR, val2Type: g.val2TypeUR, side: 'N', forcedDir: 1 };
+                let pUL = { x: detailCenterX - gw/2, y: yBot, feat: g.featUL, val: g.valUL * localScale, origVal: g.valUL, val2: g.val2UL, val2Type: g.val2TypeUL, side: 'N', forcedDir: -1 };
+                let pOL = { x: detailCenterX - gw/2, y: yTop, feat: g.featOL, val: g.valOL * localScale, origVal: g.valOL, val2: g.val2OL, val2Type: g.val2TypeOL, side: 'N', forcedDir: -1 };
+                
+                let extX = detailCircleR; 
+                let localBases = [
+                    { x: detailCenterX + gw/2 + extX, y: yTop, feat: 'none', val: 0, isEdge: true },
+                    pOR, pUR, pUL, pOL,
+                    { x: detailCenterX - gw/2 - extX, y: yTop, feat: 'none', val: 0, isEdge: true }
+                ];
+                
+                let localFinal = [ { x: localBases[0].x, y: localBases[0].y, isEdge: false } ];
+                let localCallouts = [];
+
+                for (let j = 1; j < localBases.length - 1; j++) {
+                    let res = applyFeatureExt(localBases[j-1], localBases[j], localBases[j+1], localScale);
+                    localFinal.push(...res.points);
+                    if (res.anchor) {
+																					   
+                        localCallouts.push({
+                            x: res.anchor.x, 
+                            y: detailCenterY - res.anchor.y, 
+                            text: res.anchor.text, 
+                            dir: res.anchor.dir,
+                            nx: res.anchor.nx, 
+                            ny: -res.anchor.ny,
+                            geom: res.anchor.geom
+                        });
+                    }
+                }
+                localFinal.push({ x: localBases[localBases.length-1].x, y: localBases[localBases.length-1].y, isEdge: false });
+
+                // Apply Custom Forms to Detail View
+                let detailRefLogicalX = (RightX - dv.mainX) / scale;
+                localFinal = applyDenseCustomForms(localFinal, globalCustomForms, localScale, detailCenterX, detailRefLogicalX);
+
+                // --- CLIPPING-BEREICH ---
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(detailCenterX, detailCenterY, detailCircleR, 0, Math.PI * 2);
+                ctx.clip(); 
+
+                ctx.fillStyle = '#f8f9fa';
+                ctx.fillRect(detailCenterX - detailCircleR, detailCenterY - detailCircleR, detailCircleR * 2, detailCircleR * 2);
+
+                ctx.beginPath();
+                localFinal.forEach((p, idx) => { 
+                    let cY = detailCenterY - p.y;
+                    if(idx===0) ctx.moveTo(p.x, cY); else ctx.lineTo(p.x, cY); 
+                });
+                ctx.lineTo(detailCenterX - extX, detailCenterY + detailCircleR + 50);
+                ctx.lineTo(detailCenterX + extX, detailCenterY + detailCircleR + 50);
+                ctx.closePath();
+                ctx.fillStyle = '#f8f9fa'; ctx.fill();
+
+                ctx.beginPath();
+                localFinal.forEach((p, idx) => { 
+                    let cY = detailCenterY - p.y;
+                    if(idx===0) ctx.moveTo(p.x, cY); else ctx.lineTo(p.x, cY); 
+                });
+                ctx.lineWidth = 2.5; ctx.strokeStyle = '#000'; ctx.stroke();
+
+                ctx.restore(); 
+                // --- CLIPPING ENDE ---
+
+                ctx.beginPath();
+                ctx.arc(detailCenterX, detailCenterY, detailCircleR, 0, Math.PI * 2);
+                ctx.lineWidth = 1; ctx.strokeStyle = '#2c3e50'; ctx.stroke();
+
+                // Breite Bemaßen
+                let extLineY = detailCenterY - detailCircleR - 15;
+                let cYTop = detailCenterY - yTop;
+                ctx.beginPath();
+                ctx.moveTo(detailCenterX - gw/2, cYTop); ctx.lineTo(detailCenterX - gw/2, extLineY);
+                ctx.moveTo(detailCenterX + gw/2, cYTop); ctx.lineTo(detailCenterX + gw/2, extLineY);
+                ctx.stroke();
+                drawHorizontalDimensionLocal(detailCenterX - gw/2, detailCenterX + gw/2, extLineY + 5, g.w.toString(), g.tolW);
+
+                // Durchmesser Bemaßen
+                let cYBot = detailCenterY - yBot;
+                let cYDraw = detailCenterY + detailCircleR + 40; 
+                ctx.beginPath(); ctx.setLineDash([15, 4, 3, 4]);
+                ctx.moveTo(detailCenterX - gw/2 - 10, cYDraw); ctx.lineTo(detailCenterX + gw/2 + 10, cYDraw);
+                ctx.stroke(); ctx.setLineDash([]);
+
+                ctx.beginPath();
+                ctx.moveTo(detailCenterX, cYBot); ctx.lineTo(detailCenterX, cYDraw);
+                ctx.stroke();
+                drawArrow(detailCenterX, cYBot, -Math.PI/2); 
+                
+                ctx.save();
+                ctx.translate(detailCenterX + 6, detailCenterY + detailCircleR + 20);
+                ctx.rotate(-Math.PI / 2);
+                drawDimensionWithTolerance(ctx, `Ø ${g.d}`, g.tolD, 0, -4, 'center');
+                ctx.restore();
+
+                localCallouts.sort((a,b) => Math.abs(a.x - detailCenterX) - Math.abs(b.x - detailCenterX));
+                
+                let placedTopCallouts = [];
+                let placedBotCallouts = [];
+
+                let currentTopY = detailCenterY - detailCircleR - 35;
+                let currentBotY = detailCenterY + detailCircleR + 55;
+
+                localCallouts.forEach(co => {
+                    let isTop = co.y < detailCenterY; 
+                    if(isTop) {
+                        let overlap = true;
+                        let attempts = 0;
+                        let yTarget = currentTopY;
+                        while (overlap && attempts < 10) {
+                            overlap = false;
+                            for (let pco of placedTopCallouts) {
+                                let minX1 = Math.min(co.x, co.x + co.dir * 65); let maxX1 = Math.max(co.x, co.x + co.dir * 65);
+                                let minX2 = Math.min(pco.x, pco.x + pco.dir * 65); let maxX2 = Math.max(pco.x, pco.x + pco.dir * 65);
+                                if (Math.max(0, Math.min(maxX1, maxX2) - Math.max(minX1, minX2)) > -10 && Math.abs(yTarget - pco.yTarget) < 18) {
+                                    yTarget -= 20; overlap = true;
+                                }
+                            }
+                            attempts++;
+                        }
+                        co.yTarget = yTarget;
+                        placedTopCallouts.push(co);
+                        drawCalloutSafely(co.x, co.y, co.text, yTarget, detailCenterY - detailCircleR - 10, co.dir, co.nx, co.ny, co.geom.type);
+                        currentTopY -= 20; 
+                    } else {
+                        let overlap = true;
+                        let attempts = 0;
+                        let yTarget = currentBotY;
+                        while (overlap && attempts < 10) {
+                            overlap = false;
+                            for (let pco of placedBotCallouts) {
+                                let minX1 = Math.min(co.x, co.x + co.dir * 65); let maxX1 = Math.max(co.x, co.x + co.dir * 65);
+                                let minX2 = Math.min(pco.x, pco.x + pco.dir * 65); let maxX2 = Math.max(pco.x, pco.x + pco.dir * 65);
+                                if (Math.max(0, Math.min(maxX1, maxX2) - Math.max(minX1, minX2)) > -10 && Math.abs(yTarget - pco.yTarget) < 18) {
+                                    yTarget += 20; overlap = true;
+                                }
+                            }
+                            attempts++;
+                        }
+                        co.yTarget = yTarget;
+                        placedBotCallouts.push(co);
+                        drawCalloutSafely(co.x, co.y, co.text, yTarget, detailCenterY + detailCircleR + 10, co.dir, co.nx, co.ny, co.geom.type);
+                        currentBotY += 20; 
+                    }
+                });
+
+                detailCenterX += Math.max(detailCircleR * 2 + 250, 450); 
+            });
+
+            // 8. Durchgängige Mittellinie (immer sichtbar im Vordergrund!)
+            ctx.beginPath(); ctx.setLineDash([30, 5, 5, 5]);
+            ctx.moveTo(LeftX - 30, centerY); ctx.lineTo(RightX + 30, centerY);
+            ctx.lineWidth = 1.5; ctx.strokeStyle = '#000'; ctx.stroke(); ctx.setLineDash([]); 
+
+            // 9. Schriftfeld
+            drawTitleBlock(ctx, material, tolerance, generalNotes);
+        }
+
+        window.onload = initUI;
+    </script>
+</body>
+</html>
