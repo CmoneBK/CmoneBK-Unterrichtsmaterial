@@ -23,10 +23,10 @@ layout: null
             padding-bottom: 10px;
             margin-bottom: 40px;
         }
-        .category-section {
-            margin-bottom: 40px;
+        .bereich-section {
+            margin-bottom: 45px;
         }
-        .category-title {
+        .bereich-title {
             font-size: 1.5rem;
             color: #004a99;
             border-left: 5px solid #e67e22;
@@ -36,6 +36,14 @@ layout: null
             padding-top: 5px;
             padding-bottom: 5px;
             border-radius: 0 4px 4px 0;
+        }
+        .kategorie-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6c757d;
+            margin: 28px 0 12px;
         }
         .tool-grid {
             display: grid;
@@ -71,45 +79,126 @@ layout: null
 
     <h1>Unterrichts-Mediathek</h1>
 
-    {% assign tools = site.pages | where_exp: "item", "item.path contains 'tools/'" %}
-    
-    {% comment %} Zuerst alle Kategorien sammeln {% endcomment %}
-    {% assign categories = "" | split: "," %}
-    {% for p in tools %}
-        {% if p.title contains ":" %}
-            {% assign cat = p.title | split: ":" | first | strip %}
-        {% else %}
-            {% assign cat = "Allgemein" %}
-        {% endif %}
-        {% unless categories contains cat %}
-            {% assign categories = categories | push: cat %}
-        {% endunless %}
-    {% endfor %}
-    {% assign categories = categories | sort %}
+{%- comment -%}
+  Gruppierung nach der Titel-Konvention "Bereich: Unterkategorie - Name",
+  z. B. "Fertigungstechnik: Messmittel - Messuhr".
+  Fehlt das " - ", hat das Werkzeug keine Unterkategorie und steht direkt
+  unter seinem Bereich. Getrennt wird bewusst am " - " MIT Leerzeichen,
+  damit Bindestriche im Text ("Form- und Lagetoleranzen", "Wellen-CAD-Software",
+  "Vorschub <-> Rautiefe") nicht faelschlich als Trenner gelten.
 
-    {% comment %} Für jede Kategorie die passenden Tools anzeigen {% endcomment %}
-    {% for category in categories %}
-        <div class="category-section">
-            <h2 class="category-title">{{ category }}</h2>
-            <div class="tool-grid">
-                {% for p in tools %}
-                    {% if p.title contains ":" %}
-                        {% assign current_cat = p.title | split: ":" | first | strip %}
-                        {% assign display_title = p.title | split: ":" | last | strip %}
-                    {% else %}
-                        {% assign current_cat = "Allgemein" %}
-                        {% assign display_title = p.title %}
-                    {% endif %}
+  Die Reihenfolge kommt aus _data/kategorien.csv; dieselbe Datei liest
+  deploy.sh im Repo tbk-webseite, damit beide Uebersichten gleich sortieren.
+  Nicht dort gelistete Bereiche/Kategorien werden alphabetisch angehaengt -
+  ein neues Werkzeug erscheint also auch ohne Pflege der CSV.
+{%- endcomment -%}
 
-                    {% if current_cat == category %}
-                        <a href="{{ site.baseurl }}{{ p.url }}" class="tool-card">
-                            <span class="file-name">{{ display_title }}</span>
-                        </a>
-                    {% endif %}
-                {% endfor %}
-            </div>
+{%- assign tools = site.pages | where_exp: "item", "item.path contains 'tools/'" -%}
+
+{%- comment -%} 1) Jeden Titel einmal zerlegen -> "Bereich|Unterkategorie|Name|URL" {%- endcomment -%}
+{%- assign records = "" | split: "," -%}
+{%- for t in tools -%}
+  {%- assign titel = t.title | normalize_whitespace | strip -%}
+  {%- if titel contains ":" -%}
+    {%- assign b = titel | split: ":" | first | strip -%}
+    {%- assign rest = titel | remove_first: b | remove_first: ":" | strip -%}
+  {%- else -%}
+    {%- assign b = "Allgemein" -%}
+    {%- assign rest = titel -%}
+  {%- endif -%}
+  {%- assign parts = rest | split: " - " -%}
+  {%- if parts.size > 1 -%}
+    {%- assign u = parts[0] | strip -%}
+    {%- assign tail = "" | split: "," -%}
+    {%- for p in parts offset: 1 -%}{%- assign tail = tail | push: p -%}{%- endfor -%}
+    {%- assign n = tail | join: " - " | strip -%}
+  {%- else -%}
+    {%- assign u = "" -%}
+    {%- assign n = rest -%}
+  {%- endif -%}
+  {%- capture rec %}{{ b }}|{{ u }}|{{ n }}|{{ site.baseurl }}{{ t.url }}{% endcapture -%}
+  {%- assign records = records | push: rec -%}
+{%- endfor -%}
+
+{%- comment -%} 2) Reihenfolge der Bereiche: erst laut CSV, dann Nachzuegler alphabetisch {%- endcomment -%}
+{%- assign bereiche = "" | split: "," -%}
+{%- for k in site.data.kategorien -%}
+  {%- assign kb = k.bereich | strip -%}
+  {%- unless kb == "" or bereiche contains kb -%}{%- assign bereiche = bereiche | push: kb -%}{%- endunless -%}
+{%- endfor -%}
+{%- assign extra_b = "" | split: "," -%}
+{%- for rec in records -%}
+  {%- assign r = rec | split: "|" -%}
+  {%- unless bereiche contains r[0] or extra_b contains r[0] -%}{%- assign extra_b = extra_b | push: r[0] -%}{%- endunless -%}
+{%- endfor -%}
+{%- assign extra_b = extra_b | sort -%}
+{%- for b in extra_b -%}{%- assign bereiche = bereiche | push: b -%}{%- endfor -%}
+
+{%- comment -%} 3) Ausgabe {%- endcomment -%}
+{%- for bereich in bereiche -%}
+
+  {%- comment -%} Reihenfolge der Unterkategorien dieses Bereichs {%- endcomment -%}
+  {%- assign kats = "" | split: "," -%}
+  {%- for k in site.data.kategorien -%}
+    {%- assign kb = k.bereich | strip -%}
+    {%- assign ku = k.unterkategorie | strip -%}
+    {%- if kb == bereich and ku != "" -%}
+      {%- unless kats contains ku -%}{%- assign kats = kats | push: ku -%}{%- endunless -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- assign extra_k = "" | split: "," -%}
+  {%- for rec in records -%}
+    {%- assign r = rec | split: "|" -%}
+    {%- if r[0] == bereich and r[1] != "" -%}
+      {%- unless kats contains r[1] or extra_k contains r[1] -%}{%- assign extra_k = extra_k | push: r[1] -%}{%- endunless -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- assign extra_k = extra_k | sort -%}
+  {%- for k in extra_k -%}{%- assign kats = kats | push: k -%}{%- endfor -%}
+
+  {%- capture inhalt -%}
+    {%- comment -%} a) Werkzeuge ohne Unterkategorie: direkt unter dem Bereich {%- endcomment -%}
+    {%- assign direkt = "" | split: "," -%}
+    {%- for rec in records -%}
+      {%- assign r = rec | split: "|" -%}
+      {%- if r[0] == bereich and r[1] == "" -%}{%- assign direkt = direkt | push: rec -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if direkt.size > 0 -%}
+      {%- assign direkt = direkt | sort -%}
+      <div class="tool-grid">
+        {%- for rec in direkt -%}{%- assign r = rec | split: "|" -%}
+        <a href="{{ r[3] }}" class="tool-card"><span class="file-name">{{ r[2] | escape }}</span></a>
+        {%- endfor -%}
+      </div>
+    {%- endif -%}
+
+    {%- comment -%} b) je Unterkategorie ein eigener Block {%- endcomment -%}
+    {%- for kat in kats -%}
+      {%- assign gruppe = "" | split: "," -%}
+      {%- for rec in records -%}
+        {%- assign r = rec | split: "|" -%}
+        {%- if r[0] == bereich and r[1] == kat -%}{%- assign gruppe = gruppe | push: rec -%}{%- endif -%}
+      {%- endfor -%}
+      {%- if gruppe.size > 0 -%}
+        {%- assign gruppe = gruppe | sort -%}
+        <h3 class="kategorie-title">{{ kat | escape }}</h3>
+        <div class="tool-grid">
+          {%- for rec in gruppe -%}{%- assign r = rec | split: "|" -%}
+          <a href="{{ r[3] }}" class="tool-card"><span class="file-name">{{ r[2] | escape }}</span></a>
+          {%- endfor -%}
         </div>
-    {% endfor %}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- assign inhalt_test = inhalt | strip -%}
+  {%- if inhalt_test != "" %}
+    <div class="bereich-section">
+        <h2 class="bereich-title">{{ bereich | escape }}</h2>
+        {{ inhalt }}
+    </div>
+  {%- endif -%}
+{%- endfor %}
 
 </body>
 </html>

@@ -28,20 +28,40 @@ Der Prozess ist vollständig automatisiert und besteht aus vier Komponenten:
 * `_includes/back-nav.html` – Der Rücklink „← Übersicht“, der in jedes Tool eingefügt wird.
 * `_layouts/tool.html` – Fügt diesen Rücklink beim GitHub-Pages-Build in jedes Tool ein.
 * `_config.yml` – Weist allen Dateien unter `/tools/` automatisch das Layout `tool` zu.
+* `_data/kategorien.csv` – Legt die Reihenfolge der Bereiche und Unterkategorien fest.
 * `Make.com-Anleitung.md` – Setup-Anleitung für die Make.com-Schnittstelle.
 * `Lesezeichen Erstellen.md` – Setup-Anleitung für das Browser-Bookmarklet.
 * `README.md` – Diese Dokumentation.
 
 ## 🛠 Automatisierung & Konventionen
 
-### Namensgebung für automatische Kategorien
-Die Startseite nutzt den Titel der HTML-Datei zur Gruppierung. Um ein Tool korrekt einzuordnen, muss der Titel in CodePen folgendem Muster entsprechen:
+### Namensgebung: Bereich, Unterkategorie, Name
 
-`Kategorie: Name des Tools`
+Beide Übersichten – GitHub Pages und t-bk.de – gruppieren allein anhand des Titels. Er folgt diesem Muster:
+
+`Bereich: Unterkategorie - Name des Tools`
 
 **Beispiele:**
-- `Fertigungstechnik: Prüftechnik Einführung` -> Erscheint in der Sektion "Fertigungstechnik".
-- `Mathematik: Bruchrechnen` -> Erscheint in der Sektion "Mathematik".
+- `Fertigungstechnik: Messmittel - Messuhr` → Bereich „Fertigungstechnik“, Kategorie „Messmittel“, Karte „Messuhr“
+- `Maschinenelemente: Schrauben - Gewindearten` → Bereich „Maschinenelemente“, Kategorie „Schrauben“
+- `Fertigungstechnik: ISO-Toleranzen und Passungen` → ohne Unterkategorie, steht direkt unter dem Bereich
+
+**Zwei Regeln, die man kennen muss:**
+
+1. Getrennt wird am ` - ` **mit Leerzeichen davor und dahinter**. Deshalb stören Bindestriche im Text nicht: `Form- und Lagetoleranzen`, `Wellen-CAD-Software` und `Vorschub <-> Rautiefe` werden korrekt erkannt.
+2. Ohne ` - ` gibt es keine Unterkategorie. Ein Titel wie `Messmittel Sinuslineal` (Bindestrich vergessen) landet also **nicht** unter „Messmittel“. Mehrfache Leerzeichen werden dagegen automatisch zusammengezogen.
+
+### Reihenfolge der Kategorien
+
+`_data/kategorien.csv` bestimmt, in welcher Reihenfolge Bereiche und Unterkategorien erscheinen – nützlich überall dort, wo alphabetisch fachlich falsch wäre (z. B. Instandhaltung nach DIN 31051: Wartung, Inspektion, Instandsetzung, Verbesserung).
+
+```csv
+bereich,unterkategorie
+Fertigungstechnik,Messmittel
+Instandhaltung,Wartung
+```
+
+Beide Generatoren lesen dieselbe Datei. Was dort **nicht** steht, wird alphabetisch hinten angehängt – ein neues Werkzeug erscheint also auch ohne Pflege der CSV, nur eben nicht an der gewünschten Position. Kommata sind in den Werten nicht erlaubt.
 
 ### Bookmarklet-Logik
 Das verwendete JavaScript-Bookmarklet führt folgende Schritte aus:
