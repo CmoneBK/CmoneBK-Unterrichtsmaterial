@@ -1,0 +1,11 @@
+# Jekyll-Konfiguration der GitHub-Pages-Ausgabe.
+#
+# Einziger Zweck: jede Datei unter /tools/ bekommt automatisch das Layout "tool",
+# das den Ruecklink zur Uebersicht einfuegt (siehe _layouts/tool.html).
+# Bewusst nichts weiter setzen - insbesondere kein baseurl -, damit das bisherige
+# Build-Verhalten von GitHub Pages unveraendert bleibt.
+defaults:
+  - scope:
+      path: "tools"
+    values:
+      layout: "tool"

@@ -25,6 +25,9 @@ Der Prozess ist vollständig automatisiert und besteht aus vier Komponenten:
 
 * `/tools/` – Enthält alle exportierten HTML-Dateien aus CodePen.
 * `index.html` – Die dynamische Startseite (Jekyll), die Tools nach Fachbereichen gruppiert.
+* `_includes/back-nav.html` – Der Rücklink „← Übersicht“, der in jedes Tool eingefügt wird.
+* `_layouts/tool.html` – Fügt diesen Rücklink beim GitHub-Pages-Build in jedes Tool ein.
+* `_config.yml` – Weist allen Dateien unter `/tools/` automatisch das Layout `tool` zu.
 * `Make.com-Anleitung.md` – Setup-Anleitung für die Make.com-Schnittstelle.
 * `Lesezeichen Erstellen.md` – Setup-Anleitung für das Browser-Bookmarklet.
 * `README.md` – Diese Dokumentation.
@@ -46,6 +49,22 @@ Das verwendete JavaScript-Bookmarklet führt folgende Schritte aus:
 2. Es bereinigt den Titel für den Dateinamen (Kleinbuchstaben, keine Sonderzeichen).
 3. Es fügt ein YAML Front Matter (`--- title: "..." ---`) oben in den Code ein, damit GitHub Pages den Namen inklusive Doppelpunkt erkennt.
 4. Es sendet den Code per POST-Request an den Make-Webhook.
+
+## ↩️ Rücklink zur Übersicht
+
+Jedes Tool bekommt oben links eine schwebende Schaltfläche **„← Übersicht“** (auf schmalen Displays nur den Pfeil). Sie zeigt immer auf `../` und trifft damit ohne Fallunterscheidung die jeweils richtige Übersicht:
+
+| Umgebung | Tool-URL | Ziel von `../` |
+| --- | --- | --- |
+| GitHub Pages | `…/CmoneBK-Unterrichtsmaterial/tools/x.html` | `…/CmoneBK-Unterrichtsmaterial/` |
+| t-bk.de | `t-bk.de/werkzeuge/tools/x.html` | `t-bk.de/werkzeuge/` |
+
+**Wichtig:** Die Dateien in `/tools/` werden *nicht* verändert – der Link wird erst beim Ausspielen direkt vor dem schliessenden `body`-Tag eingefügt. Ein automatischer CodePen-Upload kann ihn deshalb nicht überschreiben, und in CodePen selbst muss nichts mitgepflegt werden.
+
+* **GitHub Pages:** `_config.yml` weist `/tools/` das Layout `_layouts/tool.html` zu, das `_includes/back-nav.html` einfügt.
+* **t-bk.de:** `deploy.sh` (Repo `tbk-webseite`) liest **dieselbe** Datei `_includes/back-nav.html` aus diesem Repo und fügt sie beim Deploy ein.
+
+Aussehen oder Ziel des Links ändert man also ausschliesslich in `_includes/back-nav.html` – beide Ausspielwege übernehmen die Änderung automatisch. Der Block verwendet eine eigene ID (`#tbk-back`) und `!important`, damit ihn die sehr unterschiedlichen Tool-Designs (helle wie dunkle) nicht überschreiben.
 
 ## 🌐 Live-Ansicht
 Die Mediathek ist für Schüler und Kollegen erreichbar unter:

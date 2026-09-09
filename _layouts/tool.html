@@ -1,0 +1,14 @@
+{%- comment -%}
+Layout fuer alle Dateien unter /tools/ (zugewiesen ueber die Defaults in _config.yml).
+
+Die Tools sind vollstaendige HTML-Dokumente, kein Fragment. Das Layout umhuellt sie
+darum nicht, sondern gibt sie unveraendert aus und schiebt lediglich den Ruecklink
+aus _includes/back-nav.html direkt vor das schliessende body-Tag. Damit bleibt die
+Datei im Repo unangetastet und ein automatischer CodePen-Upload kann den Link
+nicht ueberschreiben.
+{%- endcomment -%}
+{%- capture tbk_back_nav -%}
+{% include back-nav.html %}
+</body>
+{%- endcapture -%}
+{{- content | replace: '</body>', tbk_back_nav -}}
