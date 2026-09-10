@@ -136,10 +136,22 @@ svg{display:block; max-width:100%; height:auto}
   font-family:'Cambria Math',Cambria,Georgia,serif; color:var(--primary);
   font-weight:600; white-space:nowrap;
 }
-.chip{
-  display:inline-block; font-size:.75rem; font-weight:700; padding:1px 7px;
-  border-radius:999px; background:var(--primary-light); color:var(--primary); border:1px solid #dbeafe;
-  white-space:nowrap;
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt durch
+   die Farbe auf. So begegnet der Begriff dem Lernenden ab jetzt an jeder
+   Stelle wieder und praegt sich ein. */
+.fachwort{
+  color:#6d28d9; font-weight:600;
+  background:#f5f3ff; border-radius:3px; padding:0 2px;
+}
+.einfachwort{
+  color:#0f766e; font-weight:600;
+  background:#f0fdfa; border-radius:3px; padding:0 2px;
+}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+.legende{
+  display:inline-flex; align-items:center; gap:5px; font-size:.8rem; color:var(--muted);
+  font-weight:400;
 }
 .kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
 
@@ -160,7 +172,9 @@ body.sym .wort-only{display:none !important}
   <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
   <label class="sw"><input type="checkbox" id="swSym"><span class="track"></span>Formelzeichen</label>
   <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
-  <span class="hinweis" id="linkHinweis">Ohne Haken steht der Text in Alltagssprache. Die Schalter stehen im Link &ndash; so kann eine bestimmte Stufe geteilt werden.</span>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.</span>
 </div>
 
 <div class="tabs" role="tablist">
@@ -786,10 +800,21 @@ function grossErster(txt){
   return txt.charAt(0).toUpperCase() + txt.slice(1);
 }
 
-function begriffeZeichnen(){
-  document.body.classList.toggle("fach", zustand.fach);
-  document.body.classList.toggle("sym", zustand.sym);
-  var knoten = document.querySelectorAll(".term");
+/* Welche Fassung wird gerade gezeigt? Ein einzeln aufgedeckter Begriff dreht
+   die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  /* Mit "wurzel" wird nur ein frisch erzeugter Textblock nachgezogen. Das
+     vermeidet Reihenfolge-Fallen: Rechentexte entstehen erst beim Zeichnen. */
+  var basis = wurzel || document;
+  if(!wurzel){
+    document.body.classList.toggle("fach", zustand.fach);
+    document.body.classList.toggle("sym", zustand.sym);
+  }
+  var knoten = basis.querySelectorAll(".term");
   for(var i=0;i<knoten.length;i++){
     var el = knoten[i];
     var schluessel = el.getAttribute("data-t");
@@ -798,25 +823,23 @@ function begriffeZeichnen(){
     /* Manche Stellen brauchen ein genaueres Zeichen als der Begriff allgemein
        hergibt, etwa my_T statt my - dafuer data-s an der Fundstelle. */
     var zeichen = el.getAttribute("data-s") || t.s;
-    var txt = zustand.fach ? t.f : t.a;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? t.f : t.a;
     if(el.getAttribute("data-cap")) txt = grossErster(txt);
-    var html = txt;
+    var html = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt + "</span>"
+      : txt;
     if(zustand.sym && zeichen) html += ' <span class="sym">' + zeichen + "</span>";
-    if(aufgedeckt[schluessel]){
-      var andere = zustand.fach ? t.a : t.f;
-      var vorsatz = zustand.fach ? "einfach: " : "Fachbegriff: ";
-      var chip = vorsatz + andere;
-      if(!zustand.sym && zeichen) chip += " " + zeichen;
-      html += ' <span class="chip">' + chip + "</span>";
-    }
     el.innerHTML = html;
     el.setAttribute("role", "button");
     el.setAttribute("tabindex", "0");
     el.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
     el.setAttribute("title", aufgedeckt[schluessel]
-      ? "Klicken zum Ausblenden"
+      ? (fach ? "Fachbegriff – klicken für die einfache Formulierung"
+              : "einfache Formulierung – klicken für den Fachbegriff")
       : (zustand.fach ? "Klicken: einfache Formulierung" : "Klicken: Fachbegriff"));
   }
+  if(!wurzel) zuruecksetzenAnzeigen();
 }
 
 function begriffUmschalten(el){
@@ -824,6 +847,18 @@ function begriffUmschalten(el){
   if(!schluessel || !TERME[schluessel]) return;
   aufgedeckt[schluessel] = !aufgedeckt[schluessel];
   begriffeZeichnen();
+  neuZeichnen();      /* damit auch Rechentexte und Zeichnungen mitziehen */
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zurücksetzen"
+    : anzahl + " aufgedeckte Wörter zurücksetzen";
 }
 
 function begriffKlicksAktivieren(){
@@ -840,20 +875,22 @@ function begriffKlicksAktivieren(){
   });
 }
 
-/* Beschriftung in Zeichnungen: mit Formelzeichen das Symbol, sonst das Wort. */
+/* Beschriftung in Zeichnungen: mit Formelzeichen das Symbol, sonst das Wort.
+   Ein einzeln aufgedeckter Begriff schlaegt auch hier durch. */
 function zLabel(schluessel, zeichen){
   if(zustand.sym) return zeichen;
   var t = TERME[schluessel];
   if(!t) return zeichen;
-  return zustand.fach ? t.f : (t.kurz || t.a);
+  return zeigtFach(schluessel) ? t.f : (t.kurz || t.a);
 }
 
-/* Begriff als reines Wort - fuer Saetze, die erst beim Rechnen entstehen. */
+/* Begriff fuer Saetze, die erst beim Rechnen entstehen. Ausgegeben wird eine
+   anklickbare Fundstelle - damit verhaelt sich das Ergebnis wie der Fliesstext. */
 function wort(schluessel, gross){
   var t = TERME[schluessel];
   if(!t) return schluessel;
-  var s = zustand.fach ? t.f : t.a;
-  return gross ? grossErster(s) : s;
+  return '<span class="term" data-t="' + schluessel + '"' +
+         (gross ? ' data-cap="1"' : "") + "></span>";
 }
 
 /* Formelzeichen nur zeigen, wenn sie eingeschaltet sind. */
@@ -1153,25 +1190,26 @@ function zeichneReib(){
   g.appendChild(ns("rect",{x:x0+142,y:y,width:16,height:dicke*2,fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.5}));
 
   /* Vorspannkraft */
-  var pfeilLang = Math.min(10 + FV * 1.4, 44);
+  var pfeilLang = Math.min(10 + FV * 1.4, 34);
   g.appendChild(ns("line",{x1:x0+150,y1:y-24,x2:x0+150,y2:y-24-pfeilLang,
     stroke:"#1d4ed8","stroke-width":3,"marker-end":"url(#pfeilBblau)"}));
-  g.appendChild(svgText(x0+158, y-28-pfeilLang/2, zLabel("vorspannkraft","F_V") + " = " + z(FV,0) + " kN",
-    {size:12, fill:"#1d4ed8", weight:700}));
+  g.appendChild(svgText(x0+150, y-34-pfeilLang,
+    zLabel("vorspannkraft","F_V") + " = " + z(FV,0) + " kN",
+    {anchor:"middle", size:12, fill:"#1d4ed8", weight:700}));
 
   /* Querkraft - Beschriftung ueber den Pfeil, sonst laeuft sie aus dem Bild */
   var qLang = Math.min(8 + FQ * 6, 120);
   var qx = x0 - versatz;
-  g.appendChild(ns("line",{x1:qx,y1:y+dicke+15,x2:qx-qLang,y2:y+dicke+15,
+  g.appendChild(ns("line",{x1:qx,y1:y+dicke+22,x2:qx-qLang,y2:y+dicke+22,
     stroke:"#dc2626","stroke-width":3,"marker-end":"url(#pfeilBrot)"}));
-  g.appendChild(svgText(qx-qLang/2, y+dicke+9, zLabel("querkraft","F_Q"),
+  g.appendChild(svgText(qx-qLang/2, y+dicke+8, zLabel("querkraft","F_Q"),
     {anchor:"middle", size:12, fill:"#dc2626", weight:700}));
 
   /* Reibkraft in der Fuge */
   var rLang = Math.min(8 + FR * 6, 150);
   g.appendChild(ns("line",{x1:x0+40,y1:y+dicke-8,x2:x0+40+rLang,y2:y+dicke-8,
     stroke:"#16a34a","stroke-width":3,"marker-end":"url(#pfeilBgruen)"}));
-  g.appendChild(svgText(x0+40, y+dicke-14, zLabel("reibkraft","F_R"), {size:12, fill:"#16a34a", weight:700}));
+  g.appendChild(svgText(x0+40, y+dicke-20, zLabel("reibkraft","F_R"), {size:12, fill:"#16a34a", weight:700}));
 
   /* Vergleichsbalken - Wert immer rechts neben dem Balken, damit er auch bei
      sehr kurzem Balken lesbar bleibt. */
@@ -1193,6 +1231,7 @@ function zeichneReib(){
       wort("querkraft") + zeichenOderNichts("F<sub>Q</sub>") + " = " + z(FQ,2) +
       " kN. Die Schraube selbst wird dabei nicht quer belastet und kann daher auch nicht " +
       wort("abgeschert") + " werden.";
+    begriffeZeichnen(txt);
   }else{
     txt.className = "warnung";
     txt.innerHTML = "<b>Rutscht.</b> Die " + wort("querkraft") +
@@ -1201,6 +1240,7 @@ function zeichneReib(){
       " kN. Die Bauteile verschieben sich, bis die Schraube am Lochrand anliegt. " +
       "Dann wird sie quer belastet und kann " + wort("abgeschert") +
       " werden – dafür ist sie nicht vorgesehen.";
+    begriffeZeichnen(txt);
   }
 }
 
@@ -1257,6 +1297,7 @@ function zeichneEbene(){
       wort("steigungswinkel", true) + " = " + z(phi,2) + "° ist kleiner als der " +
       wort("reibungswinkel") + " = " + z(rho,2) + "°. Die Schraube dreht sich durch die " +
       wort("vorspannkraft") + " allein nicht zurück.";
+    begriffeZeichnen(t);
   }else{
     t.className = "warnung";
     t.innerHTML = "<b>Keine " + wort("selbsthemmung") + ":</b> " +
@@ -1264,6 +1305,7 @@ function zeichneEbene(){
       wort("reibungswinkel") + " = " + z(rho,2) +
       "°. Bei so geringer Reibung würde sich die Schraube von selbst lösen. " +
       "Bei Regelgewinden tritt das praktisch nur bei sehr guter Schmierung auf.";
+    begriffeZeichnen(t);
   }
 }
 
@@ -1305,6 +1347,7 @@ function zeichneAufteilung(){
     wort("reibungszahl") + " so stark aus: Bei " + z(my,2) + " ergibt ein " +
     wort("anziehdrehmoment") + " von " + z(M.gesamt/1000,1) + " N·m eine " +
     wort("vorspannkraft") + " von " + z(FM/1000,1) + " kN.";
+  begriffeZeichnen(el("streuText"));
 }
 
 /* ============================================================================
@@ -1632,6 +1675,7 @@ function zeichneVerspannung(){
       wort("betriebskraft") + " allein, hier also die vollen " + z(FA,0) + " kN. " +
       "Die Verbindung ist so nicht brauchbar. Abhilfe: höhere " +
       wort("vorspannkraft") + " oder größere Schraube.";
+    begriffeZeichnen(t);
   }else{
     t.className = "gut";
     t.innerHTML = "<b>Die Berührstelle bleibt geschlossen.</b> Von der " +
@@ -1640,6 +1684,7 @@ function zeichneVerspannung(){
       Math.round(phi*100) + " %). Die restlichen " + z(FPA,1) +
       " kN entlasten die Bauteile. Es bleiben " + z(FKR,1) + " kN " +
       wort("klemmkraft") + " übrig.";
+    begriffeZeichnen(t);
   }
 }
 
@@ -1687,6 +1732,7 @@ function rechne(){
   el("momenteText").innerHTML = "Nur <b>" + Math.round(r.M.steig/r.M.gesamt*100) +
     " %</b> vom " + wort("anziehdrehmoment") + " erzeugen " + wort("vorspannkraft") +
     " – der Rest geht in die Reibung.";
+  begriffeZeichnen(el("momenteText"));
 
   /* Querkraft */
   var nS = parseFloat(el("qN").value) || 1;
@@ -1856,6 +1902,12 @@ function start(){
       catch(e){ window.prompt("Link zum Kopieren:", url); }
       document.body.removeChild(ta);
     }
+  });
+
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen();
+    neuZeichnen();
   });
 
   var knoepfe = document.querySelectorAll(".tabs button");
