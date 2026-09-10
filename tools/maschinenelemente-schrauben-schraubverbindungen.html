@@ -260,9 +260,12 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
     Sie ist keine feste Zahl, sondern ein Bereich.</p>
 
     <div class="felder">
+      <label class="feld">Beispiel
+        <select id="gBeispiel"></select></label>
       <label class="feld">Werkstoffpaarung
         <select id="gPaarung"></select></label>
     </div>
+    <p class="merke" id="beispielText"></p>
     <p class="fussnote" id="paarungHinweis"></p>
 
     <div class="regler">
@@ -277,11 +280,16 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
       <label for="gQuer"><span class="term" data-t="querkraft" data-cap="1"></span></label>
       <input type="range" id="gQuer" min="0" max="20" step="0.5" value="2">
       <output id="oQuer"></output>
+
+      <label for="gAnzahl">Anzahl Schrauben</label>
+      <input type="range" id="gAnzahl" min="1" max="8" step="1" value="1">
+      <output id="oAnzahl"></output>
     </div>
 
     <svg class="zeichnung" id="svgReib" viewBox="0 0 700 210" role="img"
          aria-label="Zwei Platten, die durch Reibung gehalten werden"></svg>
     <p id="reibText"></p>
+    <p class="fussnote" id="beispielZusatz" hidden></p>
 
     <div class="tabellenrahmen"><table id="tabPaarung"></table></div>
     <p class="fussnote">Anhaltswerte f&uuml;r die Haftreibung an der Ber&uuml;hrstelle. Sie streuen
@@ -862,7 +870,15 @@ var PAARUNGEN = [
   {name:"Aluminium auf Aluminium, trocken",   von:0.15, bis:0.30},
   {name:"Stahl auf Bronze, trocken",          von:0.12, bis:0.20},
   {name:"Stahl auf Kunststoff, trocken",      von:0.10, bis:0.25,
-   hinweis:"Kunststoff gibt unter Druck dauerhaft nach. Die Spannkraft sinkt mit der Zeit deutlich."}
+   hinweis:"Kunststoff gibt unter Druck dauerhaft nach. Die Spannkraft sinkt mit der Zeit deutlich."},
+  {name:"Stahl auf Holz",                     von:0.20, bis:0.40,
+   hinweis:"Holz arbeitet mit der Feuchte. Die Spannkraft schwankt dadurch über das Jahr."},
+  {name:"Stahl auf Beton",                    von:0.30, bis:0.50,
+   hinweis:"Rauer Untergrund, hohe Reibung. Begrenzend ist hier nicht die Reibung, sondern der Dübel."},
+  {name:"Stahl auf Mauerwerk (Ziegel)",       von:0.25, bis:0.45,
+   hinweis:"In Lochziegeln trägt der Dübel deutlich weniger als in Vollziegeln oder Beton."},
+  {name:"Stahl auf Gipskarton",               von:0.20, bis:0.35,
+   hinweis:"Die Platte selbst ist die Schwachstelle, nicht die Reibung. Schwere Lasten brauchen eine Unterkonstruktion."}
 ];
 
 /* ============================================================================
@@ -1387,86 +1403,236 @@ function paarungSetzen(){
   zeichneReib();
 }
 
+/* Konkrete Beispiele fuer dieselbe Skizze. Sie setzen Werkstoffpaarung,
+   Kraefte und Beschriftungen - gerechnet wird immer F_R = my_T * F_V * n.
+   "lage" bestimmt, ob die Bauteile flach uebereinander liegen oder ob eines
+   davon eine senkrechte Wand ist. */
+var BEISPIELE = [
+  {
+    id:"allgemein", name:"Zwei Bauteile verschrauben", lage:"flach",
+    paarung:0, FV:20, FQ:2, n:1, vorMax:40, querMax:20, schritt:0.5,
+    oben:"Bauteil 1", unten:"Bauteil 2",
+    lastName:"Querkraft", lastKurz:"Kraft von der Seite",
+    text:"Der Normalfall: Zwei Bauteile werden zusammengeschraubt und seitlich " +
+         "belastet. Alles Weitere l&auml;sst sich an den Reglern ausprobieren."
+  },
+  {
+    id:"regal", name:"H&auml;ngeregal an der Wand", lage:"wand",
+    paarung:10, FV:2, FQ:0.35, n:4, vorMax:6, querMax:1.5, schritt:0.05,
+    oben:"Wandwinkel", unten:"Betonwand",
+    lastName:"Gewichtskraft", lastKurz:"Gewicht",
+    text:"Ein Regal von 80&nbsp;cm Breite tr&auml;gt B&uuml;cher: rund 30&nbsp;kg " +
+         "einschlie&szlig;lich Brett, also etwa 0,3&nbsp;kN. Zwei Wandwinkel mit je zwei " +
+         "Schrauben halten es. Die Schrauben werden dabei <b>nicht</b> abgeschert &ndash; " +
+         "die Winkel werden gegen die Wand gepresst, und die Reibung tr&auml;gt das Gewicht. " +
+         "Wie fest man die Schrauben anziehen kann, begrenzt hier der D&uuml;bel.",
+    zusatz:"Zus&auml;tzlich wirkt ein Kippmoment: Das Regal will von der Wand wegkippen und " +
+           "zieht dabei an den oberen Schrauben. Deshalb sitzen die oberen D&uuml;bel im " +
+           "Zweifel fester als die unteren."
+  },
+  {
+    id:"rad", name:"Autorad an der Nabe", lage:"flach",
+    paarung:5, FV:30, FQ:20, n:5, vorMax:45, querMax:40, schritt:1,
+    oben:"Felge (Alu)", unten:"Radnabe",
+    lastName:"Umfangskraft", lastKurz:"Kraft beim Bremsen",
+    text:"F&uuml;nf Radschrauben pressen die Felge gegen die Nabe. Beim Bremsen entsteht am " +
+         "Lochkreis eine Umfangskraft von rund 20&nbsp;kN &ndash; getragen wird sie allein " +
+         "von der Reibung zwischen Felge und Nabe. Die Schrauben zentrieren das Rad, " +
+         "abgeschert werden sie nicht.",
+    zusatz:"Genau deshalb ist das Anziehdrehmoment am Rad so wichtig: Zu locker angezogen " +
+           "sinkt die Spannkraft &ndash; und mit ihr die Reibung, die das Bremsmoment " +
+           "&uuml;bertr&auml;gt."
+  }
+];
+
+function beispielSetzen(){
+  var b = BEISPIELE[parseInt(el("gBeispiel").value, 10)] || BEISPIELE[0];
+
+  el("gPaarung").value = b.paarung;
+
+  var v = el("gVor");
+  v.min = b.schritt; v.max = b.vorMax; v.step = b.schritt; v.value = b.FV;
+  var q = el("gQuer");
+  q.min = 0; q.max = b.querMax; q.step = b.schritt; q.value = b.FQ;
+  el("gAnzahl").value = b.n;
+
+  el("beispielText").innerHTML = b.text;
+  var zu = el("beispielZusatz");
+  if(b.zusatz){ zu.hidden = false; zu.innerHTML = "<b>Nebenbei:</b> " + b.zusatz; }
+  else { zu.hidden = true; }
+
+  paarungSetzen();          /* setzt den Reibungsregler und zeichnet neu */
+  el("gMyT").value = Math.round((PAARUNGEN[b.paarung].von + PAARUNGEN[b.paarung].bis) / 2 * 100) / 100;
+  zeichneReib();
+}
+
+function aktuellesBeispiel(){
+  return BEISPIELE[parseInt(el("gBeispiel").value, 10)] || BEISPIELE[0];
+}
+
 function zeichneReib(){
   var svg = el("svgReib"); leeren(svg); pfeilDefs(svg);
   var g = ns("g", {}); svg.appendChild(g);
 
+  var b = aktuellesBeispiel();
   var FV = parseFloat(el("gVor").value);
   var myT = parseFloat(el("gMyT").value);
   var FQ = parseFloat(el("gQuer").value);
-  var FR = myT * FV;
+  var n = parseInt(el("gAnzahl").value, 10) || 1;
+  var FR = myT * FV * n;
   var haelt = FQ <= FR;
 
-  el("oVor").textContent  = z(FV,0) + " kN";
-  el("oMyT").textContent  = z(myT,2);
-  el("oQuer").textContent = z(FQ,1) + " kN";
+  var nk = b.querMax <= 2 ? 2 : 1;
+  el("oVor").textContent  = z(FV, nk) + " kN";
+  el("oMyT").textContent  = z(myT, 2);
+  el("oQuer").textContent = z(FQ, nk) + " kN";
+  el("oAnzahl").textContent = n === 1 ? "1 Schraube" : n + " Schrauben";
 
+  if(b.lage === "wand") reibWand(g, b, FV, FQ, FR, haelt, n);
+  else reibFlach(g, b, FV, FQ, FR, haelt, n);
+
+  reibVergleich(g, b, FR, FQ, nk);
+  reibUrteil(b, FR, FQ, haelt, n, nk);
+}
+
+/* --- Anordnung 1: zwei Bauteile flach uebereinander --------------------- */
+function reibFlach(g, b, FV, FQ, FR, haelt, n){
   var y = 92, dicke = 30, x0 = 170, breite = 240;
   var versatz = haelt ? 0 : 26;
 
-  g.appendChild(ns("rect",{x:x0,y:y,width:breite,height:dicke,fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
-  g.appendChild(ns("rect",{x:x0-versatz,y:y+dicke,width:breite,height:dicke,fill:"#99f6e4",stroke:"#0f766e","stroke-width":1.5}));
-  g.appendChild(ns("rect",{x:x0+130,y:y-16,width:40,height:16,fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
-  g.appendChild(ns("rect",{x:x0+142,y:y,width:16,height:dicke*2,fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0,y:y,width:breite,height:dicke,
+    fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0-versatz,y:y+dicke,width:breite,height:dicke,
+    fill:"#99f6e4",stroke:"#0f766e","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0+130,y:y-16,width:40,height:16,
+    fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0+142,y:y,width:16,height:dicke*2,
+    fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.5}));
 
-  /* Vorspannkraft */
-  var pfeilLang = Math.min(10 + FV * 1.4, 34);
+  var pfeilLang = Math.min(10 + FV * 34 / Math.max(1, b.vorMax), 34);
   g.appendChild(ns("line",{x1:x0+150,y1:y-24,x2:x0+150,y2:y-24-pfeilLang,
     stroke:"#1d4ed8","stroke-width":3,"marker-end":"url(#pfeilBblau)"}));
   g.appendChild(svgText(x0+150, y-42-pfeilLang,
-    zLabel("vorspannkraft","F_V") + " = " + z(FV,0) + " kN",
+    zLabel("vorspannkraft","F_V") + " = " + z(FV, b.querMax <= 2 ? 2 : 1) + " kN",
     {anchor:"middle", size:12, fill:"#1d4ed8", weight:700}));
 
-  /* Querkraft - Beschriftung ueber den Pfeil, sonst laeuft sie aus dem Bild */
-  var qLang = Math.min(8 + FQ * 6, 120);
+  var qLang = Math.min(8 + FQ * 112 / Math.max(0.001, b.querMax), 120);
   var qx = x0 - versatz;
   g.appendChild(ns("line",{x1:qx,y1:y+dicke+22,x2:qx-qLang,y2:y+dicke+22,
     stroke:"#dc2626","stroke-width":3,"marker-end":"url(#pfeilBrot)"}));
   g.appendChild(svgText(qx-qLang/2, y+dicke+8, zLabel("querkraft","F_Q"),
     {anchor:"middle", size:12, fill:"#dc2626", weight:700}));
 
-  /* Reibkraft in der Fuge */
-  var rLang = Math.min(8 + FR * 6, 150);
+  var rLang = Math.min(8 + FR * 112 / Math.max(0.001, b.querMax), 150);
   g.appendChild(ns("line",{x1:x0+40,y1:y+dicke-8,x2:x0+40+rLang,y2:y+dicke-8,
     stroke:"#16a34a","stroke-width":3,"marker-end":"url(#pfeilBgruen)"}));
-  g.appendChild(svgText(x0+40, y+dicke-20, zLabel("reibkraft","F_R"), {size:12, fill:"#16a34a", weight:700}));
+  g.appendChild(svgText(x0+40, y+dicke-20, zLabel("reibkraft","F_R"),
+    {size:12, fill:"#16a34a", weight:700}));
 
-  /* Vergleichsbalken - Wert immer rechts neben dem Balken, damit er auch bei
-     sehr kurzem Balken lesbar bleibt. */
-  var bx = 420, bw = 120, skala = Math.max(FR, FQ, 1);
-  g.appendChild(svgText(bx, 44, "Kräftevergleich", {size:12.5, weight:700, fill:"#334155"}));
-  [[FR, "#16a34a", zLabel("reibkraft","F_R"), 56],
-   [FQ, "#dc2626", zLabel("querkraft","F_Q"), 88]].forEach(function(a){
-    var w = bw * (a[0]/skala);
-    g.appendChild(ns("rect",{x:bx, y:a[3], width:Math.max(w,2), height:22, fill:a[1], rx:4}));
-    g.appendChild(svgText(bx + Math.max(w,2) + 8, a[3]+16, a[2] + " = " + z(a[0],2) + " kN",
-      {size:12, fill:a[1], weight:700}));
-  });
-
-  var txt = el("reibText");
-  if(haelt){
-    txt.className = "gut";
-    txt.innerHTML = "<b>Hält.</b> Die " + wort("reibkraft") + " = " + z(FR,2) + " kN ist größer als die " +
-      wort("querkraft") + " = " + z(FQ,2) +
-      " kN. Die Schraube selbst wird dabei nicht quer belastet und kann daher auch nicht " +
-      wort("abgeschert") + " werden.";
-    begriffeZeichnen(txt);
-  }else{
-    txt.className = "warnung";
-    txt.innerHTML = "<b>Rutscht.</b> Die " + wort("querkraft") + " = " + z(FQ,2) + " kN übersteigt die " +
-      wort("reibkraft") + " = " + z(FR,2) +
-      " kN. Die Bauteile verschieben sich, bis die Schraube am Lochrand anliegt. " +
-      "Dann wird sie quer belastet und kann " + wort("abgeschert") +
-      " werden – dafür ist sie nicht vorgesehen.";
-    begriffeZeichnen(txt);
+  g.appendChild(svgText(x0+breite-8, y+20, b.oben,
+    {anchor:"end", size:11.5, fill:"#0f766e", weight:600}));
+  g.appendChild(svgText(x0+breite-8, y+dicke+20, b.unten,
+    {anchor:"end", size:11.5, fill:"#0f766e", weight:600}));
+  if(n > 1){
+    g.appendChild(svgText(x0+150, y+dicke*2+30, n + " Schrauben",
+      {anchor:"middle", size:11.5, fill:"#64748b"}));
   }
 }
 
-/* ============================================================================
-   ZEICHNUNG  -  normgerechte Schnittdarstellung einer Schraubverbindung
-   ==========================================================================
-   Linienbreiten nach DIN ISO 128: breite zu schmaler Vollinie im Verhaeltnis
-   2 : 1. Hier 2,0 zu 1,0 Pixel. */
+/* --- Anordnung 2: Wandwinkel an einer senkrechten Wand ------------------ */
+function reibWand(g, b, FV, FQ, FR, haelt, n){
+  var wx = 56, wb = 44, wy = 18, wh = 172;
+  var absacken = haelt ? 0 : 14;
+
+  /* Wand */
+  g.appendChild(ns("rect",{x:wx,y:wy,width:wb,height:wh,
+    fill:"#99f6e4",stroke:"#0f766e","stroke-width":1.5}));
+  for(var i = 0; i < 7; i++){
+    g.appendChild(ns("line",{x1:wx, y1:wy+10+i*24, x2:wx-9, y2:wy+20+i*24,
+      stroke:"#0f766e","stroke-width":1}));
+  }
+
+  /* Wandwinkel: senkrechter Schenkel an der Wand, waagerechter darunter */
+  var sx = wx + wb, sy = 54 + absacken;
+  g.appendChild(ns("rect",{x:sx,y:sy,width:18,height:104,
+    fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
+  g.appendChild(ns("path",{d:"M"+sx+","+(sy+86)+" L"+(sx+128)+","+(sy+86)+
+    " L"+(sx+128)+","+(sy+104)+" L"+sx+","+(sy+104)+" Z",
+    fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
+
+  /* Regalbrett */
+  g.appendChild(ns("rect",{x:sx,y:sy+68,width:206,height:18,
+    fill:"#fde68a",stroke:"#b45309","stroke-width":1.5}));
+  g.appendChild(svgText(sx+42, sy+81, "Regalbrett", {size:11.5, fill:"#b45309", weight:600}));
+
+  /* Zwei sichtbare Schrauben durch den senkrechten Schenkel in die Wand */
+  var pfeilLang = Math.min(10 + FV * 30 / Math.max(0.001, b.vorMax), 30);
+  [sy + 14, sy + 56].forEach(function(ys){
+    g.appendChild(ns("rect",{x:wx+wb-26,y:ys-5,width:26,height:10,
+      fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.3}));
+    g.appendChild(ns("rect",{x:sx,y:ys-7,width:12,height:14,
+      fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.3}));
+    g.appendChild(ns("line",{x1:sx+16,y1:ys,x2:sx+16+pfeilLang,y2:ys,
+      stroke:"#1d4ed8","stroke-width":2.6,"marker-end":"url(#pfeilBblau)"}));
+  });
+  g.appendChild(svgText(sx+22, sy - 6,
+    zLabel("vorspannkraft","F_V") + " = " + z(FV,2) + " kN je Schraube",
+    {size:11.5, fill:"#1d4ed8", weight:700}));
+
+  /* Gewichtskraft am aeusseren Ende des Bretts */
+  var qLang = Math.min(14 + FQ * 60 / Math.max(0.001, b.querMax), 68);
+  var qx = sx + 176;
+  g.appendChild(ns("line",{x1:qx,y1:sy+90,x2:qx,y2:sy+90+qLang,
+    stroke:"#dc2626","stroke-width":3,"marker-end":"url(#pfeilBrot)"}));
+  g.appendChild(svgText(qx+8, sy+94+qLang/2,
+    zLabel("querkraft","F_Q") + " = " + z(FQ,2) + " kN",
+    {size:11.5, fill:"#dc2626", weight:700}));
+
+  /* Reibkraft an der Wandflaeche, nach oben gerichtet */
+  var rLang = Math.min(14 + FR * 48 / Math.max(0.001, b.querMax), 54);
+  g.appendChild(ns("line",{x1:sx+6,y1:sy+140,x2:sx+6,y2:sy+140-rLang,
+    stroke:"#16a34a","stroke-width":3,"marker-end":"url(#pfeilBgruen)"}));
+  g.appendChild(svgText(sx+16, sy+136, zLabel("reibkraft","F_R") + " an der Wandfläche",
+    {size:11.5, fill:"#16a34a", weight:700}));
+
+  g.appendChild(svgText(wx+2, wy-4, b.unten, {size:11.5, fill:"#0f766e", weight:600}));
+  g.appendChild(svgText(sx+26, sy-22, b.oben, {size:11.5, fill:"#0f766e", weight:600}));
+
+}
+
+/* --- Vergleichsbalken, fuer beide Anordnungen gleich -------------------- */
+function reibVergleich(g, b, FR, FQ, nk){
+  var bx = 430, bw = 118, skala = Math.max(FR, FQ, 0.001);
+  g.appendChild(svgText(bx, 40, "Kräftevergleich", {size:12.5, weight:700, fill:"#334155"}));
+  [[FR, "#16a34a", zLabel("reibkraft","F_R"), 54],
+   [FQ, "#dc2626", zLabel("querkraft","F_Q"), 86]].forEach(function(a){
+    var w = bw * (a[0]/skala);
+    g.appendChild(ns("rect", {x:bx, y:a[3], width:Math.max(w,2), height:22, fill:a[1], rx:4}));
+    g.appendChild(svgText(bx + Math.max(w,2) + 8, a[3]+16, a[2] + " = " + z(a[0],nk) + " kN",
+      {size:12, fill:a[1], weight:700}));
+  });
+}
+
+function reibUrteil(b, FR, FQ, haelt, n, nk){
+  var txt = el("reibText");
+  var lastwort = (b.id === "allgemein") ? wort("querkraft") : b.lastKurz;
+  if(haelt){
+    txt.className = "gut";
+    txt.innerHTML = "<b>Hält.</b> " + n + " Schraube" + (n > 1 ? "n erzeugen" : " erzeugt") +
+      " zusammen eine " + wort("reibkraft") + " von " + z(FR,nk) + " kN. Das ist mehr als " +
+      lastwort + " mit " + z(FQ,nk) + " kN. Die Schrauben werden dabei nicht quer belastet " +
+      "und können daher auch nicht " + wort("abgeschert") + " werden.";
+  }else{
+    txt.className = "warnung";
+    txt.innerHTML = "<b>Rutscht.</b> " + lastwort.charAt(0).toUpperCase() + lastwort.slice(1) +
+      " übersteigt mit " + z(FQ,nk) + " kN die " + wort("reibkraft") + " von " + z(FR,nk) +
+      " kN. Die Teile verschieben sich, bis die Schrauben am Lochrand anliegen. Dann werden " +
+      "sie quer belastet und können " + wort("abgeschert") + " werden – dafür sind sie nicht " +
+      "vorgesehen.";
+  }
+  begriffeZeichnen(txt);
+}
+
 var BREIT = 2.0, SCHMAL = 1.0;
 
 var REGELN = [
@@ -2811,6 +2977,15 @@ function start(){
     paarungSetzen();
   });
 
+  /* Beispiele */
+  for(var bi = 0; bi < BEISPIELE.length; bi++){
+    var ob = document.createElement("option");
+    ob.value = bi; ob.innerHTML = BEISPIELE[bi].name;
+    el("gBeispiel").appendChild(ob);
+  }
+  el("gBeispiel").addEventListener("change", beispielSetzen);
+  el("gAnzahl").addEventListener("input", zeichneReib);
+
   /* Ereignisse: Grundlagen */
   el("gAnziehen").addEventListener("input", function(){
     if(anziehLauf){ cancelAnimationFrame(anziehLauf); anziehLauf = null; }
@@ -2890,7 +3065,7 @@ function start(){
   zeichneVerbindung();
   zeichneVerspannung();
   rechne();
-  paarungSetzen();            /* setzt den Regler und zeichnet das Reibungsbild */
+  beispielSetzen();           /* setzt Paarung, Regler und zeichnet das Reibungsbild */
   reiterSetzen("grundlagen");
 }
 
