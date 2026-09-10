@@ -1,0 +1,1677 @@
+---
+title: "Fertigungstechnik: Fügeverfahren - Überblick"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fertigungstechnik: Fügeverfahren - Überblick</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+  --kraft:#1d4ed8; --form:#7c3aed; --stoff:#c2410c;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:14px 18px 60px}
+@media (max-width:640px){ .wrap{padding-top:56px} }
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.drei{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .drei,.zwei{grid-template-columns:1fr} }
+
+/* Auswahl der Verfahren */
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer; font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+
+.steuerung{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:12px 0;
+}
+.steuerung input[type=range]{flex:1 1 220px; min-width:160px}
+button.link{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:8px; padding:6px 12px; font:600 .85rem/1 inherit; cursor:pointer;
+}
+button.link:hover{border-color:var(--primary); color:var(--primary)}
+
+svg{display:block; max-width:100%; height:auto}
+.zeichnung{background:#fff; border:1px solid var(--border); border-radius:10px; margin:10px 0}
+
+table{border-collapse:collapse; width:100%; font-size:.88rem}
+.tabellenrahmen{overflow-x:auto; -webkit-overflow-scrolling:touch}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:#f1f5f9; font-weight:700}
+tbody tr:hover{background:#f8fafc}
+td.mitte,th.mitte{text-align:center}
+
+.merke{border-left:4px solid var(--accent); background:#fffbeb; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0}
+.merke b{color:#92400e}
+.warnung{border-left:4px solid var(--bad); background:#fef2f2; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.gut{border-left:4px solid var(--ok); background:#f0fdf4; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.fussnote{font-size:.8rem; color:var(--muted); margin-top:10px}
+
+.marke{
+  display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; padding:2px 9px; border-radius:999px; color:#fff;
+}
+.marke.kraft{background:var(--kraft)}
+.marke.form{background:var(--form)}
+.marke.stoff{background:var(--stoff)}
+
+.paar{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px}
+@media (max-width:700px){ .paar{grid-template-columns:1fr} }
+.paar > div{border:1px solid var(--border); border-radius:10px; padding:10px 14px}
+.paar h4{margin:0 0 6px; font-size:.92rem}
+.paar ul{margin:0; padding-left:18px}
+.paar li{margin:2px 0}
+.plus h4{color:var(--ok)}
+.minus h4{color:var(--bad)}
+
+/* Auswahlhilfe */
+.fragen{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:8px; margin:12px 0}
+.frage{display:flex; gap:9px; align-items:flex-start; background:#f8fafc;
+  border:1px solid var(--border); border-radius:8px; padding:9px 12px; cursor:pointer}
+.frage input{margin-top:3px; flex:none}
+.frage span{font-size:.9rem}
+.ergebnis{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px}
+@media (max-width:700px){ .ergebnis{grid-template-columns:1fr} }
+.ez{border:1px solid var(--border); border-radius:10px; padding:12px 14px; background:#fff}
+.ez .titel{font-weight:700; margin-bottom:6px}
+.ez .balken{height:12px; border-radius:6px; background:#e2e8f0; overflow:hidden; margin:8px 0}
+.ez .balken i{display:block; height:100%; border-radius:6px}
+.ez .grund{font-size:.82rem; color:var(--muted)}
+.ez.top{border-color:var(--primary); box-shadow:0 0 0 2px var(--primary-light)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>F&uuml;geverfahren im &Uuml;berblick</h1>
+  <p class="lead">Kraftschluss, Formschluss, Stoffschluss &ndash; wie sie wirken und wann man welches
+    Verfahren w&auml;hlt.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button role="tab" data-tab="ueberblick"  aria-selected="true">&Uuml;berblick</button>
+  <button role="tab" data-tab="kraft"       aria-selected="false">Kraftschluss</button>
+  <button role="tab" data-tab="form"        aria-selected="false">Formschluss</button>
+  <button role="tab" data-tab="stoff"       aria-selected="false">Stoffschluss</button>
+  <button role="tab" data-tab="sonder"      aria-selected="false">Sonderformen</button>
+</div>
+
+<!-- ============================================================= ÜBERBLICK -->
+<section class="panel" id="p-ueberblick">
+
+  <div class="karte">
+    <h2>Was hei&szlig;t F&uuml;gen?</h2>
+    <p class="sub">Hauptgruppe 4 der Fertigungsverfahren nach DIN 8580.</p>
+    <p>F&uuml;gen bedeutet: zwei oder mehr Werkst&uuml;cke dauerhaft zusammenbringen. Wie die
+    Verbindung die Kraft &uuml;bertr&auml;gt, entscheidet &uuml;ber alles Weitere &ndash;
+    Belastbarkeit, L&ouml;sbarkeit, Kosten. Man unterscheidet drei Wirkprinzipien:</p>
+
+    <div class="drei">
+      <div>
+        <span class="marke kraft">Kraftschluss</span>
+        <svg class="zeichnung" id="svgUeK" viewBox="0 0 320 190" role="img"
+             aria-label="Prinzipbild Kraftschluss"></svg>
+        <p><b>Reibung h&auml;lt.</b> Eine Kraft presst die Teile aneinander. &Uuml;bertragen wird
+        die Last durch Reibung an der Ber&uuml;hrfl&auml;che.</p>
+        <p class="fussnote">Wird die Last zu gro&szlig;, rutschen die Teile.</p>
+      </div>
+      <div>
+        <span class="marke form">Formschluss</span>
+        <svg class="zeichnung" id="svgUeF" viewBox="0 0 320 190" role="img"
+             aria-label="Prinzipbild Formschluss"></svg>
+        <p><b>Die Form h&auml;lt.</b> Die Teile greifen ineinander. Die Last dr&uuml;ckt gegen
+        Flanken, Bolzen oder Nasen.</p>
+        <p class="fussnote">Wird die Last zu gro&szlig;, schert das Element ab.</p>
+      </div>
+      <div>
+        <span class="marke stoff">Stoffschluss</span>
+        <svg class="zeichnung" id="svgUeS" viewBox="0 0 320 190" role="img"
+             aria-label="Prinzipbild Stoffschluss"></svg>
+        <p><b>Der Werkstoff h&auml;lt.</b> Die Teile werden durch Schmelze, Lot oder Klebstoff
+        auf molekularer Ebene verbunden.</p>
+        <p class="fussnote">L&ouml;sen geht nur durch Zerst&ouml;ren der Verbindung.</p>
+      </div>
+    </div>
+
+    <div class="merke">
+      <b>Faustregel:</b> Kraftschluss ist l&ouml;sbar und spielfrei, braucht aber eine
+      dauerhafte Vorspannung. Formschluss ist einfach und sicher, hat aber meist etwas Spiel.
+      Stoffschluss ist dicht und leicht, aber nicht mehr zerst&ouml;rungsfrei l&ouml;sbar.
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Die drei Prinzipien im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tabPrinzip"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Welches Prinzip passt?</h2>
+    <p class="sub">Anforderungen ankreuzen &ndash; die Empfehlung rechnet sich sofort mit.</p>
+    <div class="fragen" id="fragen"></div>
+    <div class="ergebnis" id="empfehlung"></div>
+    <p class="fussnote">Die Auswertung ist eine Orientierung f&uuml;r den Unterricht. In der Praxis
+      entscheiden zus&auml;tzlich St&uuml;ckzahl, vorhandene Fertigungsmittel und Kosten.</p>
+  </div>
+</section>
+
+<!-- =========================================================== KRAFTSCHLUSS -->
+<section class="panel" id="p-kraft" hidden>
+  <div class="karte">
+    <h2><span class="marke kraft">Kraftschluss</span> &ndash; Reibung &uuml;bertr&auml;gt die Last</h2>
+    <p class="sub">Auch Reibschluss genannt. Eine Normalkraft presst die Fl&auml;chen aneinander.</p>
+    <p>Alle kraftschl&uuml;ssigen Verbindungen funktionieren nach demselben Muster: Ein Element
+    erzeugt eine <b>Normalkraft</b> senkrecht zur Ber&uuml;hrfl&auml;che. Daraus entsteht Reibung,
+    und diese Reibung &uuml;bertr&auml;gt die eigentliche Last. Reicht sie nicht aus, rutscht die
+    Verbindung durch &ndash; sie geht nicht schlagartig kaputt, sondern verliert ihre Funktion.</p>
+    <div class="merke">
+      <b>Gemeinsame Grenze:</b> &Uuml;bertragbare Kraft = Reibungszahl &middot; Normalkraft.
+      Beide Gr&ouml;&szlig;en streuen &ndash; deshalb rechnet man kraftschl&uuml;ssige
+      Verbindungen immer mit Sicherheit gegen Rutschen.
+    </div>
+  </div>
+
+  <div class="karte" id="karte-kraft">
+    <h2>Verfahren ansehen</h2>
+    <div class="wahl" id="wahl-kraft"></div>
+    <svg class="zeichnung" id="svg-kraft" viewBox="0 0 640 280" role="img"
+         aria-label="Animation des gew&auml;hlten Verfahrens"></svg>
+    <div class="steuerung">
+      <button class="link" data-play="kraft">&#9654;&nbsp; Abspielen</button>
+      <input type="range" id="reg-kraft" min="0" max="100" step="1" value="0" aria-label="Ablauf">
+    </div>
+    <p id="phase-kraft"></p>
+    <div id="info-kraft"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Eignung im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tab-kraft"></table></div>
+  </div>
+</section>
+
+<!-- ============================================================ FORMSCHLUSS -->
+<section class="panel" id="p-form" hidden>
+  <div class="karte">
+    <h2><span class="marke form">Formschluss</span> &ndash; die Geometrie &uuml;bertr&auml;gt die Last</h2>
+    <p class="sub">Die Teile greifen ineinander, die Last dr&uuml;ckt gegen Wirkfl&auml;chen.</p>
+    <p>Formschl&uuml;ssige Verbindungen brauchen keine Vorspannung. Die Kraft geht &uuml;ber
+    Flanken, Bolzen oder Nasen &ndash; entscheidend sind <b>Fl&auml;chenpressung</b> und
+    <b>Scherquerschnitt</b> der Wirkfl&auml;chen. Damit sich die Teile f&uuml;gen lassen, braucht
+    es fast immer etwas Spiel; bei wechselnder Last f&uuml;hrt dieses Spiel zu Schl&auml;gen.</p>
+    <div class="merke">
+      <b>Gemeinsame Grenze:</b> Das Verbindungselement wird auf Abscheren und die Wirkfl&auml;che
+      auf Fl&auml;chenpressung belastet. Beides muss gepr&uuml;ft werden.
+    </div>
+  </div>
+
+  <div class="karte" id="karte-form">
+    <h2>Verfahren ansehen</h2>
+    <div class="wahl" id="wahl-form"></div>
+    <svg class="zeichnung" id="svg-form" viewBox="0 0 640 280" role="img"
+         aria-label="Animation des gew&auml;hlten Verfahrens"></svg>
+    <div class="steuerung">
+      <button class="link" data-play="form">&#9654;&nbsp; Abspielen</button>
+      <input type="range" id="reg-form" min="0" max="100" step="1" value="0" aria-label="Ablauf">
+    </div>
+    <p id="phase-form"></p>
+    <div id="info-form"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Eignung im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tab-form"></table></div>
+  </div>
+</section>
+
+<!-- =========================================================== STOFFSCHLUSS -->
+<section class="panel" id="p-stoff" hidden>
+  <div class="karte">
+    <h2><span class="marke stoff">Stoffschluss</span> &ndash; der Werkstoff selbst h&auml;lt</h2>
+    <p class="sub">Schmelze, Lot oder Klebstoff verbinden die Teile auf molekularer Ebene.</p>
+    <p>Stoffschl&uuml;ssige Verbindungen &uuml;bertragen die Last &uuml;ber die gesamte
+    Verbindungsfl&auml;che. Sie sind dicht, brauchen keine Bohrungen und tragen bei d&uuml;nnen
+    Blechen mehr als jede Schraube. Der Preis: Sie lassen sich nur durch Zerst&ouml;ren l&ouml;sen,
+    und der Werkstoff wird durch W&auml;rme oder Klebstoff beeinflusst.</p>
+    <div class="merke">
+      <b>Der Unterschied in einem Satz:</b> Beim <b>Schwei&szlig;en</b> schmilzt der
+      Grundwerkstoff, beim <b>L&ouml;ten</b> nur das Lot, beim <b>Kleben</b> gar nichts.
+    </div>
+  </div>
+
+  <div class="karte" id="karte-stoff">
+    <h2>Verfahren ansehen</h2>
+    <div class="wahl" id="wahl-stoff"></div>
+    <svg class="zeichnung" id="svg-stoff" viewBox="0 0 640 280" role="img"
+         aria-label="Animation des gew&auml;hlten Verfahrens"></svg>
+    <div class="steuerung">
+      <button class="link" data-play="stoff">&#9654;&nbsp; Abspielen</button>
+      <input type="range" id="reg-stoff" min="0" max="100" step="1" value="0" aria-label="Ablauf">
+    </div>
+    <p id="phase-stoff"></p>
+    <div id="info-stoff"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Eignung im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tab-stoff"></table></div>
+    <h3>Temperaturen zur Einordnung</h3>
+    <div class="tabellenrahmen">
+      <table>
+        <thead><tr><th>Verfahren</th><th>Temperatur</th><th>Was schmilzt?</th></tr></thead>
+        <tbody>
+          <tr><td>Kleben</td><td>Raumtemperatur bis etwa 180&nbsp;&deg;C</td><td>nichts &ndash; der Klebstoff h&auml;rtet aus</td></tr>
+          <tr><td>Weichl&ouml;ten</td><td>unter 450&nbsp;&deg;C</td><td>nur das Lot</td></tr>
+          <tr><td>Hartl&ouml;ten</td><td>&uuml;ber 450&nbsp;&deg;C</td><td>nur das Lot</td></tr>
+          <tr><td>Schmelzschwei&szlig;en</td><td>Schmelztemperatur des Grundwerkstoffs, Stahl etwa 1500&nbsp;&deg;C</td>
+              <td>Grundwerkstoff und Zusatzwerkstoff</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================== SONDERFORMEN -->
+<section class="panel" id="p-sonder" hidden>
+  <div class="karte">
+    <h2>Sonderformen und Kombinationen</h2>
+    <p class="sub">Viele Verbindungen wirken nach zwei Prinzipien gleichzeitig.</p>
+    <p>Die Einteilung in drei Prinzipien ist ein Ordnungsschema, kein Naturgesetz. In der Praxis
+    kombiniert man sie gezielt: Der Niet klemmt <em>und</em> greift formschl&uuml;ssig, die
+    geklebte Schraube h&auml;lt durch Reibung <em>und</em> Klebstoff. Solche Kombinationen
+    gleichen die Schw&auml;chen der einzelnen Prinzipien aus.</p>
+  </div>
+
+  <div class="karte" id="karte-sonder">
+    <h2>Verfahren ansehen</h2>
+    <div class="wahl" id="wahl-sonder"></div>
+    <svg class="zeichnung" id="svg-sonder" viewBox="0 0 640 280" role="img"
+         aria-label="Animation des gew&auml;hlten Verfahrens"></svg>
+    <div class="steuerung">
+      <button class="link" data-play="sonder">&#9654;&nbsp; Abspielen</button>
+      <input type="range" id="reg-sonder" min="0" max="100" step="1" value="0" aria-label="Ablauf">
+    </div>
+    <p id="phase-sonder"></p>
+    <div id="info-sonder"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Eignung im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tab-sonder"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Weitere Kombinationen</h2>
+    <div class="tabellenrahmen">
+      <table>
+        <thead><tr><th>Verbindung</th><th>Wirkt</th><th>Warum kombiniert?</th></tr></thead>
+        <tbody>
+          <tr><td>Schraube mit Passstift</td><td>kraft- und formschl&uuml;ssig</td>
+              <td>Die Schraube spannt, der Stift sichert die genaue Lage.</td></tr>
+          <tr><td>Stanznieten</td><td>form- und kraftschl&uuml;ssig</td>
+              <td>Verbindet Bleche ohne Vorlochen, auch Alu mit Stahl.</td></tr>
+          <tr><td>Kleben und Punktschwei&szlig;en</td><td>stoffschl&uuml;ssig, zweifach</td>
+              <td>Die Punkte fixieren sofort, der Klebstoff verteilt die Last.</td></tr>
+          <tr><td>Schrumpfen mit Passfeder</td><td>kraft- und formschl&uuml;ssig</td>
+              <td>Der Pressverband tr&auml;gt, die Passfeder sichert gegen Durchrutschen.</td></tr>
+          <tr><td>Gewinde mit Klebstoffsicherung</td><td>kraft- und stoffschl&uuml;ssig</td>
+              <td>Der Klebstoff verhindert selbstt&auml;tiges Losdrehen.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<p class="fussnote">
+  Die Darstellungen sind schematisch und f&uuml;r den Unterricht vereinfacht. Zahlenwerte sind
+  Orientierungswerte und ersetzen keine Auslegung.
+</p>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+
+/* ============================================================================
+   1  ZEICHEN-WERKZEUG
+   ========================================================================== */
+function el(id){ return document.getElementById(id); }
+function ns(name, attr){
+  var e = document.createElementNS("http://www.w3.org/2000/svg", name);
+  for(var a in attr){ if(attr.hasOwnProperty(a)) e.setAttribute(a, attr[a]); }
+  return e;
+}
+function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild); }
+function txt(g, x, y, s, opt){
+  var o = opt || {};
+  var t = ns("text", {x:x, y:y, "font-size":o.size || 12,
+    "font-family":"Segoe UI, system-ui, sans-serif",
+    "text-anchor":o.anchor || "start", fill:o.fill || "#334155",
+    "font-weight":o.weight || 600});
+  t.textContent = s;
+  if(o.opacity !== undefined) t.setAttribute("opacity", o.opacity);
+  g.appendChild(t);
+  return t;
+}
+function rect(g, x, y, w, h, fill, stroke, opt){
+  var o = opt || {};
+  var e = ns("rect", {x:x, y:y, width:Math.max(0,w), height:Math.max(0,h),
+    fill:fill, stroke:stroke || "none", "stroke-width":o.sw || 1.6});
+  if(o.rx) e.setAttribute("rx", o.rx);
+  if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
+  g.appendChild(e);
+  return e;
+}
+function pfad(g, d, fill, stroke, opt){
+  var o = opt || {};
+  var e = ns("path", {d:d, fill:fill || "none", stroke:stroke || "none",
+    "stroke-width":o.sw || 1.6});
+  if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
+  if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
+  g.appendChild(e);
+  return e;
+}
+function linie(g, x1, y1, x2, y2, farbe, sw, opt){
+  var o = opt || {};
+  var e = ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe, "stroke-width":sw || 1.4});
+  if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
+  if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
+  g.appendChild(e);
+  return e;
+}
+function pfeil(g, x1, y1, x2, y2, farbe, sw){
+  return ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe,
+    "stroke-width":sw || 3,
+    "marker-end":"url(#" + MARKER_PRAEFIX + farbe.replace("#","") + ")"});
+}
+/* Pfeilspitzen werden je Farbe einmal angelegt.
+   Zwei Fallstricke stecken hier drin:
+   1. Das viewBox ist Pflicht - ohne es zeichnet der Browser die Spitze nicht,
+      obwohl der Marker sauber definiert und referenziert ist.
+   2. Die IDs muessen je SVG eindeutig sein. Legt jedes SVG dieselben IDs an,
+      loest url(#...) auf das erste Vorkommen im Dokument auf - und das liegt
+      in einem ausgeblendeten Reiter. Ein Marker in einem display:none-SVG
+      wird nicht gezeichnet, die Pfeile blieben dann ohne Spitze. */
+var MARKER_PRAEFIX = "sp-";
+function spitzen(svg, farben){
+  MARKER_PRAEFIX = "sp-" + svg.id + "-";
+  var defs = ns("defs", {});
+  farben.forEach(function(f){
+    /* refX auf die Spitze: So endet der Pfeil genau am Zielpunkt statt
+       darueber hinauszuschiessen. userSpaceOnUse haelt die Spitze in allen
+       Zeichnungen gleich gross, unabhaengig von der Strichstaerke. */
+    var m = ns("marker", {id:MARKER_PRAEFIX + f.replace("#",""), viewBox:"0 0 7 6",
+      markerWidth:10, markerHeight:8.6, refX:7, refY:3,
+      orient:"auto", markerUnits:"userSpaceOnUse"});
+    m.appendChild(ns("path", {d:"M0,0 L0,6 L7,3 z", fill:f}));
+    defs.appendChild(m);
+  });
+  svg.appendChild(defs);
+}
+var FARBEN = ["#dc2626","#1d4ed8","#16a34a","#c2410c","#7c3aed","#0f766e","#64748b",
+              "#b45309","#334155"];
+function kraftpfeil(g, x1, y1, x2, y2, farbe, sw){
+  g.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
+}
+
+/* Farbwelt: Bauteil A, Bauteil B, Verbindungselement, Waerme, Lot/Kleber */
+var C = {
+  aF:"#ccfbf1", aS:"#0f766e",
+  bF:"#99f6e4", bS:"#0f766e",
+  eF:"#dbeafe", eS:"#1d4ed8",
+  warm:"#fdba74", heiss:"#f97316", glut:"#fbbf24",
+  lot:"#fde68a", lotS:"#b45309",
+  kleb:"#ddd6fe", klebS:"#6d28d9",
+  grau:"#e2e8f0", grauS:"#64748b"
+};
+function mische(t){ return Math.max(0, Math.min(1, t)); }
+function stufe(t, von, bis){ return mische((t - von) / Math.max(1e-6, bis - von)); }
+
+/* ============================================================================
+   2  VERFAHREN
+   ========================================================================== */
+var VERFAHREN = [];
+
+function verfahren(o){ VERFAHREN.push(o); return o; }
+
+/* ---------------------------------------------------------- KRAFTSCHLUSS -- */
+
+verfahren({
+  id:"schraube", gruppe:"kraft", name:"Schraubverbindung",
+  prinzip:"Die angezogene Schraube wird gedehnt und presst die Bauteile aneinander. " +
+          "Die Reibung an der Trennfuge überträgt die Last.",
+  phasen:[
+    {ab:0,    text:"Die Teile liegen lose aufeinander, die Mutter ist noch nicht angezogen."},
+    {ab:0.35, text:"Die Mutter wird gedreht und wandert am Gewinde hoch. Die Fuge schließt sich."},
+    {ab:0.7,  text:"Jetzt baut sich die Spannkraft auf: Die Schraube wird länger, die Bauteile werden dünner."}],
+  plus:["Zerstörungsfrei lösbar, beliebig oft","Normteile, überall verfügbar",
+        "Hoch belastbar, auch bei wechselnder Last"],
+  minus:["Vorspannkraft streut stark","Kann sich durch Setzen und Erschütterung lockern",
+         "Bohrungen schwächen den Querschnitt"],
+  loesbar:"ja, zerstörungsfrei", last:"hoch, auch wechselnd", werkstoff:"beliebig",
+  dicht:"nur mit Dichtung", aufwand:"gering",
+  einsatz:"Montage und Wartung im gesamten Maschinenbau",
+  zeichnen:function(g, t){
+    var schliessen = stufe(t, 0, 0.35), kraft = stufe(t, 0.35, 1);
+    var cx = 250, oben = 74, dicke = 34, breite = 250;
+    var spalt = 12 * (1 - schliessen);
+    var stauch = 8 * kraft, dehn = 12 * kraft;
+    var y1o = oben, y1u = y1o + dicke - stauch/2;
+    var y2o = y1u + spalt, y2u = y2o + dicke - stauch/2;
+    var yEnde = oben + 2*dicke + 18 + 16 + dehn;
+    var lx = cx - breite/2, rx = cx + breite/2;
+
+    if(kraft > 0.02){
+      rect(g, lx, oben, breite, 2*dicke, "none", C.grauS, {sw:1.2, opacity:0.5});
+      linie(g, cx-12, oben + 2*dicke + 34, cx+12, oben + 2*dicke + 34, C.grauS, 1.2,
+        {dash:"5 4", opacity:0.5});
+    }
+    rect(g, lx, y1o, breite, y1u-y1o, C.aF, C.aS);
+    rect(g, lx, y2o, breite, y2u-y2o, C.bF, C.bS);
+    rect(g, cx-24, oben-19, 48, 19, C.eF, C.eS);
+    rect(g, cx-9, oben, 18, yEnde-oben, C.eF, C.eS);
+    rect(g, cx-21, y2u, 42, 18, C.eF, C.eS);
+
+    if(schliessen < 1){
+      pfad(g, "M"+(cx+30)+","+(y2u+4)+" A 22 22 0 1 1 "+(cx+26)+","+(y2u+21),
+        "none", "#b45309", {sw:2.4, opacity:0.3 + 0.7*(1-schliessen)});
+      txt(g, cx+58, y2u+16, "anziehen", {fill:"#b45309", size:12,
+        opacity:0.3 + 0.7*(1-schliessen)});
+    }
+    if(kraft > 0.02){
+      var p = 10 + 32*kraft;
+      kraftpfeil(g, cx, oben-24, cx, oben-24-p, "#1d4ed8");
+      kraftpfeil(g, cx, yEnde+8, cx, yEnde+8+p, "#1d4ed8");
+      txt(g, cx+12, oben-30-p/2, "Spannkraft", {fill:"#1d4ed8"});
+      for(var i=0;i<4;i++){
+        var x = lx + 34 + i*58;
+        if(Math.abs(x-cx) < 34) continue;
+        var lp = 6 + 9*kraft;
+        kraftpfeil(g, x-6, y1u-lp-9, x-6, y1u-9, "#0f766e", 2);
+        kraftpfeil(g, x+6, y2o+lp+9, x+6, y2o+9, "#0f766e", 2);
+      }
+      txt(g, rx+10, y1u+4, "Reibung hält", {fill:"#0f766e", size:11.5});
+    }
+    txt(g, lx, oben-30, "gestrichelt: unbelasteter Zustand", {fill:C.grauS, size:11,
+      weight:400, opacity: kraft > 0.02 ? 1 : 0});
+  }
+});
+
+verfahren({
+  id:"pressverband", gruppe:"kraft", name:"Pressverband",
+  prinzip:"Die Nabe ist innen kleiner als die Welle. Erwärmt man sie, lässt sie sich aufschieben; " +
+          "beim Abkühlen schrumpft sie auf und presst mit hoher Kraft.",
+  phasen:[
+    {ab:0,    text:"Nabe und Welle im Ausgangszustand. Die Bohrung ist um das Übermaß kleiner als die Welle."},
+    {ab:0.28, text:"Die Nabe wird erwärmt und dehnt sich aus – jetzt passt sie über die Welle."},
+    {ab:0.55, text:"Die Nabe wird aufgeschoben."},
+    {ab:0.78, text:"Beim Abkühlen schrumpft sie auf die Welle und erzeugt die Pressung."}],
+  plus:["Sehr hohe Momente übertragbar","Keine Kerbwirkung durch Nut oder Bohrung",
+        "Spielfrei und zentriert von selbst"],
+  minus:["Nur mit Aufwand lösbar","Genaue Toleranzen nötig (Übermaßpassung)",
+         "Übertragbares Moment hängt stark von Rauheit und Öl ab"],
+  loesbar:"schwer, meist mit Abziehvorrichtung", last:"sehr hoch, gleichmäßig",
+  werkstoff:"metallisch, ähnliche Wärmedehnung", dicht:"ja, an der Fügefläche",
+  aufwand:"hoch, Erwärmen oder Presse nötig",
+  einsatz:"Zahnräder und Lager auf Wellen, Radreifen",
+  zeichnen:function(g, t){
+    var waerme = stufe(t, 0.28, 0.5), fuegen = stufe(t, 0.55, 0.75), kuehl = stufe(t, 0.78, 1);
+    var cy = 150, wr = 26;                       /* Wellenradius */
+    var wl = 120, wrx = 520;
+    var dehnung = 10 * waerme * (1 - kuehl);
+    var nabeX = 560 - fuegen * 280;              /* Nabe faehrt von rechts ein */
+    var nr = wr + 22;
+
+    rect(g, wl, cy-wr, wrx-wl, 2*wr, "#e2e8f0", "#475569");
+    txt(g, wl+6, cy-wr-8, "Welle", {fill:"#475569", size:12});
+    linie(g, wl-16, cy, wrx+16, cy, "#94a3b8", 1, {dash:"14 3 3 3"});
+
+    var farbe = waerme > 0 && kuehl < 1
+      ? (waerme > 0.5 ? C.heiss : C.warm) : C.bF;
+    /* Laengsschnitt: Die Nabe erscheint als zwei Baender ueber und unter der
+       Welle. Ein durchgehendes Rechteck mit weisser Bohrung wuerde die Welle
+       verdecken. */
+    var band = (nr + dehnung) - (wr + dehnung);
+    rect(g, nabeX-70, cy-nr-dehnung, 140, band, farbe, C.bS, {sw:1.8});
+    rect(g, nabeX-70, cy+wr+dehnung, 140, band, farbe, C.bS, {sw:1.8});
+    txt(g, nabeX-70, cy-nr-dehnung-10, "Nabe", {fill:C.bS, size:12});
+
+    if(t < 0.28){
+      txt(g, wl, cy+wr+34, "Bohrung kleiner als die Welle: Übermaß", {fill:"#b45309", size:12});
+      linie(g, nabeX-70, cy-wr, nabeX+70, cy-wr, "#b45309", 1.4, {dash:"4 3"});
+    }
+    if(waerme > 0 && kuehl < 1){
+      for(var i=0;i<3;i++){
+        var x = nabeX - 40 + i*40;
+        pfad(g, "M"+x+","+(cy-nr-dehnung-14)+" q 6,-10 0,-20 q -6,-10 0,-20",
+          "none", C.heiss, {sw:2, opacity:waerme*(1-kuehl)});
+      }
+      txt(g, nabeX+80, cy-nr-30, "erwärmt", {fill:C.heiss, size:12,
+        opacity:waerme*(1-kuehl)});
+    }
+    if(kuehl > 0.2){
+      [-1,1].forEach(function(v){
+        for(var i=0;i<3;i++){
+          var x = nabeX - 40 + i*40;
+          kraftpfeil(g, x, cy + v*(nr+14), x, cy + v*(wr+3), "#dc2626", 2.4);
+        }
+      });
+      txt(g, nabeX+80, cy+nr+22, "Pressung", {fill:"#dc2626", size:12.5});
+      txt(g, wl, cy+wr+52, "Reibung überträgt jetzt das Drehmoment",
+        {fill:"#0f766e", size:12, opacity:kuehl});
+    }
+  }
+});
+
+verfahren({
+  id:"klemmnabe", gruppe:"kraft", name:"Klemmverbindung",
+  prinzip:"Eine geschlitzte Nabe wird mit einer Schraube zusammengezogen. Sie klemmt auf der Welle.",
+  phasen:[
+    {ab:0,    text:"Die geschlitzte Nabe sitzt mit leichtem Spiel auf der Welle."},
+    {ab:0.4,  text:"Die Klemmschraube wird angezogen, der Schlitz wird schmaler."},
+    {ab:0.75, text:"Die Nabe presst rundum auf die Welle – Reibung überträgt das Moment."}],
+  plus:["Stufenlos in Lage und Winkel einstellbar","Ohne Nut oder Bohrung in der Welle",
+        "Leicht zu lösen und zu versetzen"],
+  minus:["Nur mäßige Momente","Nabe wird durch den Schlitz geschwächt",
+         "Kann bei Überlast durchrutschen"],
+  loesbar:"ja, einfach", last:"mäßig", werkstoff:"metallisch",
+  dicht:"nein", aufwand:"gering",
+  einsatz:"Stellringe, Hebel, Riemenscheiben, Sensorhalter",
+  zeichnen:function(g, t){
+    var zieh = stufe(t, 0.4, 0.85);
+    var cx = 300, cy = 145, wr = 40, nr = 78;
+    var spalt = 14 * (1 - zieh) + 3;
+
+    g.appendChild(ns("circle", {cx:cx, cy:cy, r:nr, fill:C.bF, stroke:C.bS, "stroke-width":1.8}));
+    g.appendChild(ns("circle", {cx:cx, cy:cy, r:wr, fill:"#e2e8f0", stroke:"#475569", "stroke-width":1.6}));
+    /* Schlitz nach unten */
+    rect(g, cx-spalt/2, cy+wr-4, spalt, nr-wr+22, "#ffffff", C.bS, {sw:1.4});
+    /* Klemmschraube quer durch die beiden Backen */
+    var by = cy + nr - 6;
+    rect(g, cx-64, by, 128, 13, C.eF, C.eS, {sw:1.4});
+    rect(g, cx-76, by-3, 14, 19, C.eF, C.eS, {sw:1.4});
+    rect(g, cx+62, by-3, 14, 19, C.eF, C.eS, {sw:1.4});
+
+    txt(g, cx+nr+14, cy-nr+16, "geschlitzte Nabe", {fill:C.bS, size:12});
+    txt(g, cx+nr+14, cy+4, "Welle", {fill:"#475569", size:12});
+    txt(g, cx+nr+14, by+12, "Klemmschraube", {fill:C.eS, size:12});
+
+    if(zieh > 0.05){
+      [[-1,0],[1,0],[0,-1]].forEach(function(v){
+        var a = Math.atan2(v[1], v[0]);
+        for(var k=-1;k<=1;k++){
+          var w = a + k*0.42;
+          kraftpfeil(g, cx + Math.cos(w)*(wr+30), cy + Math.sin(w)*(wr+30),
+                     cx + Math.cos(w)*(wr+5), cy + Math.sin(w)*(wr+5), "#dc2626", 2.2);
+        }
+      });
+      txt(g, cx-nr-14, cy-nr-6, "Pressung rundum", {anchor:"end", fill:"#dc2626", size:12});
+      kraftpfeil(g, cx-92, by+7, cx-70, by+7, "#1d4ed8", 2.6);
+      kraftpfeil(g, cx+92, by+7, cx+70, by+7, "#1d4ed8", 2.6);
+    }
+    txt(g, cx-nr-14, cy+nr+30, "Schlitzbreite " + (spalt > 8 ? "offen" : "zusammengezogen"),
+      {anchor:"end", fill:"#64748b", size:11.5, weight:400});
+  }
+});
+
+verfahren({
+  id:"spannsatz", gruppe:"kraft", name:"Kegelspannsatz",
+  prinzip:"Zwei Kegelringe werden axial zusammengezogen. Dabei weiten sie sich nach außen und " +
+          "schrumpfen nach innen – sie klemmen Welle und Nabe gleichzeitig.",
+  phasen:[
+    {ab:0,    text:"Der Spannsatz liegt lose zwischen Welle und Nabe."},
+    {ab:0.35, text:"Die Spannschrauben ziehen die Kegelringe axial zusammen."},
+    {ab:0.7,  text:"Die Kegelflächen schieben die Ringe radial auseinander – die Verbindung klemmt."}],
+  plus:["Sehr hohe Momente, spielfrei","Lage und Winkel frei einstellbar",
+        "Ohne Nut, keine Kerbwirkung"],
+  minus:["Teures Zukaufteil","Braucht Bauraum im Durchmesser",
+         "Anziehreihenfolge und Drehmoment müssen stimmen"],
+  loesbar:"ja, durch Lösen der Schrauben", last:"sehr hoch, spielfrei",
+  werkstoff:"metallisch", dicht:"nein", aufwand:"mittel",
+  einsatz:"Riemenscheiben, Kupplungen, Antriebsräder",
+  zeichnen:function(g, t){
+    var zieh = stufe(t, 0.35, 0.85);
+    var cy = 145, wr = 30, nr = 96;
+    var lx = 140, rx = 500;
+    var weg = 26 * zieh;
+
+    rect(g, lx-40, cy-wr, (rx+40)-(lx-40), 2*wr, "#e2e8f0", "#475569");
+    txt(g, lx-36, cy-wr-8, "Welle", {fill:"#475569", size:12});
+    rect(g, lx, cy-nr, rx-lx, nr-wr-30, C.bF, C.bS, {sw:1.8});
+    rect(g, lx, cy+wr+30, rx-lx, nr-wr-30, C.bF, C.bS, {sw:1.8});
+    txt(g, lx+6, cy-nr-8, "Nabe", {fill:C.bS, size:12});
+
+    /* Kegelringe: aussen und innen, gegenlaeufig */
+    [-1,1].forEach(function(v){
+      var yA = cy + v*(wr + 2), yB = cy + v*(wr + 30);
+      var aus = 6 * zieh;
+      pfad(g, "M"+(lx+40+weg)+","+yA+" L"+(rx-40)+","+yA+
+              " L"+(rx-40)+","+(yB+v*aus)+" L"+(lx+40+weg)+","+(yB+v*aus)+" Z",
+        C.eF, C.eS, {sw:1.6});
+      pfad(g, "M"+(lx+30)+","+(yB+v*aus)+" L"+(rx-70-weg)+","+(yB+v*aus)+
+              " L"+(rx-40-weg)+","+yA+" L"+(lx+30)+","+yA+" Z",
+        "#bfdbfe", C.eS, {sw:1.4, opacity:0.9});
+    });
+    txt(g, rx+8, cy-wr-16, "Kegelringe", {fill:C.eS, size:12});
+
+    /* Spannschrauben */
+    rect(g, lx+10, cy-wr-26, 24, 12, C.eF, C.eS, {sw:1.3});
+    rect(g, lx+10, cy+wr+14, 24, 12, C.eF, C.eS, {sw:1.3});
+    if(zieh > 0.03){
+      kraftpfeil(g, lx+40, cy-wr-20, lx+40+weg+18, cy-wr-20, "#1d4ed8", 2.6);
+      kraftpfeil(g, lx+40, cy+wr+20, lx+40+weg+18, cy+wr+20, "#1d4ed8", 2.6);
+      txt(g, lx+44, cy-wr-30, "axial spannen", {fill:C.eS, size:11.5});
+      [-1,1].forEach(function(v){
+        for(var i=0;i<3;i++){
+          var x = lx+110+i*90;
+          /* nach innen auf die Welle */
+          kraftpfeil(g, x-9, cy + v*(wr+28), x-9, cy + v*(wr+4), "#dc2626", 2.2);
+          /* nach aussen auf die Nabe */
+          kraftpfeil(g, x+9, cy + v*(wr+32), x+9, cy + v*(nr-4), "#dc2626", 2.2);
+        }
+      });
+      txt(g, rx+8, cy+wr+40, "radial pressen", {fill:"#dc2626", size:12});
+    }
+  }
+});
+
+/* ----------------------------------------------------------- FORMSCHLUSS -- */
+
+verfahren({
+  id:"passfeder", gruppe:"form", name:"Passfeder",
+  prinzip:"Ein Stahlklotz in einer Nut überträgt das Drehmoment zwischen Welle und Nabe. " +
+          "Die Last drückt gegen die Flanken der Feder.",
+  phasen:[
+    {ab:0,    text:"Welle mit Nut, Passfeder und Nabe liegen bereit."},
+    {ab:0.3,  text:"Die Passfeder wird in die Wellennut eingelegt."},
+    {ab:0.55, text:"Die Nabe wird aufgeschoben – ihre Nut nimmt die Feder auf."},
+    {ab:0.8,  text:"Das Drehmoment drückt gegen die Flanken. Es wirkt Flächenpressung, kein Reibschluss."}],
+  plus:["Einfach, billig, überall bekannt","Nabe axial verschiebbar (Führung möglich)",
+        "Bei Überlast schert die Feder – das Bauteil bleibt heil"],
+  minus:["Nut schwächt die Welle stark (Kerbwirkung)","Spiel führt bei Lastwechsel zu Schlägen",
+         "Überträgt kein Axialkraft, Nabe muss extra gesichert werden"],
+  loesbar:"ja", last:"mäßig bis hoch, nicht für Lastwechsel",
+  werkstoff:"metallisch", dicht:"nein", aufwand:"gering",
+  einsatz:"Zahnräder, Riemenscheiben, Kupplungen auf Wellen",
+  zeichnen:function(g, t){
+    var legen = stufe(t, 0.3, 0.5), schieben = stufe(t, 0.55, 0.78), last = stufe(t, 0.8, 1);
+    var cy = 150, wr = 34, lx = 60, rx = 600;
+    var nutB = 70, nutT = 13, nutX = 250, nr = wr + 42;
+
+    /* Welle mit Nut in der Oberflaeche */
+    rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
+    rect(g, nutX, cy-wr, nutB, nutT, "#ffffff", "#475569", {sw:1.3});
+    txt(g, lx+4, cy+wr+20, "Welle mit Nut", {fill:"#475569", size:12});
+
+    /* Passfeder faellt in die Nut - sie ragt halb heraus */
+    var fedY = cy - wr - nutT - 58 + legen*58;
+    rect(g, nutX+2, fedY, nutB-4, 2*nutT, C.eF, C.eS, {sw:1.6, rx:2});
+    txt(g, nutX+nutB+12, fedY+12, "Passfeder", {fill:C.eS, size:12});
+
+    /* Nabe als zwei Baender - ein volles Rechteck wuerde die Welle verdecken.
+       Im oberen Band ist die Nut ausgespart, dort sitzt die Feder. */
+    var nabeX = 620 - schieben*(620-190), nb = 160, oNut = nabeX + 60;
+    pfad(g, "M"+nabeX+","+(cy-nr)+" L"+(nabeX+nb)+","+(cy-nr)+
+            " L"+(nabeX+nb)+","+(cy-wr)+" L"+(oNut+nutB)+","+(cy-wr)+
+            " L"+(oNut+nutB)+","+(cy-wr-nutT)+" L"+oNut+","+(cy-wr-nutT)+
+            " L"+oNut+","+(cy-wr)+" L"+nabeX+","+(cy-wr)+" Z", C.bF, C.bS, {sw:1.8});
+    rect(g, nabeX, cy+wr, nb, nr-wr, C.bF, C.bS, {sw:1.8});
+    txt(g, nabeX+nb+10, cy-nr+16, "Nabe mit Nut", {fill:C.bS, size:12});
+
+    if(last > 0.05){
+      kraftpfeil(g, nutX-52, cy-wr-6, nutX-4, cy-wr-6, "#dc2626", 3);
+      kraftpfeil(g, nutX+nutB+52, cy-wr+16, nutX+nutB+4, cy-wr+16, "#dc2626", 3);
+      txt(g, nutX-58, cy-wr-16, "Drehmoment", {anchor:"end", fill:"#dc2626", size:12});
+      txt(g, nutX+nutB+58, cy-wr+20, "Gegenkraft", {fill:"#dc2626", size:12});
+      txt(g, lx+4, cy+nr+34, "Die Flanken tragen – Flächenpressung, kein Reibschluss",
+        {fill:"#7c3aed", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"zahnwelle", gruppe:"form", name:"Zahnwellenverbindung",
+  prinzip:"Statt einer Feder übertragen viele Zähne rundum das Moment. Dadurch verteilt sich " +
+          "die Flächenpressung auf eine große Fläche.",
+  phasen:[
+    {ab:0,    text:"Zahnwelle und Nabe mit passender Innenverzahnung."},
+    {ab:0.35, text:"Die Nabe wird aufgeschoben, die Zähne greifen ineinander."},
+    {ab:0.75, text:"Alle Zahnflanken tragen gleichzeitig – deutlich höhere Momente als mit einer Passfeder."}],
+  plus:["Sehr hohe Momente, gleichmäßig verteilt","Gute Zentrierung, wenig Unwucht",
+        "Axial verschiebbar unter Last möglich"],
+  minus:["Teure Herstellung (Wälzfräsen, Räumen)","Nur mit passender Nabe verwendbar",
+         "Kerbwirkung am Zahnfuß"],
+  loesbar:"ja", last:"sehr hoch", werkstoff:"metallisch",
+  dicht:"nein", aufwand:"hoch",
+  einsatz:"Getriebe, Gelenkwellen, Schaltmuffen",
+  zeichnen:function(g, t){
+    var schieben = stufe(t, 0.35, 0.7), last = stufe(t, 0.75, 1);
+    var cx = 210, cy = 140, wr = 54, nr = 94, z = 12;
+
+    function zahnPfad(mx, my, r, zahnH, innen){
+      var d = "";
+      for(var i=0;i<z*2;i++){
+        var a = i * Math.PI / z;
+        var rr = (i % 2 === 0) ? r : r + (innen ? -zahnH : zahnH);
+        d += (i === 0 ? "M" : " L") + (mx + Math.cos(a)*rr).toFixed(1) + "," +
+             (my + Math.sin(a)*rr).toFixed(1);
+      }
+      return d + " Z";
+    }
+    function kreisPfad(mx, my, r){
+      return "M"+(mx-r)+","+my+" a "+r+","+r+" 0 1,0 "+(2*r)+",0 a "+r+","+r+" 0 1,0 "+(-2*r)+",0 Z";
+    }
+
+    pfad(g, zahnPfad(cx, cy, wr, 11, false), "#e2e8f0", "#475569", {sw:1.6});
+    txt(g, cx-wr, cy+nr+30, "Zahnwelle", {fill:"#475569", size:12});
+
+    /* Die Nabe als Ring zeichnen (Aussenkreis plus Zahnkontur als Loch),
+       sonst deckt ihre Bohrung die Welle zu. */
+    var nx = 520 - schieben*(520-cx);
+    var ring = pfad(g, kreisPfad(nx, cy, nr) + " " + zahnPfad(nx, cy, wr + 11, 11, true),
+      C.bF, C.bS, {sw:1.8});
+    ring.setAttribute("fill-rule", "evenodd");
+    txt(g, nx+nr+10, cy-nr+14, "Nabe", {fill:C.bS, size:12});
+
+    if(last > 0.05){
+      for(var i=0;i<z;i++){
+        var a = i * 2*Math.PI / z + 0.16;
+        kraftpfeil(g, cx + Math.cos(a)*(wr+30), cy + Math.sin(a)*(wr+30),
+                   cx + Math.cos(a)*(wr+8),  cy + Math.sin(a)*(wr+8), "#7c3aed", 2);
+      }
+      txt(g, cx+nr+30, cy+nr-10, "alle Flanken tragen gleichzeitig",
+        {fill:"#7c3aed", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"querstift", gruppe:"form", name:"Stiftverbindung",
+  prinzip:"Ein Stift geht quer durch Nabe und Welle. Er überträgt das Moment und sichert " +
+          "zugleich gegen axiales Verschieben.",
+  phasen:[
+    {ab:0,    text:"Nabe sitzt auf der Welle, die Querbohrung ist gemeinsam gebohrt."},
+    {ab:0.35, text:"Der Stift wird eingetrieben."},
+    {ab:0.75, text:"Der Stift überträgt das Moment – er wird dabei auf Abscheren belastet."}],
+  plus:["Sehr einfach und billig","Sichert gleichzeitig axial",
+        "Kann als Sollbruchstelle ausgelegt werden"],
+  minus:["Nur kleine Momente","Bohrung schwächt Welle und Nabe erheblich",
+         "Bohrung muss gemeinsam gefertigt werden"],
+  loesbar:"bedingt, Stift austreiben", last:"gering", werkstoff:"metallisch",
+  dicht:"nein", aufwand:"gering",
+  einsatz:"Handhebel, Stellräder, Sicherungen gegen Überlast",
+  zeichnen:function(g, t){
+    var treiben = stufe(t, 0.35, 0.7), last = stufe(t, 0.75, 1);
+    var cy = 160, wr = 32, lx = 110, rx = 520, cx = 300;
+
+    rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
+    var nr = wr + 34;
+    rect(g, cx-80, cy-nr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
+    rect(g, cx-80, cy+wr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
+    txt(g, lx, cy-wr-10, "Welle", {fill:"#475569", size:12});
+    txt(g, cx+86, cy-nr+16, "Nabe", {fill:C.bS, size:12});
+
+    /* Bohrung */
+    linie(g, cx-7, cy-nr, cx-7, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
+    linie(g, cx+7, cy-nr, cx+7, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
+
+    var stiftY = cy - nr - 70 + treiben*70;
+    rect(g, cx-7, stiftY, 14, 2*nr, C.eF, C.eS, {sw:1.6, rx:3});
+    txt(g, cx+18, stiftY+16, "Stift", {fill:C.eS, size:12});
+
+    if(treiben > 0 && treiben < 1){
+      kraftpfeil(g, cx, stiftY-38, cx, stiftY-12, "#b45309", 2.6);
+      txt(g, cx+14, stiftY-26, "eintreiben", {fill:"#b45309", size:11.5});
+    }
+    if(last > 0.05){
+      kraftpfeil(g, cx-104, cy-wr-12, cx-84, cy-wr-12, "#7c3aed", 3);
+      kraftpfeil(g, cx+104, cy+wr+12, cx+84, cy+wr+12, "#7c3aed", 3);
+      txt(g, lx, cy+nr+30, "Der Stift wird auf Abscheren belastet",
+        {fill:"#7c3aed", size:12, opacity:last});
+      linie(g, cx-16, cy-wr, cx+16, cy-wr, "#dc2626", 2.4, {opacity:last});
+      linie(g, cx-16, cy+wr, cx+16, cy+wr, "#dc2626", 2.4, {opacity:last});
+    }
+  }
+});
+
+verfahren({
+  id:"schnapp", gruppe:"form", name:"Schnappverbindung",
+  prinzip:"Eine federnde Nase wird beim Fügen elastisch verformt und rastet dahinter wieder ein.",
+  phasen:[
+    {ab:0,    text:"Das Kunststoffteil mit der Rastnase steht vor der Öffnung."},
+    {ab:0.3,  text:"Beim Einschieben wird die Nase elastisch weggebogen."},
+    {ab:0.62, text:"Hinter der Kante federt sie zurück und rastet ein."},
+    {ab:0.85, text:"Jetzt hält die Verbindung formschlüssig – ganz ohne zusätzliches Teil."}],
+  plus:["Kein zusätzliches Verbindungselement","Montage in Sekunden, ohne Werkzeug",
+        "Sehr günstig bei großen Stückzahlen"],
+  minus:["Nur kleine Kräfte","Kunststoff altert und kriecht",
+         "Oft nur einmal lösbar, Nase bricht leicht ab"],
+  loesbar:"je nach Bauform, oft nur einmal", last:"gering",
+  werkstoff:"vor allem Kunststoff", dicht:"nein", aufwand:"sehr gering",
+  einsatz:"Gehäuse, Abdeckungen, Steckverbinder, Clips",
+  zeichnen:function(g, t){
+    var ein = stufe(t, 0.3, 0.62), raste = stufe(t, 0.62, 0.85), fest = stufe(t, 0.85, 1);
+    var cx = 300, py = 120, pd = 20;            /* Platte mit Loch */
+    var lochB = 46;
+
+    /* Gehaeuseplatte mit Durchbruch */
+    rect(g, 80, py, (cx-lochB/2)-80, pd, C.bF, C.bS, {sw:1.8});
+    rect(g, cx+lochB/2, py, 520-(cx+lochB/2), pd, C.bF, C.bS, {sw:1.8});
+    txt(g, 86, py-10, "Gehäuse mit Rastöffnung", {fill:C.bS, size:12});
+
+    /* Rasthaken faehrt von unten durch das Loch */
+    var weg = 178 * ein;
+    var hy = 262 - weg;                          /* Oberkante des Hakens */
+    rect(g, cx-15, hy, 30, 158, C.eF, C.eS, {sw:1.8});
+    txt(g, cx+22, hy+126, "Rasthaken", {fill:C.eS, size:12});
+
+    /* Widerhaken: im Loch zusammengedrueckt, darueber federt er auf */
+    var offen = Math.max(raste, 1 - Math.min(1, ein*2.2));   /* im Loch schmal */
+    var breit = 15 + 22 * offen;
+    pfad(g, "M"+(cx-15)+","+(hy+34)+" L"+(cx-breit)+","+(hy+34)+" L"+(cx-15)+","+hy+" Z",
+      C.eF, C.eS, {sw:1.6});
+    pfad(g, "M"+(cx+15)+","+(hy+34)+" L"+(cx+breit)+","+(hy+34)+" L"+(cx+15)+","+hy+" Z",
+      C.eF, C.eS, {sw:1.6});
+
+    if(ein < 1){
+      kraftpfeil(g, cx, hy+186, cx, hy+156, "#1d4ed8", 3);
+      txt(g, cx+14, hy+176, "einschieben", {fill:"#1d4ed8", size:11.5});
+    }
+    if(ein > 0.15 && raste < 0.5){
+      kraftpfeil(g, cx-64, hy+18, cx-30, hy+18, "#b45309", 2.4);
+      kraftpfeil(g, cx+64, hy+18, cx+30, hy+18, "#b45309", 2.4);
+      txt(g, cx-70, hy+8, "elastisch verformt", {anchor:"end", fill:"#b45309", size:11.5});
+    }
+    if(fest > 0.05){
+      kraftpfeil(g, cx, hy+186, cx, hy+214, "#7c3aed", 3);
+      txt(g, cx+14, hy+206, "Last zieht am Haken", {fill:"#7c3aed", size:11.5});
+      kraftpfeil(g, cx-30, py-24, cx-30, py-4, "#7c3aed", 2.4);
+      kraftpfeil(g, cx+30, py-24, cx+30, py-4, "#7c3aed", 2.4);
+      txt(g, cx+56, py-14, "die Widerhaken stützen sich auf der Platte ab",
+        {fill:"#7c3aed", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"bolzen", gruppe:"form", name:"Bolzen mit Splint",
+  prinzip:"Ein Bolzen verbindet zwei Laschen gelenkig. Ein Splint sichert ihn gegen Herausfallen.",
+  phasen:[
+    {ab:0,    text:"Zwei Laschen mit fluchtenden Bohrungen."},
+    {ab:0.3,  text:"Der Bolzen wird durchgesteckt."},
+    {ab:0.62, text:"Der Splint wird eingesetzt und aufgebogen."},
+    {ab:0.85, text:"Die Verbindung überträgt die Kraft und bleibt beweglich."}],
+  plus:["Bleibt gelenkig beweglich","Schnell und ohne Werkzeug lösbar",
+        "Sehr einfache Bauteile"],
+  minus:["Nur Querkräfte, kein Drehmoment um die Bolzenachse","Spiel im Gelenk, Verschleiß",
+         "Splint ist ein Verschleißteil"],
+  loesbar:"ja, sehr einfach", last:"mäßig", werkstoff:"metallisch",
+  dicht:"nein", aufwand:"sehr gering",
+  einsatz:"Anhängerkupplungen, Hydraulikzylinder, Landmaschinen",
+  zeichnen:function(g, t){
+    var stecken = stufe(t, 0.3, 0.58), splint = stufe(t, 0.62, 0.82), last = stufe(t, 0.85, 1);
+    var cy = 150, cx = 300, r = 20;
+
+    pfad(g, "M60,"+(cy-26)+" L"+(cx-6)+","+(cy-26)+" A 26 26 0 0 1 "+(cx-6)+","+(cy+26)+
+            " L60,"+(cy+26)+" Z", C.aF, C.aS, {sw:1.8});
+    pfad(g, "M540,"+(cy-26)+" L"+(cx+6)+","+(cy-26)+" A 26 26 0 0 0 "+(cx+6)+","+(cy+26)+
+            " L540,"+(cy+26)+" Z", C.bF, C.bS, {sw:1.8});
+    g.appendChild(ns("circle", {cx:cx, cy:cy, r:r, fill:"#ffffff", stroke:"#475569",
+      "stroke-width":1.4}));
+    txt(g, 66, cy-36, "Lasche A", {fill:C.aS, size:12});
+    txt(g, 470, cy-36, "Lasche B", {fill:C.bS, size:12});
+
+    var by = cy - 120 + stecken*120;
+    rect(g, cx-r+2, by-16, 2*r-4, 116, C.eF, C.eS, {sw:1.8, rx:3});
+    rect(g, cx-r-8, by-30, 2*r+16, 15, C.eF, C.eS, {sw:1.8, rx:2});
+    txt(g, cx+r+14, by-20, "Bolzen", {fill:C.eS, size:12});
+
+    if(splint > 0.05){
+      var a = 26 * splint;
+      linie(g, cx-2, by+92, cx-2-a, by+92+a*0.8, "#b45309", 2.6, {opacity:splint});
+      linie(g, cx+2, by+92, cx+2+a, by+92+a*0.8, "#b45309", 2.6, {opacity:splint});
+      txt(g, cx+34, by+108, "Splint", {fill:"#b45309", size:12, opacity:splint});
+    }
+    if(last > 0.05){
+      kraftpfeil(g, 40, cy, 66, cy, "#7c3aed", 3);
+      kraftpfeil(g, 560, cy, 534, cy, "#7c3aed", 3);
+      txt(g, 60, cy+64, "Der Bolzen wird auf Abscheren belastet – hier zweischnittig",
+        {fill:"#7c3aed", size:12, opacity:last});
+    }
+  }
+});
+
+verfahren({
+  id:"falz", gruppe:"form", name:"Falzverbindung",
+  prinzip:"Zwei Blechränder werden umgebogen, ineinander gehakt und flachgedrückt.",
+  phasen:[
+    {ab:0,    text:"Zwei Bleche mit umgebogenen Rändern."},
+    {ab:0.3,  text:"Die Ränder werden ineinander geschoben."},
+    {ab:0.6,  text:"Der Falz wird flachgedrückt."},
+    {ab:0.85, text:"Fertig: eine formschlüssige Verbindung ganz ohne Zusatzteil."}],
+  plus:["Kein Verbindungselement nötig","Auch bei sehr dünnen Blechen",
+        "Sehr günstig, gut automatisierbar"],
+  minus:["Nur für dünne, umformbare Bleche","Geringe Festigkeit quer zum Falz",
+         "Nicht zerstörungsfrei lösbar"],
+  loesbar:"nein", last:"gering", werkstoff:"dünne Bleche, umformbar",
+  dicht:"bedingt, mit Dichtmasse", aufwand:"gering, aber Werkzeug nötig",
+  einsatz:"Konservendosen, Lüftungskanäle, Karosseriebau",
+  zeichnen:function(g, t){
+    var schieben = stufe(t, 0.3, 0.55), pressen = stufe(t, 0.6, 0.85);
+    var cy = 150, dick = 12;
+    var off = 120 * (1 - schieben);
+    var h = 40 - 26*pressen;
+
+    pfad(g, "M60,"+(cy-dick/2)+" L"+(250-off)+","+(cy-dick/2)+
+            " L"+(250-off)+","+(cy-dick/2-h)+" L"+(250-off-30)+","+(cy-dick/2-h)+
+            " L"+(250-off-30)+","+(cy-dick/2-h+dick)+" L"+(250-off-dick)+","+(cy-dick/2-h+dick)+
+            " L"+(250-off-dick)+","+(cy+dick/2)+" L60,"+(cy+dick/2)+" Z",
+      C.aF, C.aS, {sw:1.8});
+    pfad(g, "M560,"+(cy-dick/2)+" L"+(250+off)+","+(cy-dick/2)+
+            " L"+(250+off)+","+(cy-dick/2-h-dick-2)+" L"+(250+off+42)+","+(cy-dick/2-h-dick-2)+
+            " L"+(250+off+42)+","+(cy-dick/2-h-2)+" L"+(250+off+dick)+","+(cy-dick/2-h-2)+
+            " L"+(250+off+dick)+","+(cy+dick/2)+" L560,"+(cy+dick/2)+" Z",
+      C.bF, C.bS, {sw:1.8});
+
+    txt(g, 66, cy-dick/2-14, "Blech A", {fill:C.aS, size:12});
+    txt(g, 500, cy-dick/2-14, "Blech B", {fill:C.bS, size:12});
+
+    if(schieben < 1){
+      kraftpfeil(g, 150, cy+34, 200, cy+34, "#1d4ed8", 2.6);
+      kraftpfeil(g, 470, cy+34, 420, cy+34, "#1d4ed8", 2.6);
+      txt(g, 250, cy+52, "ineinander schieben", {anchor:"middle", fill:"#1d4ed8", size:11.5});
+    }else if(pressen < 1){
+      kraftpfeil(g, 250, cy-dick/2-h-70, 250, cy-dick/2-h-16, "#b45309", 3);
+      txt(g, 262, cy-dick/2-h-50, "flachdrücken", {fill:"#b45309", size:11.5});
+    }else{
+      kraftpfeil(g, 40, cy, 66, cy, "#7c3aed", 3);
+      kraftpfeil(g, 580, cy, 554, cy, "#7c3aed", 3);
+      txt(g, 250, cy+52, "die Haken greifen ineinander",
+        {anchor:"middle", fill:"#7c3aed", size:12});
+    }
+  }
+});
+
+/* ---------------------------------------------------------- STOFFSCHLUSS -- */
+
+verfahren({
+  id:"schweissen", gruppe:"stoff", name:"Schweißen",
+  prinzip:"Der Grundwerkstoff wird örtlich aufgeschmolzen. Zusammen mit dem Zusatzwerkstoff " +
+          "entsteht beim Erstarren eine durchgehende Naht.",
+  phasen:[
+    {ab:0,    text:"Zwei Bleche mit V-Naht vorbereitet, Spalt gleichmäßig."},
+    {ab:0.22, text:"Der Lichtbogen zündet und schmilzt Grundwerkstoff und Draht auf."},
+    {ab:0.45, text:"Der Brenner wandert weiter, das Schmelzbad läuft mit."},
+    {ab:0.85, text:"Hinter dem Bad erstarrt die Naht. Der Grundwerkstoff ist mit aufgeschmolzen."}],
+  plus:["Höchste Festigkeit, oft so fest wie der Grundwerkstoff","Dicht und dauerhaft",
+        "Kein Zusatzteil, geringes Gewicht"],
+  minus:["Nur zerstörend lösbar","Wärmeeinflusszone und Verzug",
+         "Nur schweißgeeignete, ähnliche Werkstoffe"],
+  loesbar:"nein", last:"sehr hoch", werkstoff:"gleiche oder ähnliche, schweißgeeignet",
+  dicht:"ja", aufwand:"hoch, Qualifikation nötig",
+  einsatz:"Stahlbau, Behälterbau, Fahrzeugrahmen",
+  zeichnen:function(g, t){
+    var lauf = stufe(t, 0.22, 0.9);
+    var cy = 150, lx = 60, rx = 590, start = 120;
+    var bx = start + lauf*(505-start);
+
+    /* Draufsicht auf die Naht: So laesst sich zeigen, wie der Brenner
+       entlangwandert. Im Querschnitt liefe die Naht in die Zeichenebene. */
+    rect(g, lx, cy-96, rx-lx, 84, C.aF, C.aS, {sw:1.8});
+    rect(g, lx, cy+12, rx-lx, 84, C.bF, C.bS, {sw:1.8});
+    txt(g, lx+6, cy-104, "Blech A, Draufsicht", {fill:C.aS, size:12});
+    txt(g, lx+6, cy+112, "Blech B", {fill:C.bS, size:12});
+
+    /* noch offener Spalt vor dem Brenner */
+    linie(g, bx, cy, rx, cy, "#94a3b8", 1.4, {dash:"7 5"});
+    if(lauf < 1) txt(g, Math.min(rx-120, bx+40), cy-6, "Spalt", {fill:"#94a3b8", size:11.5});
+
+    /* erstarrte Naht: Band auf der Fuge, darauf die typischen Schuppen */
+    if(bx > start){
+      rect(g, start-6, cy-14, (bx-start)+6, 28, "#cbd5e1", "#64748b", {sw:1.2, rx:3});
+      for(var x = start+6; x < bx - 6; x += 13){
+        pfad(g, "M"+(x-9)+","+(cy+13)+" Q "+x+","+(cy-13)+" "+(x+9)+","+(cy+13),
+          "none", "#94a3b8", {sw:1});
+      }
+    }
+    if(lauf > 0.02 && lauf < 1){
+      txt(g, start, cy+44, "erstarrte Naht", {fill:"#475569", size:11.5});
+    }
+
+    /* Schmelzbad und Brenner */
+    if(lauf > 0 && lauf < 1){
+      g.appendChild(ns("ellipse", {cx:bx, cy:cy, rx:24, ry:15,
+        fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+      txt(g, bx+30, cy+36, "Schmelzbad", {fill:"#b45309", size:11.5});
+      rect(g, bx-12, cy-92, 24, 56, "#94a3b8", "#334155", {sw:1.4, rx:3});
+      linie(g, bx, cy-36, bx, cy-18, "#334155", 2);
+      pfad(g, "M"+(bx-16)+","+(cy-18)+" L"+bx+","+(cy-2)+" L"+(bx+16)+","+(cy-18)+" Z",
+        C.glut, "none", {opacity:0.9});
+      txt(g, bx-18, cy-98, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
+      kraftpfeil(g, bx+34, cy-70, bx+72, cy-70, "#334155", 2.2);
+      txt(g, bx+78, cy-66, "Vorschub", {fill:"#334155", size:11.5});
+    }
+    if(lauf >= 1){
+      txt(g, start, cy+58, "Grundwerkstoff war mit aufgeschmolzen – die Naht ist Teil des Bauteils",
+        {fill:"#c2410c", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"loeten", gruppe:"stoff", name:"Löten",
+  prinzip:"Nur das Lot schmilzt. Es fließt durch Kapillarwirkung in den Spalt und verbindet " +
+          "die Teile beim Erstarren. Der Grundwerkstoff bleibt fest.",
+  phasen:[
+    {ab:0,    text:"Zwei Teile mit schmalem, gleichmäßigem Lötspalt – etwa 0,05 bis 0,2 mm."},
+    {ab:0.25, text:"Die Stelle wird erwärmt. Der Grundwerkstoff bleibt dabei fest."},
+    {ab:0.5,  text:"Das Lot schmilzt und wird vom Spalt eingesaugt – Kapillarwirkung."},
+    {ab:0.82, text:"Nach dem Abkühlen ist der Spalt vollständig gefüllt."}],
+  plus:["Verbindet auch verschiedene Metalle","Geringer Verzug, niedrige Temperatur",
+        "Dicht und elektrisch leitend"],
+  minus:["Geringere Festigkeit als Schweißen","Spaltbreite und Sauberkeit entscheiden alles",
+         "Flussmittelreste können korrodieren"],
+  loesbar:"durch Erwärmen bedingt lösbar", last:"mäßig",
+  werkstoff:"auch unterschiedliche Metalle", dicht:"ja",
+  aufwand:"mittel", einsatz:"Elektronik, Rohrleitungen, Hartmetallschneiden",
+  zeichnen:function(g, t){
+    var waerme = stufe(t, 0.25, 0.5), fluss = stufe(t, 0.5, 0.82), kuehl = stufe(t, 0.82, 1);
+    var cy = 160, dick = 34, lx = 80, rx = 560, spalt = 10, mitte = 320;
+
+    var warmF = waerme > 0 && kuehl < 1
+      ? (waerme > 0.6 ? C.warm : "#fef3c7") : C.aF;
+    rect(g, lx, cy-dick, (mitte-spalt/2)-lx, 2*dick, warmF, C.aS, {sw:1.8});
+    rect(g, mitte+spalt/2, cy-dick, rx-(mitte+spalt/2), 2*dick, warmF, C.bS, {sw:1.8});
+    txt(g, lx+4, cy-dick-10, "Grundwerkstoff bleibt fest", {fill:C.aS, size:12});
+
+    /* Lot laeuft von oben in den Spalt */
+    var fuell = 2*dick * fluss;
+    rect(g, mitte-spalt/2, cy-dick, spalt, fuell, C.lot, C.lotS, {sw:1});
+    if(fluss > 0 && fluss < 1){
+      txt(g, mitte+22, cy-dick+fuell+4, "Kapillarwirkung zieht das Lot in den Spalt",
+        {fill:C.lotS, size:11.5});
+      kraftpfeil(g, mitte, cy-dick+fuell+30, mitte, cy-dick+fuell+6, "#b45309", 2.4);
+    }
+    if(waerme > 0 && kuehl < 1){
+      for(var i=0;i<3;i++){
+        var x = mitte - 60 + i*60;
+        pfad(g, "M"+x+","+(cy-dick-16)+" q 6,-10 0,-20 q -6,-10 0,-20",
+          "none", C.heiss, {sw:2, opacity:waerme*(1-kuehl)});
+      }
+      txt(g, mitte+80, cy-dick-46, "erwärmt", {fill:C.heiss, size:12, opacity:waerme*(1-kuehl)});
+    }
+    if(t < 0.25){
+      linie(g, mitte-spalt/2, cy+dick+10, mitte-spalt/2, cy+dick+30, "#64748b", 1);
+      linie(g, mitte+spalt/2, cy+dick+10, mitte+spalt/2, cy+dick+30, "#64748b", 1);
+      txt(g, mitte+16, cy+dick+34, "Lötspalt 0,05 bis 0,2 mm", {fill:"#64748b", size:11.5});
+    }
+    if(kuehl > 0.3){
+      txt(g, lx+4, cy+dick+30, "Das Lot hält – der Grundwerkstoff war nie flüssig",
+        {fill:C.lotS, size:12, opacity:kuehl});
+    }
+  }
+});
+
+verfahren({
+  id:"kleben", gruppe:"stoff", name:"Kleben",
+  prinzip:"Ein Klebstoff haftet an beiden Oberflächen (Adhäsion) und ist in sich fest " +
+          "(Kohäsion). Nichts schmilzt.",
+  phasen:[
+    {ab:0,    text:"Die Flächen werden gereinigt und aufgeraut – davon hängt fast alles ab."},
+    {ab:0.25, text:"Der Klebstoff wird aufgetragen."},
+    {ab:0.5,  text:"Die Teile werden gefügt und gepresst, der Klebstoff verteilt sich."},
+    {ab:0.78, text:"Beim Aushärten entsteht die Festigkeit. Die Last verteilt sich über die ganze Fläche."}],
+  plus:["Verbindet beliebige Werkstoffe, auch Metall mit Kunststoff","Keine Wärme, kein Verzug",
+        "Gleichmäßige Lastverteilung, dichtet zugleich"],
+  minus:["Aushärtezeit, Oberflächen müssen vorbereitet sein","Empfindlich gegen Wärme, Feuchte und Schälen",
+         "Alterung schwer vorhersagbar"],
+  loesbar:"nein, nur zerstörend", last:"mäßig, große Fläche nötig",
+  werkstoff:"nahezu beliebig, auch gemischt", dicht:"ja",
+  aufwand:"mittel, Vorbehandlung entscheidend",
+  einsatz:"Karosseriebau, Luftfahrt, Elektronik, Fassaden",
+  zeichnen:function(g, t){
+    var auftrag = stufe(t, 0.25, 0.48), fuegen = stufe(t, 0.5, 0.74), haerten = stufe(t, 0.78, 1);
+    var cy = 168, dick = 26, lx = 110, rx = 530;
+    var abstand = 66 * (1 - fuegen) + 8;
+
+    rect(g, lx, cy, rx-lx, dick, C.bF, C.bS, {sw:1.8});
+    txt(g, lx+4, cy+dick+18, "Fügeteil B", {fill:C.bS, size:12});
+
+    /* Klebstoffraupe */
+    if(auftrag > 0){
+      var breiteK = (rx-lx-40) * Math.min(1, auftrag + fuegen);
+      var hoeheK = fuegen > 0 ? 8 : 14;
+      rect(g, lx+20, cy-hoeheK, breiteK, hoeheK, haerten > 0.5 ? "#c4b5fd" : C.kleb,
+        C.klebS, {sw:1.2, rx:3});
+    }
+    rect(g, lx, cy-abstand-dick, rx-lx, dick, C.aF, C.aS, {sw:1.8});
+    txt(g, lx+4, cy-abstand-dick-10, "Fügeteil A", {fill:C.aS, size:12});
+
+    if(t < 0.25){
+      txt(g, lx+20, cy-abstand-dick-32, "Flächen reinigen und aufrauen",
+        {fill:"#64748b", size:12});
+    }
+    if(auftrag > 0 && fuegen < 1){
+      kraftpfeil(g, 300, cy-abstand-dick-54, 300, cy-abstand-dick-22, "#1d4ed8", 2.6);
+      txt(g, 312, cy-abstand-dick-40, "fügen und pressen", {fill:"#1d4ed8", size:11.5});
+    }
+    if(haerten > 0.1){
+      txt(g, lx+20, cy-abstand-dick-32, "ausgehärtet", {fill:C.klebS, size:12, opacity:haerten});
+      kraftpfeil(g, lx-14, cy-abstand-dick+dick/2, lx-52, cy-abstand-dick+dick/2, "#c2410c", 3);
+      kraftpfeil(g, rx+14, cy+dick/2, rx+52, cy+dick/2, "#c2410c", 3);
+      txt(g, lx+20, cy+dick+40,
+        "Adhäsion hält am Bauteil, Kohäsion hält den Klebstoff zusammen",
+        {fill:C.klebS, size:12, opacity:haerten});
+    }
+  }
+});
+
+/* ---------------------------------------------------------- SONDERFORMEN -- */
+
+verfahren({
+  id:"nieten", gruppe:"sonder", name:"Nieten",
+  prinzip:"Der Nietschaft wird gestaucht. Er füllt die Bohrung formschlüssig aus und zieht " +
+          "die Bleche zugleich kraftschlüssig zusammen.",
+  wirkt:"form- und kraftschlüssig",
+  phasen:[
+    {ab:0,    text:"Der Niet steckt in der gemeinsamen Bohrung beider Bleche."},
+    {ab:0.32, text:"Der Setzkopf wird gestaucht – der Schaft füllt die Bohrung aus."},
+    {ab:0.7,  text:"Beim Abkühlen und Zurückfedern zieht der Niet die Bleche zusammen."}],
+  plus:["Sehr zuverlässig, gut prüfbar","Verbindet auch unterschiedliche Werkstoffe",
+        "Keine Wärmeeinflusszone wie beim Schweißen"],
+  minus:["Nicht zerstörungsfrei lösbar","Bohrungen schwächen die Bleche",
+         "Beidseitiger Zugang nötig (außer beim Blindniet)"],
+  loesbar:"nein, Niet muss aufgebohrt werden", last:"hoch, vor allem quer",
+  werkstoff:"auch gemischt", dicht:"bedingt", aufwand:"mittel",
+  einsatz:"Flugzeugbau, Leichtbau, Blechkonstruktionen",
+  zeichnen:function(g, t){
+    var stauch = stufe(t, 0.32, 0.66), zieh = stufe(t, 0.7, 1);
+    var cx = 300, oben = 80, dick = 26;
+    var lx = cx-190, rx = cx+190;
+    var y1u = oben + dick, y2u = y1u + dick - 4*zieh;
+
+    rect(g, lx, oben, rx-lx, dick, C.aF, C.aS, {sw:1.8});
+    rect(g, lx, y1u, rx-lx, dick - 4*zieh, C.bF, C.bS, {sw:1.8});
+
+    rect(g, cx-30, oben-14, 60, 14, C.eF, C.eS, {sw:1.6, rx:3});
+    rect(g, cx-14, oben, 28, y2u-oben, C.eF, C.eS, {sw:1.6});
+
+    /* Schliesskopf entsteht */
+    var kh = 4 + 12*stauch, kb = 16 + 20*stauch;
+    pfad(g, "M"+(cx-kb)+","+y2u+" Q "+cx+","+(y2u+kh*1.8)+" "+(cx+kb)+","+y2u+" Z",
+      C.eF, C.eS, {sw:1.6});
+    txt(g, cx+kb+12, y2u+12, "Schließkopf", {fill:C.eS, size:12});
+    txt(g, cx+34, oben-4, "Setzkopf", {fill:C.eS, size:12});
+
+    if(stauch > 0 && stauch < 1){
+      kraftpfeil(g, cx, y2u+70, cx, y2u+kh+10, "#b45309", 3);
+      txt(g, cx+14, y2u+56, "stauchen", {fill:"#b45309", size:11.5});
+    }
+    if(zieh > 0.05){
+      kraftpfeil(g, cx-70, oben-30, cx-70, oben-6, "#1d4ed8", 2.4);
+      kraftpfeil(g, cx-70, y2u+30, cx-70, y2u+6, "#1d4ed8", 2.4);
+      txt(g, cx-84, oben-34, "klemmt", {anchor:"end", fill:"#1d4ed8", size:11.5});
+      kraftpfeil(g, lx-40, oben+dick/2, lx-8, oben+dick/2, "#7c3aed", 2.8);
+      kraftpfeil(g, rx+40, y1u+dick/2, rx+8, y1u+dick/2, "#7c3aed", 2.8);
+      txt(g, lx, y2u+56, "Der Schaft füllt die Bohrung aus – zusätzlich Formschluss",
+        {fill:"#7c3aed", size:12, opacity:zieh});
+    }
+  }
+});
+
+verfahren({
+  id:"clinchen", gruppe:"sonder", name:"Clinchen",
+  prinzip:"Ein Stempel drückt beide Bleche in eine Matrize. Der Werkstoff fließt und verhakt " +
+          "sich – ganz ohne Zusatzteil.",
+  wirkt:"formschlüssig durch Umformen",
+  phasen:[
+    {ab:0,    text:"Zwei Bleche liegen über der Matrize."},
+    {ab:0.3,  text:"Der Stempel drückt die Bleche in die Matrize."},
+    {ab:0.62, text:"Der Werkstoff fließt seitlich aus – es entsteht ein Hinterschnitt."},
+    {ab:0.85, text:"Stempel zurück: Die Bleche sind ineinander verhakt."}],
+  plus:["Kein Zusatzteil, keine Bohrung","Auch beschichtete Bleche, kein Lackschaden",
+        "Sehr schnell und günstig"],
+  minus:["Nur dünne, umformbare Bleche","Beidseitiger Zugang nötig",
+         "Sichtbare Ausbeulung auf der Rückseite"],
+  loesbar:"nein", last:"gering bis mäßig", werkstoff:"dünne Bleche, auch gemischt",
+  dicht:"nein", aufwand:"gering, aber Werkzeug nötig",
+  einsatz:"Karosseriebau, Haushaltsgeräte, Lüftungstechnik",
+  zeichnen:function(g, t){
+    var druck = stufe(t, 0.3, 0.62), fliess = stufe(t, 0.62, 0.85), zurueck = stufe(t, 0.85, 1);
+    var cx = 300, cy = 150, dick = 13;
+    var tief = 30 * druck;
+    var breite = 30 + 16*fliess;
+
+    /* Matrize */
+    pfad(g, "M120,"+(cy+30)+" L"+(cx-46)+","+(cy+30)+" L"+(cx-46)+","+(cy+72)+
+            " L"+(cx+46)+","+(cy+72)+" L"+(cx+46)+","+(cy+30)+" L480,"+(cy+30)+
+            " L480,"+(cy+92)+" L120,"+(cy+92)+" Z", "#cbd5e1", "#475569", {sw:1.6});
+    txt(g, 126, cy+108, "Matrize", {fill:"#475569", size:12});
+
+    /* Bleche mit Napf */
+    function blech(yo, fill, stroke){
+      pfad(g, "M120,"+yo+" L"+(cx-breite)+","+yo+
+              " L"+(cx-breite+8)+","+(yo+tief)+" L"+(cx+breite-8)+","+(yo+tief)+
+              " L"+(cx+breite)+","+yo+" L480,"+yo+" L480,"+(yo+dick)+
+              " L"+(cx+breite-4)+","+(yo+dick)+" L"+(cx+breite-12)+","+(yo+tief+dick)+
+              " L"+(cx-breite+12)+","+(yo+tief+dick)+" L"+(cx-breite+4)+","+(yo+dick)+
+              " L120,"+(yo+dick)+" Z", fill, stroke, {sw:1.6});
+    }
+    blech(cy+4, C.aF, C.aS);
+    blech(cy+4-dick-1, C.bF, C.bS);
+    txt(g, 126, cy-24, "zwei Bleche", {fill:C.bS, size:12});
+
+    /* Stempel */
+    var sy = cy - 58 + (zurueck > 0 ? (1-zurueck)*tief : tief);
+    rect(g, cx-24, sy-70, 48, 78, "#94a3b8", "#334155", {sw:1.5, rx:3});
+    txt(g, cx+32, sy-56, "Stempel", {fill:"#334155", size:12});
+    if(druck > 0 && zurueck < 1){
+      kraftpfeil(g, cx, sy-92, cx, sy-74, "#b45309", 3);
+    }
+    if(fliess > 0.2){
+      kraftpfeil(g, cx-breite-40, cy+tief+8, cx-breite-10, cy+tief+8, "#7c3aed", 2.4);
+      kraftpfeil(g, cx+breite+40, cy+tief+8, cx+breite+10, cy+tief+8, "#7c3aed", 2.4);
+      txt(g, cx+breite+46, cy+tief+12, "Hinterschnitt", {fill:"#7c3aed", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"schraubkleben", gruppe:"sonder", name:"Geklebte Schraube",
+  prinzip:"Klebstoff im Gewinde füllt das Spiel aus und verhindert, dass sich die Schraube " +
+          "von selbst losdreht.",
+  wirkt:"kraft- und stoffschlüssig",
+  phasen:[
+    {ab:0,    text:"Schraube und Gewinde sind sauber und entfettet."},
+    {ab:0.28, text:"Flüssige Schraubensicherung wird auf das Gewinde gegeben."},
+    {ab:0.55, text:"Die Schraube wird eingedreht, der Klebstoff verteilt sich im Gewindespiel."},
+    {ab:0.82, text:"Unter Luftabschluss härtet er aus und blockiert das Losdrehen."}],
+  plus:["Sichert zuverlässig gegen Losdrehen","Dichtet das Gewinde ab",
+        "Kein zusätzliches Bauteil nötig"],
+  minus:["Nur bis etwa 150 °C","Losbrechmoment beim Lösen deutlich höher",
+         "Sauberkeit entscheidet über die Wirkung"],
+  loesbar:"ja, mit erhöhtem Losbrechmoment", last:"wie die Schraube selbst",
+  werkstoff:"metallische Gewinde", dicht:"ja", aufwand:"gering",
+  einsatz:"Überall dort, wo Erschütterungen Schrauben lockern",
+  zeichnen:function(g, t){
+    var auftrag = stufe(t, 0.28, 0.5), drehen = stufe(t, 0.55, 0.8), haerten = stufe(t, 0.82, 1);
+    var cx = 300, cy = 190, tiefe = 92;
+
+    rect(g, cx-150, cy-tiefe, 300, tiefe+40, C.bF, C.bS, {sw:1.8});
+    rect(g, cx-22, cy-tiefe, 44, tiefe, "#ffffff", C.bS, {sw:1.3});
+    for(var i=0;i<7;i++){
+      var y = cy - tiefe + 8 + i*12;
+      linie(g, cx-22, y, cx-14, y+6, C.bS, 1);
+      linie(g, cx+22, y, cx+14, y+6, C.bS, 1);
+    }
+    txt(g, cx+160, cy-tiefe+16, "Bauteil mit Innengewinde", {fill:C.bS, size:12});
+
+    var sy = cy - tiefe - 120 + drehen*116;
+    rect(g, cx-34, sy-20, 68, 20, C.eF, C.eS, {sw:1.6});
+    rect(g, cx-18, sy, 36, 104, C.eF, C.eS, {sw:1.6});
+    txt(g, cx+42, sy-6, "Schraube", {fill:C.eS, size:12});
+
+    if(auftrag > 0){
+      var f = haerten > 0.4 ? "#a78bfa" : C.kleb;
+      if(drehen < 0.1){
+        rect(g, cx-19, sy+64, 38, 34, f, C.klebS, {sw:1.1, rx:4, opacity:auftrag});
+        txt(g, cx+46, sy+84, "Schraubensicherung auftragen",
+          {fill:C.klebS, size:11.5, opacity:auftrag});
+      }else{
+        rect(g, cx-22, cy-tiefe, 4, tiefe, f, "none", {opacity:0.9});
+        rect(g, cx+18, cy-tiefe, 4, tiefe, f, "none", {opacity:0.9});
+      }
+    }
+    if(haerten > 0.1){
+      pfad(g, "M"+(cx+70)+","+(cy-tiefe+40)+" A 34 34 0 1 0 "+(cx+70)+","+(cy-tiefe+42),
+        "none", "#dc2626", {sw:2.4, opacity:haerten});
+      linie(g, cx+52, cy-tiefe+26, cx+92, cy-tiefe+62, "#dc2626", 3, {opacity:haerten});
+      txt(g, cx+104, cy-tiefe+50, "kein Losdrehen mehr",
+        {fill:"#dc2626", size:12, opacity:haerten});
+    }
+  }
+});
+
+/* ============================================================================
+   3  ANZEIGE
+   ========================================================================== */
+var GRUPPEN = {
+  kraft:  {name:"Kraftschluss", farbe:"#1d4ed8"},
+  form:   {name:"Formschluss",  farbe:"#7c3aed"},
+  stoff:  {name:"Stoffschluss", farbe:"#c2410c"},
+  sonder: {name:"Sonderform",   farbe:"#0f766e"}
+};
+
+var zustand = {};   /* je Gruppe: {aktiv, t, lauf} */
+
+function ausGruppe(gruppe){
+  return VERFAHREN.filter(function(v){ return v.gruppe === gruppe; });
+}
+
+function zeichneVerfahren(gruppe){
+  var z = zustand[gruppe];
+  var v = z.aktiv;
+  var svg = el("svg-" + gruppe);
+  leeren(svg); spitzen(svg, FARBEN);
+  var g = ns("g", {}); svg.appendChild(g);
+  v.zeichnen(g, z.t);
+
+  /* Phasentext: die letzte Phase, deren Startwert erreicht ist */
+  var ph = v.phasen[0];
+  for(var i=0;i<v.phasen.length;i++){ if(z.t >= v.phasen[i].ab) ph = v.phasen[i]; }
+  var p = el("phase-" + gruppe);
+  p.className = (z.t >= v.phasen[v.phasen.length-1].ab) ? "gut" : "merke";
+  p.innerHTML = "<b>Schritt " + (v.phasen.indexOf(ph)+1) + " von " + v.phasen.length + ":</b> " +
+    ph.text;
+}
+
+function infoSchreiben(gruppe){
+  var v = zustand[gruppe].aktiv;
+  el("info-" + gruppe).innerHTML =
+    "<h3>Wie es wirkt</h3><p>" + v.prinzip + "</p>" +
+    (v.wirkt ? "<p class='fussnote'>Wirkprinzip: <b>" + v.wirkt + "</b></p>" : "") +
+    "<div class='paar'>" +
+      "<div class='plus'><h4>Vorteile</h4><ul>" +
+        v.plus.map(function(s){ return "<li>" + s + "</li>"; }).join("") + "</ul></div>" +
+      "<div class='minus'><h4>Grenzen</h4><ul>" +
+        v.minus.map(function(s){ return "<li>" + s + "</li>"; }).join("") + "</ul></div>" +
+    "</div>";
+}
+
+function verfahrenWaehlen(gruppe, id){
+  var z = zustand[gruppe];
+  var liste = ausGruppe(gruppe);
+  z.aktiv = liste.filter(function(v){ return v.id === id; })[0] || liste[0];
+  z.t = 0;
+  el("reg-" + gruppe).value = 0;
+  if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
+  var kn = el("wahl-" + gruppe).querySelectorAll("button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].setAttribute("aria-pressed",
+      kn[i].getAttribute("data-id") === z.aktiv.id ? "true" : "false");
+  }
+  infoSchreiben(gruppe);
+  zeichneVerfahren(gruppe);
+}
+
+function abspielen(gruppe){
+  var z = zustand[gruppe];
+  if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
+  var dauer = 4200, start = null;
+  var von = z.t >= 0.999 ? 0 : z.t;
+  function schritt(zeit){
+    if(start === null) start = zeit;
+    var p = Math.min(1, (zeit - start) / dauer);
+    z.t = von + (1 - von) * p;
+    el("reg-" + gruppe).value = Math.round(z.t * 100);
+    zeichneVerfahren(gruppe);
+    if(p < 1){ z.lauf = requestAnimationFrame(schritt); } else { z.lauf = null; }
+  }
+  z.lauf = requestAnimationFrame(schritt);
+}
+
+function gruppeAufbauen(gruppe){
+  zustand[gruppe] = {aktiv:null, t:0, lauf:null};
+  var liste = ausGruppe(gruppe);
+  var wahl = el("wahl-" + gruppe);
+  liste.forEach(function(v){
+    var b = document.createElement("button");
+    b.textContent = v.name;
+    b.setAttribute("data-id", v.id);
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){ verfahrenWaehlen(gruppe, v.id); });
+    wahl.appendChild(b);
+  });
+  el("reg-" + gruppe).addEventListener("input", function(){
+    var z = zustand[gruppe];
+    if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
+    z.t = parseFloat(this.value) / 100;
+    zeichneVerfahren(gruppe);
+  });
+  document.querySelector('[data-play="' + gruppe + '"]')
+    .addEventListener("click", function(){ abspielen(gruppe); });
+
+  /* Eignungstabelle */
+  var h = "<thead><tr><th>Verfahren</th><th>Lösbar</th><th>Belastung</th><th>Werkstoffe</th>" +
+          "<th>Dicht</th><th>Aufwand</th><th>Typischer Einsatz</th></tr></thead><tbody>";
+  liste.forEach(function(v){
+    h += "<tr><td><b>" + v.name + "</b></td><td>" + v.loesbar + "</td><td>" + v.last +
+         "</td><td>" + v.werkstoff + "</td><td>" + v.dicht + "</td><td>" + v.aufwand +
+         "</td><td>" + v.einsatz + "</td></tr>";
+  });
+  el("tab-" + gruppe).innerHTML = h + "</tbody>";
+
+  verfahrenWaehlen(gruppe, liste[0].id);
+}
+
+/* ============================================================================
+   4  ÜBERBLICK
+   ========================================================================== */
+var PRINZIP = [
+  {name:"Kraftschluss", klasse:"kraft",
+   wirkung:"Reibung durch eine Normalkraft", grenze:"Rutschen",
+   loesbar:"meist zerstörungsfrei", spiel:"spielfrei", dicht:"nur mit Dichtung",
+   beispiele:"Schraube, Pressverband, Klemmnabe, Spannsatz"},
+  {name:"Formschluss", klasse:"form",
+   wirkung:"ineinandergreifende Formen", grenze:"Abscheren, Flächenpressung",
+   loesbar:"meist ja", spiel:"meist etwas Spiel", dicht:"nein",
+   beispiele:"Passfeder, Zahnwelle, Stift, Schnappnase, Bolzen, Falz"},
+  {name:"Stoffschluss", klasse:"stoff",
+   wirkung:"Schmelze, Lot oder Klebstoff", grenze:"Festigkeit der Verbindungsschicht",
+   loesbar:"nein, nur zerstörend", spiel:"spielfrei", dicht:"ja",
+   beispiele:"Schweißen, Löten, Kleben"}
+];
+
+var KRITERIEN = [
+  {id:"loesbar", frage:"Muss später zerstörungsfrei lösbar sein",
+   p:{kraft:3, form:3, stoff:-4},
+   grund:{kraft:"lässt sich lösen", form:"lässt sich lösen", stoff:"nur zerstörend zu trennen"}},
+  {id:"dicht", frage:"Muss dicht sein (Flüssigkeit oder Gas)",
+   p:{kraft:0, form:-2, stoff:3},
+   grund:{kraft:"nur mit zusätzlicher Dichtung", form:"dichtet nicht", stoff:"dichtet von selbst"}},
+  {id:"gemischt", frage:"Verschiedene Werkstoffe verbinden",
+   p:{kraft:2, form:2, stoff:1},
+   grund:{kraft:"unabhängig vom Werkstoff", form:"unabhängig vom Werkstoff",
+          grundStoff:"nur Kleben und Löten, Schweißen scheidet meist aus"}},
+  {id:"hoch", frage:"Sehr hohe Kräfte übertragen",
+   p:{kraft:2, form:2, stoff:2},
+   grund:{kraft:"Pressverband und Spannsatz sind stark", form:"Zahnwelle überträgt viel",
+          grundStoff:"Schweißen ist am stärksten"}},
+  {id:"duenn", frage:"Dünne Bleche verbinden",
+   p:{kraft:-2, form:1, stoff:3},
+   grund:{kraft:"Schrauben brauchen Klemmlänge", form:"Falzen und Clinchen passen",
+          grundStoff:"Kleben und Punktschweißen sind hier zu Hause"}},
+  {id:"lage", frage:"Genaue Lage dauerhaft sichern",
+   p:{kraft:1, form:3, stoff:2},
+   grund:{kraft:"kann bei Überlast rutschen", form:"die Form gibt die Lage vor",
+          grundStoff:"unverrückbar nach dem Aushärten"}},
+  {id:"wechsel", frage:"Wechselnde oder stoßartige Last",
+   p:{kraft:2, form:-2, stoff:1},
+   grund:{kraft:"spielfrei, deshalb gut", form:"Spiel führt zu Schlägen und Verschleiß",
+          grundStoff:"gut, solange nicht geschält wird"}},
+  {id:"schnell", frage:"Sehr schnelle Montage, große Stückzahl",
+   p:{kraft:0, form:3, stoff:1},
+   grund:{kraft:"Anziehen kostet Zeit", form:"Schnappen und Clinchen gehen in Sekunden",
+          grundStoff:"Aushärtezeit bremst"}}
+];
+
+function auswahlAufbauen(){
+  var f = el("fragen");
+  KRITERIEN.forEach(function(k){
+    var l = document.createElement("label");
+    l.className = "frage";
+    l.innerHTML = '<input type="checkbox" data-k="' + k.id + '"><span>' + k.frage + "</span>";
+    l.querySelector("input").addEventListener("change", auswerten);
+    f.appendChild(l);
+  });
+  auswerten();
+}
+
+function auswerten(){
+  var gewaehlt = [];
+  var kn = el("fragen").querySelectorAll("input");
+  for(var i=0;i<kn.length;i++){
+    if(kn[i].checked){
+      gewaehlt.push(KRITERIEN.filter(function(k){
+        return k.id === kn[i].getAttribute("data-k"); })[0]);
+    }
+  }
+  var punkte = {kraft:0, form:0, stoff:0};
+  var gruende = {kraft:[], form:[], stoff:[]};
+  gewaehlt.forEach(function(k){
+    ["kraft","form","stoff"].forEach(function(gr){
+      punkte[gr] += k.p[gr];
+      var g = (gr === "stoff" && k.grund.grundStoff) ? k.grund.grundStoff : k.grund[gr];
+      if(g) gruende[gr].push(g);
+    });
+  });
+
+  var max = Math.max(punkte.kraft, punkte.form, punkte.stoff, 1);
+  var min = Math.min(punkte.kraft, punkte.form, punkte.stoff, 0);
+  var out = "";
+  PRINZIP.forEach(function(pr){
+    var k = pr.klasse;
+    var anteil = gewaehlt.length === 0 ? 34
+      : Math.round((punkte[k] - min) / Math.max(1, max - min) * 100);
+    var top = gewaehlt.length > 0 && punkte[k] === max;
+    out += "<div class='ez" + (top ? " top" : "") + "'>" +
+      "<div class='titel'><span class='marke " + k + "'>" + pr.name + "</span></div>" +
+      "<div class='balken'><i style='width:" + Math.max(4, anteil) + "%;background:" +
+        GRUPPEN[k].farbe + "'></i></div>" +
+      "<div class='grund'>" +
+        (gewaehlt.length === 0
+          ? "Noch nichts angekreuzt &ndash; alle drei sind m&ouml;glich."
+          : (gruende[k].length ? gruende[k].join("; ") : "keine besonderen Vorteile")) +
+      "</div>" +
+      "<div class='grund' style='margin-top:6px'><b>Beispiele:</b> " + pr.beispiele + "</div>" +
+      "</div>";
+  });
+  el("empfehlung").innerHTML = out;
+}
+
+function prinziptabelle(){
+  var h = "<thead><tr><th>Prinzip</th><th>Was überträgt die Last?</th><th>Wo ist die Grenze?</th>" +
+          "<th>Lösbar</th><th>Spiel</th><th>Dicht</th><th>Beispiele</th></tr></thead><tbody>";
+  PRINZIP.forEach(function(p){
+    h += "<tr><td><span class='marke " + p.klasse + "'>" + p.name + "</span></td><td>" +
+         p.wirkung + "</td><td>" + p.grenze + "</td><td>" + p.loesbar + "</td><td>" +
+         p.spiel + "</td><td>" + p.dicht + "</td><td>" + p.beispiele + "</td></tr>";
+  });
+  el("tabPrinzip").innerHTML = h + "</tbody>";
+}
+
+/* Eigene, bewusst einfache Prinzipbilder.
+   Die grossen Zeichnungen verkleinert einzusetzen waere naheliegend, aber ihre
+   Beschriftungen werden dabei unleserlich klein. */
+function prinzipbilder(){
+  var cy = 96, lx = 40, rx = 280, d = 34;
+
+  /* --- Kraftschluss: Normalkraft presst, Reibung haelt --- */
+  var svg = el("svgUeK"); leeren(svg); spitzen(svg, FARBEN);
+  var g = ns("g", {}); svg.appendChild(g);
+  rect(g, lx, cy-d, rx-lx, d, C.aF, C.aS, {sw:1.8});
+  rect(g, lx, cy, rx-lx, d, C.bF, C.bS, {sw:1.8});
+  rect(g, 148, cy-d-16, 24, 2*d+16, C.eF, C.eS, {sw:1.6});
+  kraftpfeil(g, 160, cy-d-52, 160, cy-d-22, "#1d4ed8", 3);
+  kraftpfeil(g, 160, cy+d+52, 160, cy+d+22, "#1d4ed8", 3);
+  txt(g, 176, cy-d-36, "Kraft", {fill:"#1d4ed8", size:13});
+  kraftpfeil(g, 62, cy-10, 118, cy-10, "#0f766e", 2.6);
+  txt(g, 62, cy-18, "Reibung", {fill:"#0f766e", size:13});
+
+  /* --- Formschluss: die Teile greifen ineinander --- */
+  svg = el("svgUeF"); leeren(svg); spitzen(svg, FARBEN);
+  g = ns("g", {}); svg.appendChild(g);
+  var zx = 160, zb = 34, zt = 22;
+  pfad(g, "M"+lx+","+(cy-d)+" L"+rx+","+(cy-d)+" L"+rx+","+cy+
+          " L"+(zx+zb)+","+cy+" L"+(zx+zb)+","+(cy+zt)+" L"+zx+","+(cy+zt)+
+          " L"+zx+","+cy+" L"+lx+","+cy+" Z", C.aF, C.aS, {sw:1.8});
+  pfad(g, "M"+lx+","+(cy+d+zt)+" L"+rx+","+(cy+d+zt)+" L"+rx+","+(cy+zt+2)+
+          " L"+(zx+zb-2)+","+(cy+zt+2)+" L"+(zx+zb-2)+","+(cy+2)+" L"+(zx+2)+","+(cy+2)+
+          " L"+(zx+2)+","+(cy+zt+2)+" L"+lx+","+(cy+zt+2)+" Z", C.bF, C.bS, {sw:1.8});
+  kraftpfeil(g, 68, cy+zt+16, 128, cy+zt+16, "#7c3aed", 3);
+  kraftpfeil(g, 262, cy-16, 202, cy-16, "#7c3aed", 3);
+  txt(g, 68, cy+zt+40, "Last", {fill:"#7c3aed", size:13});
+  txt(g, zx+zb+14, cy-d-10, "Flanke trägt", {fill:"#7c3aed", size:13});
+
+  /* --- Stoffschluss: eine durchgehende Schicht verbindet --- */
+  svg = el("svgUeS"); leeren(svg); spitzen(svg, FARBEN);
+  g = ns("g", {}); svg.appendChild(g);
+  rect(g, lx, cy-d-6, rx-lx, d, C.aF, C.aS, {sw:1.8});
+  rect(g, lx, cy+8, rx-lx, d, C.bF, C.bS, {sw:1.8});
+  rect(g, lx, cy-6, rx-lx, 14, C.lot, C.lotS, {sw:1.4, rx:3});
+  txt(g, lx, cy-d-16, "Schmelze, Lot oder Klebstoff", {fill:C.lotS, size:13});
+  kraftpfeil(g, 92, cy+d+34, 52, cy+d+34, "#c2410c", 3);
+  kraftpfeil(g, 228, cy+d+34, 268, cy+d+34, "#c2410c", 3);
+  txt(g, 116, cy+d+38, "die Schicht trägt", {fill:"#c2410c", size:13});
+}
+
+/* ============================================================================
+   5  REITER UND START
+   ========================================================================== */
+function reiterSetzen(name){
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].setAttribute("aria-selected", kn[i].getAttribute("data-tab") === name ? "true" : "false");
+  }
+  var panels = document.querySelectorAll(".panel");
+  for(var j=0;j<panels.length;j++){ panels[j].hidden = panels[j].id !== "p-" + name; }
+  if(zustand[name]) zeichneVerfahren(name);
+  if(name === "ueberblick") prinzipbilder();
+}
+
+function start(){
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].addEventListener("click", function(){ reiterSetzen(this.getAttribute("data-tab")); });
+  }
+  ["kraft","form","stoff","sonder"].forEach(gruppeAufbauen);
+  prinziptabelle();
+  auswahlAufbauen();
+  prinzipbilder();
+  reiterSetzen("ueberblick");
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+</body>
+</html>
