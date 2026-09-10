@@ -149,6 +149,12 @@ svg{display:block; max-width:100%; height:auto}
 }
 .term[aria-expanded="true"]{background:transparent}
 .term[aria-expanded="true"]:hover{background:var(--primary-light)}
+.steuerung{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:12px 0;
+}
+.steuerung input[type=range]{flex:1 1 220px; min-width:160px}
 .legende{
   display:inline-flex; align-items:center; gap:5px; font-size:.8rem; color:var(--muted);
   font-weight:400;
@@ -342,73 +348,72 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
 
 <!-- ============================================================== FUNKTION -->
 <!-- ============================================================== FUNKTION -->
+<!-- ============================================================== FUNKTION -->
 <section class="panel" id="p-funktion" hidden>
 
   <div class="karte">
-    <h2>Das Gewinde ist eine schiefe Ebene</h2>
-    <p class="sub">Deshalb dreht sich eine Schraube nach dem
-      <span class="term" data-t="anziehen"></span> nicht von allein zur&uuml;ck.</p>
+    <h2>Warum dreht sich eine Schraube nach dem
+      <span class="term" data-t="anziehen"></span> nicht von allein zur&uuml;ck?</h2>
+    <p class="sub">Weil ein Gewinde nichts anderes ist als eine schiefe Ebene &ndash; und die ist
+      zu flach zum Rutschen.</p>
 
-    <div class="zwei">
-      <div>
-        <p>Wickelt man einen Gewindegang ab, entsteht eine schiefe Ebene. Ihr Anstieg ergibt sich
-        aus der <span class="term" data-t="steigung"></span> und dem
-        <span class="term" data-t="d2"></span>:</p>
+    <p>Schneidet man die Mantelfl&auml;che der Schraube auf und legt sie flach hin, wird aus einem
+    Gewindegang eine gerade schiefe Ebene. Ihre Breite ist der Umfang, ihre H&ouml;he die
+    <span class="term" data-t="steigung"></span>. Probier es aus:</p>
 
-        <div class="formel sym-only">tan&nbsp;&phi; = P / (&pi; &middot; d<sub>2</sub>)</div>
-        <p class="wort-only">Je gr&ouml;&szlig;er die H&ouml;he je Umdrehung und je kleiner der
-        Durchmesser, desto steiler die Ebene.</p>
-
-        <p>Die Reibung wirkt dem Zur&uuml;ckdrehen entgegen. Weil die Gewindeflanken um 60&deg;
-        geneigt sind, wird die Reibung um den Faktor 1,155 verst&auml;rkt:</p>
-
-        <div class="formel sym-only">tan&nbsp;&rho;&prime; = &mu;<sub>G</sub> / cos&nbsp;30&deg;
-          = 1,155 &middot; &mu;<sub>G</sub></div>
-        <p class="wort-only">Die schr&auml;gen Flanken pressen sich zus&auml;tzlich aneinander.
-        Dadurch wirkt die Reibung im Gewinde st&auml;rker als auf einer flachen Bahn.</p>
-
-        <p>Solange der <span class="term" data-t="steigungswinkel"></span> kleiner bleibt als der
-        <span class="term" data-t="reibungswinkel"></span>, wirkt die
-        <span class="term" data-t="selbsthemmung"></span>.</p>
-
-        <div class="regler">
-          <label for="gGewinde">Gewinde</label>
-          <select id="gGewinde"></select>
-          <output></output>
-
-          <label for="gMyG1"><span class="term" data-t="reibungszahl" data-s="&mu;<sub>G</sub>" data-cap="1"></span></label>
-          <input type="range" id="gMyG1" min="0.02" max="0.30" step="0.01" value="0.12">
-          <output id="oMyG1"></output>
-        </div>
-
-        <div class="ergebnis">
-          <div class="ez"><span class="l"><span class="term" data-t="steigungswinkel" data-cap="1"></span></span>
-            <span class="v" id="ezPhi">&ndash;</span></div>
-          <div class="ez"><span class="l"><span class="term" data-t="reibungswinkel" data-cap="1"></span></span>
-            <span class="v" id="ezRho">&ndash;</span></div>
-        </div>
-        <p id="hemmText"></p>
-      </div>
-      <div>
-        <svg class="zeichnung" id="svgEbene" viewBox="0 0 570 265" role="img"
-             aria-label="Abgewickelter Gewindegang als schiefe Ebene"></svg>
-        <p class="fussnote">Die Darstellung ist &uuml;berh&ouml;ht: Reale Anstiegswinkel liegen
-        bei etwa 2&deg; bis 3&deg;.</p>
-      </div>
+    <div class="felder">
+      <label class="feld">Gewinde
+        <select id="gGewinde"></select></label>
+      <label class="feld"><span class="term" data-t="reibungszahl" data-s="&mu;<sub>G</sub>" data-cap="1"></span>
+        <input type="number" id="gMyG1" min="0.02" max="0.30" step="0.01" value="0.12"></label>
     </div>
+
+    <div class="steuerung">
+      <button class="link" id="btnAbwickeln">&#9654;&nbsp; Abwickeln abspielen</button>
+      <input type="range" id="gAbwickeln" min="0" max="100" step="1" value="0"
+             aria-label="Abwickeln">
+      <label class="sw"><input type="checkbox" id="gUeberhoeht" checked><span class="track"></span>
+        Steigung &uuml;berh&ouml;ht</label>
+    </div>
+
+    <svg class="zeichnung" id="svgAbwickeln" viewBox="0 0 760 300" role="img"
+         aria-label="Die Mantelfl&auml;che der Schraube wird abgewickelt; aus der Schraubenlinie wird eine schiefe Ebene"></svg>
+    <p class="fussnote" id="abwickelHinweis"></p>
+
+    <p>Die Reibung wirkt dem Zur&uuml;ckdrehen entgegen. Weil die Gewindeflanken um 60&deg; geneigt
+    sind, pressen sie sich zus&auml;tzlich aneinander &ndash; die Reibung wirkt dadurch um den
+    Faktor 1,155 st&auml;rker als auf einer flachen Bahn.</p>
+
+    <div class="formel sym-only">tan&nbsp;&phi; = P / (&pi; &middot; d<sub>2</sub>)
+      &nbsp;&nbsp;&nbsp; tan&nbsp;&rho;&prime; = 1,155 &middot; &mu;<sub>G</sub></div>
+
+    <div class="ergebnis">
+      <div class="ez"><span class="l"><span class="term" data-t="steigungswinkel" data-cap="1"></span></span>
+        <span class="v" id="ezPhi">&ndash;</span></div>
+      <div class="ez"><span class="l"><span class="term" data-t="reibungswinkel" data-cap="1"></span></span>
+        <span class="v" id="ezRho">&ndash;</span></div>
+    </div>
+    <p id="hemmText"></p>
   </div>
 
   <div class="karte">
     <h2>Was beeinflusst die Spannkraft?</h2>
-    <p class="sub">Das Drehmoment und die Reibung &ndash; und die Reibung streut stark.</p>
+    <p class="sub">Zwei gleiche Schrauben, dasselbe Drehmoment &ndash; und trotzdem v&ouml;llig
+      verschiedene Ergebnisse.</p>
 
-    <p>Aufgebracht wird sie &uuml;ber das <span class="term" data-t="anziehdrehmoment"></span>. Der
-    gr&ouml;&szlig;te Teil davon geht aber gar nicht in die
-    <span class="term" data-t="vorspannkraft"></span>, sondern wird von der Reibung aufgezehrt
-    &ndash; unter dem Kopf und im Gewinde:</p>
+    <div class="regler">
+      <label for="gMoment"><span class="term" data-t="anziehdrehmoment" data-cap="1"></span></label>
+      <input type="range" id="gMoment" min="5" max="300" step="1" value="45">
+      <output id="oMoment"></output>
+    </div>
 
-    <svg class="zeichnung" id="svgAufteil" viewBox="0 0 700 150" role="img"
-         aria-label="Aufteilung des Anziehdrehmoments"></svg>
+    <svg class="zeichnung" id="svgVergleich" viewBox="0 0 760 372" role="img"
+         aria-label="Zwei gleiche Schrauben mit gleichem Drehmoment, aber unterschiedlicher Reibung"></svg>
+    <p id="vergleichText"></p>
+
+    <h3>Wohin geht das Drehmoment?</h3>
+    <p>Der gr&ouml;&szlig;te Teil erzeugt gar keine Spannkraft, sondern wird von der Reibung
+    aufgezehrt &ndash; unter dem Kopf und im Gewinde:</p>
 
     <div class="regler">
       <label for="gMyStreu"><span class="term" data-t="reibungszahl" data-s="&mu;" data-cap="1"></span></label>
@@ -416,7 +421,24 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
       <output id="oMyStreu"></output>
     </div>
 
+    <svg class="zeichnung" id="svgAufteil" viewBox="0 0 700 150" role="img"
+         aria-label="Aufteilung des Anziehdrehmoments"></svg>
     <p id="streuText"></p>
+
+    <h3>Wo landet man damit?</h3>
+    <p>Das Drehmoment ist eingestellt &ndash; wo die Spannkraft tats&auml;chlich landet, entscheidet
+    die Reibung. Sie muss zwischen zwei Grenzen bleiben: zu wenig, und die Verbindung rutscht;
+    zu viel, und die Schraube wird &uuml;berdehnt.</p>
+
+    <div class="regler">
+      <label for="gMindest">Ben&ouml;tigte Spannkraft</label>
+      <input type="range" id="gMindest" min="1" max="60" step="1" value="12">
+      <output id="oMindest"></output>
+    </div>
+
+    <svg class="zeichnung" id="svgStreuband" viewBox="0 0 760 340" role="img"
+         aria-label="Erreichte Spannkraft in Abh&auml;ngigkeit von der Reibungszahl mit oberer und unterer Grenze"></svg>
+    <p id="bandText"></p>
 
     <div class="warnung">
       <b>Praxisfolge:</b> Zieht man mit dem Drehmomentschl&uuml;ssel immer auf denselben Wert an,
@@ -1074,7 +1096,8 @@ var aktuellerReiter = "grundlagen";
 function reiterZeichnen(name){
   if(name === "grundlagen"){ zeichnePrinzip(); zeichneReib(); }
   if(name === "aufbau"){ zeichneSchraube(); zeichneGewindeprofil(); }
-  if(name === "funktion"){ zeichneEbene(); zeichneAufteilung(); }
+  if(name === "funktion"){ zeichneAbwickeln(); zeichneAufteilung();
+                          zeichneVergleich(); zeichneStreuband(); }
   if(name === "fortgeschritten") zeichneVerspannung();
   if(name === "berechnungen") rechne();
 }
@@ -1244,69 +1267,367 @@ function zeichneReib(){
   }
 }
 
-function zeichneEbene(){
-  var svg = el("svgEbene"); leeren(svg); pfeilDefs(svg);
+/* ============================================================================
+   FUNKTION  -  Abwickeln, Vergleich und Streuband
+   ========================================================================== */
+
+/* --- Abwickeln der Mantelflaeche -------------------------------------------
+   Gerechnet wird mit dem Biegeradius: Ein flacher Streifen der Laenge L, auf
+   einen Zylinder mit Radius R gewickelt, ueberdeckt den Winkel L/R. Waechst
+   der Radius auf Rt = R/(1-t), wird der ueberdeckte Winkel kleiner, bis der
+   Streifen bei t = 1 gerade ist. Genau das ist das Abwickeln.
+   Dargestellt wird schraeg von oben: die Tiefe wird gestaucht auf den Schirm
+   gelegt, die Steigung laeuft nach oben. */
+var abwickelT = 0;          /* 0 = Zylinder, 1 = abgewickelt */
+var abwickelLauf = null;
+
+function abwickelPunkt(u, L, Rt, delta, sk, cx, cy, hoehe, stauchung){
+  var phi = u / Rt - delta / 2;
+  var tiefe = Rt * (1 - Math.cos(phi));
+  return {
+    x: cx + Rt * Math.sin(phi) * sk,
+    y: cy - hoehe * (u / L) - stauchung * tiefe * sk
+  };
+}
+
+function abwickelKurve(L, Rt, delta, sk, cx, cy, hoehe, stauchung, punkte){
+  var d = "", i, p;
+  for(i = 0; i <= punkte; i++){
+    p = abwickelPunkt(L * i / punkte, L, Rt, delta, sk, cx, cy, hoehe, stauchung);
+    d += (i === 0 ? "M" : " L") + p.x.toFixed(2) + "," + p.y.toFixed(2);
+  }
+  return d;
+}
+
+function zeichneAbwickeln(){
+  var svg = el("svgAbwickeln"); leeren(svg); pfeilDefs(svg);
   var g = ns("g", {}); svg.appendChild(g);
 
-  var groesse = el("gGewinde").value;
-  var m = gewindeMasse(groesse);
-  var myG = parseFloat(el("gMyG1").value);
-  el("oMyG1").textContent = z(myG,2);
+  var m = gewindeMasse(el("gGewinde").value);
+  var t = Math.min(0.9995, abwickelT);
+  var ueberhoeht = el("gUeberhoeht").checked;
 
+  var R = m.d2 / 2;
+  var L = Math.PI * m.d2;              /* Umfang = Grundlinie des Dreiecks */
+  var breite = 470;
+  var sk = breite / L;                 /* Pixel je mm in Umfangsrichtung */
+  var hoehe = ueberhoeht ? 96 : m.P * sk;
+  var stauchung = 0.42;                /* Schraegansicht: Tiefe flacher zeichnen */
+
+  var Rt = R / (1 - t);
+  var delta = L / Rt;
+  var cx = 300, cy = 244;
+
+  /* Angedeutete Schraubenachse, solange noch etwas gewickelt ist - erst dadurch
+     ist erkennbar, worum sich das Band legt. */
+  if(delta > 1.2){
+    var achse = ns("g", {opacity: Math.min(0.5, (delta - 1.2) / 3)});
+    g.appendChild(achse);
+    var achsMitte = abwickelPunkt(L / 2, L, Rt, delta, sk, cx, cy, 0, stauchung);
+    achse.appendChild(ns("line", {x1:achsMitte.x, y1:cy + 16, x2:achsMitte.x, y2:cy - hoehe - 34,
+      stroke:"#94a3b8", "stroke-width":1.2, "stroke-dasharray":"12 3 3 3"}));
+    achse.appendChild(svgText(achsMitte.x + 8, cy - hoehe - 24, "Schraubenachse",
+      {size:11.5, fill:"#94a3b8", weight:600}));
+  }
+
+  var grund = abwickelKurve(L, Rt, delta, sk, cx, cy, 0, stauchung, 170);
+  var gewinde = abwickelKurve(L, Rt, delta, sk, cx, cy, hoehe, stauchung, 170);
+
+  /* Die Mantelflaeche selbst - genau sie wird abgewickelt und wird am Ende
+     zum Dreieck. Deshalb als Flaeche zwischen beiden Linien, nicht als
+     angedeuteter Zylinderkoerper. */
+  var rueck = "";
+  for(var i = 170; i >= 0; i--){
+    var q = abwickelPunkt(L * i / 170, L, Rt, delta, sk, cx, cy, 0, stauchung);
+    rueck += " L" + q.x.toFixed(2) + "," + q.y.toFixed(2);
+  }
+  g.appendChild(ns("path", {d:gewinde + rueck + " Z", fill:"#bfdbfe", opacity:0.5,
+    stroke:"none"}));
+
+  g.appendChild(ns("path", {d:grund, fill:"none", stroke:"#0f766e", "stroke-width":2.2}));
+  g.appendChild(ns("path", {d:gewinde, fill:"none", stroke:"#1d4ed8", "stroke-width":3}));
+
+  /* Anfang und Ende verbinden - daraus wird die Hoehe P */
+  var a0 = abwickelPunkt(0, L, Rt, delta, sk, cx, cy, 0, stauchung);
+  var aP = abwickelPunkt(0, L, Rt, delta, sk, cx, cy, hoehe, stauchung);
+  var e0 = abwickelPunkt(L, L, Rt, delta, sk, cx, cy, 0, stauchung);
+  var eP = abwickelPunkt(L, L, Rt, delta, sk, cx, cy, hoehe, stauchung);
+  g.appendChild(ns("line", {x1:a0.x, y1:a0.y, x2:aP.x, y2:aP.y,
+    stroke:"#b45309", "stroke-width":2, opacity:0.45}));
+  g.appendChild(ns("line", {x1:e0.x, y1:e0.y, x2:eP.x, y2:eP.y,
+    stroke:"#b45309", "stroke-width":2.6}));
+  g.appendChild(ns("circle", {cx:a0.x, cy:a0.y, r:4.5, fill:"#0f766e"}));
+  g.appendChild(ns("circle", {cx:eP.x, cy:eP.y, r:4.5, fill:"#1d4ed8"}));
+
+  /* Bemassung erst am Ende, sonst wandert sie mit */
+  if(t > 0.9){
+    var kl = (t - 0.9) / 0.1;
+    var mass = ns("g", {opacity:kl}); g.appendChild(mass);
+    masslinie(mass, a0.x, a0.y, e0.x, e0.y,
+      (zustand.sym ? "\u03c0 \u00b7 d\u2082" : "Umfang") + " = " + z(L, 1) + " mm", 34);
+    masslinie(mass, e0.x, e0.y, eP.x, eP.y,
+      zLabel("steigung", "P") + " = " + z(m.P, 2) + " mm", 26);
+    var phiGrad = Math.atan(m.P / L) * 180 / Math.PI;
+    /* Am Scheitel statt an der Hypotenuse - dort liegt der Text sonst darauf. */
+    mass.appendChild(svgText(eP.x - 10, eP.y - 12,
+      (zustand.sym ? "\u03c6" : "Anstieg") + " = " + z(phiGrad, 2) + "\u00b0",
+      {anchor:"end", size:13, fill:"#1d4ed8", weight:700}));
+  }
+
+  /* Kopfzeile und Legende */
+  g.appendChild(svgText(24, 30, t < 0.45
+      ? "Die Gewindeflanke l\u00e4uft schr\u00e4g um die Schraube herum \u2026"
+      : (t < 0.9 ? "\u2026 die Mantelfl\u00e4che wird aufgerollt \u2026"
+                 : "\u2026 und liegt flach als schiefe Ebene da."),
+    {size:13.5, fill:"#334155", weight:700}));
+  g.appendChild(ns("line", {x1:24, y1:50, x2:52, y2:50, stroke:"#1d4ed8", "stroke-width":3}));
+  g.appendChild(svgText(58, 54, "Gewindelinie", {size:12, fill:"#1d4ed8", weight:600}));
+  g.appendChild(ns("line", {x1:176, y1:50, x2:204, y2:50, stroke:"#0f766e", "stroke-width":2.2}));
+  g.appendChild(svgText(210, 54, "einmal rundherum", {size:12, fill:"#0f766e", weight:600}));
+  g.appendChild(ns("line", {x1:344, y1:50, x2:372, y2:50, stroke:"#b45309", "stroke-width":2.6}));
+  g.appendChild(svgText(378, 54, "Steigung", {size:12, fill:"#b45309", weight:600}));
+
+  el("abwickelHinweis").innerHTML = ueberhoeht
+    ? "Die Steigung ist stark \u00fcberh\u00f6ht gezeichnet, sonst w\u00e4re die Ebene kaum zu " +
+      "erkennen. Haken entfernen zeigt das echte Verh\u00e4ltnis."
+    : "Jetzt ma\u00dfst\u00e4blich: " + z(L,1) + " mm Umfang auf " + z(m.P,2) +
+      " mm Steigung. So flach ist ein Gewinde wirklich \u2013 deshalb h\u00e4lt es.";
+
+  winkelVergleich(m);
+}
+
+/* Anstiegswinkel gegen Reibungswinkel - die eigentliche Antwort auf die
+   Ueberschrift dieses Abschnitts. */
+function winkelVergleich(m){
+  var myG = parseFloat(el("gMyG1").value) || 0.12;
   var phi = Math.atan(m.P / (Math.PI * m.d2)) * 180 / Math.PI;
   var rho = Math.atan(1.155 * myG) * 180 / Math.PI;
 
-  el("ezPhi").innerHTML = z(phi,2) + "&deg;";
-  el("ezRho").innerHTML = z(rho,2) + "&deg;";
-
-  /* Ueberhoehte Darstellung: sonst waere das Dreieck nicht erkennbar. */
-  var x0 = 40, y0 = 185, breite = 215;
-  var hoehe = breite * Math.tan(phi * Math.PI / 180) * 8;
-  hoehe = Math.max(18, Math.min(hoehe, 120));
-
-  g.appendChild(ns("path",{d:"M"+x0+","+y0+" L"+(x0+breite)+","+y0+" L"+(x0+breite)+","+(y0-hoehe)+" Z",
-    fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":1.5}));
-
-  masslinie(g, x0, y0, x0+breite, y0,
-    (zustand.sym ? "π · d₂" : "Umfang") + " = " + z(Math.PI*m.d2,1) + " mm", 30);
-  masslinie(g, x0+breite, y0, x0+breite, y0-hoehe,
-    zLabel("steigung","P") + " = " + z(m.P,2) + " mm", 26);
-
-  /* Winkelmarkierung: der GEZEICHNETE Winkel, nicht der echte - die Ebene ist
-     ja bewusst ueberhoeht dargestellt. */
-  var alpha = Math.atan2(hoehe, breite);
-  var rBogen = 58;
-  g.appendChild(ns("path",{d:"M"+(x0+rBogen)+","+y0+" A "+rBogen+" "+rBogen+" 0 0 0 "+
-    (x0 + rBogen*Math.cos(alpha))+","+(y0 - rBogen*Math.sin(alpha)),
-    fill:"none", stroke:"#1d4ed8", "stroke-width":1.4}));
-  g.appendChild(svgText(x0 + rBogen + 8, y0 - rBogen*Math.sin(alpha)/2 - 2,
-    zustand.sym ? "φ" : "Anstieg", {size:15, fill:"#1d4ed8", weight:700}));
-
-  /* Klotz auf der Ebene */
-  var kx = x0 + breite*0.55;
-  var ky = y0 - hoehe*0.55;
-  g.appendChild(ns("rect",{x:kx-16, y:ky-26, width:32, height:22, fill:"#fed7aa", stroke:"#c2410c",
-    "stroke-width":1.4, transform:"rotate(" + (-Math.atan2(hoehe,breite)*180/Math.PI) + " " + kx + " " + ky + ")"}));
-
-  g.appendChild(svgText(20, 252, "Ein Gewindegang, abgewickelt.", {size:12.5, fill:"#64748b"}));
+  el("ezPhi").innerHTML = z(phi, 2) + "&deg;";
+  el("ezRho").innerHTML = z(rho, 2) + "&deg;";
 
   var t = el("hemmText");
   if(phi < rho){
     t.className = "gut";
-    t.innerHTML = "<b>" + grossErster(wort("selbsthemmung")) + " wirkt:</b> " +
-      wort("steigungswinkel", true) + " = " + z(phi,2) + "° ist kleiner als der " +
-      wort("reibungswinkel") + " = " + z(rho,2) + "°. Die Schraube dreht sich durch die " +
-      wort("vorspannkraft") + " allein nicht zurück.";
-    begriffeZeichnen(t);
+    t.innerHTML = "<b>" + grossErster(wort("selbsthemmung")) + " wirkt:</b> Die Ebene steigt mit " +
+      z(phi,2) + "\u00b0 an, die Reibung h&auml;lt aber bis " + z(rho,2) +
+      "\u00b0. Die Schraube dreht sich durch die " + wort("vorspannkraft") +
+      " allein nicht zur&uuml;ck &ndash; genau wie ein Gegenstand auf einer zu flachen " +
+      "Rampe liegen bleibt.";
   }else{
     t.className = "warnung";
-    t.innerHTML = "<b>Keine " + wort("selbsthemmung") + ":</b> " +
-      wort("steigungswinkel", true) + " = " + z(phi,2) + "° ist größer als der " +
-      wort("reibungswinkel") + " = " + z(rho,2) +
-      "°. Bei so geringer Reibung würde sich die Schraube von selbst lösen. " +
-      "Bei Regelgewinden tritt das praktisch nur bei sehr guter Schmierung auf.";
-    begriffeZeichnen(t);
+    t.innerHTML = "<b>Keine " + wort("selbsthemmung") + ":</b> Die Ebene steigt mit " +
+      z(phi,2) + "\u00b0 st&auml;rker an, als die Reibung mit " + z(rho,2) +
+      "\u00b0 halten kann. Bei so geringer Reibung w&uuml;rde sich die Schraube von selbst " +
+      "l&ouml;sen. Bei Regelgewinden tritt das praktisch nur bei sehr guter Schmierung auf.";
   }
+  begriffeZeichnen(t);
+}
+
+function abwickelSetzen(wert){
+  abwickelT = Math.max(0, Math.min(1, wert));
+  el("gAbwickeln").value = Math.round(abwickelT * 100);
+  zeichneAbwickeln();
+}
+
+function abwickelAbspielen(){
+  if(abwickelLauf){ cancelAnimationFrame(abwickelLauf); abwickelLauf = null; }
+  var dauer = 2600, start = null;
+  var von = abwickelT >= 0.999 ? 0 : abwickelT;
+  function schritt(zeit){
+    if(start === null) start = zeit;
+    var p = Math.min(1, (zeit - start) / dauer);
+    /* weich anfahren und ausrollen */
+    var weich = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;
+    abwickelSetzen(von + (1 - von) * weich);
+    if(p < 1){ abwickelLauf = requestAnimationFrame(schritt); }
+    else { abwickelLauf = null; }
+  }
+  abwickelLauf = requestAnimationFrame(schritt);
+}
+
+/* --- Spannkraft aus einem vorgegebenen Drehmoment --------------------------
+   Umkehrung der Drehmomentformel: Steht das Drehmoment fest, entscheidet
+   allein die Reibung, wie viel Spannkraft ankommt. */
+function vorspannkraftAusMoment(m, MAnmm, myG, myK){
+  return MAnmm / (beiwertGewinde(m, myG) + beiwertKopf(m, myK));
+}
+
+/* --- Zwei Schrauben, gleiches Drehmoment, andere Reibung ------------------- */
+function zeichneVergleich(){
+  var svg = el("svgVergleich"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var m = gewindeMasse(el("gGewinde").value);
+  var MA = parseFloat(el("gMoment").value);
+  el("oMoment").textContent = z(MA, 0) + " N·m";
+
+  var faelle = [
+    {name:"trocken, blank", my:0.20, x:60},
+    {name:"geölt",     my:0.10, x:420}
+  ];
+  var streck = klasseWerte("8.8", m.d).Rp * m.As;    /* Kraft an der Streckgrenze */
+  var maxF = Math.max(vorspannkraftAusMoment(m, MA*1000, 0.10, 0.10), streck) * 1.1;
+
+  g.appendChild(svgText(380, 26, "Gleiche Schraube " + m.bez + ", Klasse 8.8, gleiches Drehmoment " +
+    z(MA,0) + " N·m", {anchor:"middle", size:13, fill:"#334155", weight:700}));
+
+  var werte = [];
+  faelle.forEach(function(f){
+    var FV = vorspannkraftAusMoment(m, MA * 1000, f.my, f.my);
+    werte.push(FV);
+    var bx = f.x, by = 292, bh = 190;
+    var h = Math.max(2, bh * FV / maxF);
+    var ueber = FV > streck;
+
+    /* Rahmen des Diagramms */
+    g.appendChild(ns("line", {x1:bx-6, y1:by, x2:bx+256, y2:by, stroke:"#cbd5e1", "stroke-width":1}));
+
+    /* Grenze Streckgrenze */
+    var ys = by - bh * streck / maxF;
+    g.appendChild(ns("line", {x1:bx-6, y1:ys, x2:bx+256, y2:ys,
+      stroke:"#dc2626", "stroke-width":1.4, "stroke-dasharray":"6 4"}));
+    g.appendChild(svgText(bx+250, ys-6, "Streckgrenze",
+      {anchor:"end", size:11, fill:"#dc2626", weight:700}));
+
+    /* Balken */
+    g.appendChild(ns("rect", {x:bx+96, y:by-h, width:74, height:h, rx:4,
+      fill: ueber ? "#dc2626" : "#2563eb"}));
+    g.appendChild(svgText(bx+180, by - h + 20, z(FV/1000,1) + " kN",
+      {size:16, fill: ueber ? "#dc2626" : "#1d4ed8", weight:700}));
+
+    /* Verschraubung daneben andeuten */
+    var sx = bx + 22, sy = by - 96;
+    g.appendChild(ns("rect", {x:sx-14, y:sy, width:52, height:22, fill:"#ccfbf1", stroke:"#0f766e", "stroke-width":1.3}));
+    g.appendChild(ns("rect", {x:sx-14, y:sy+22, width:52, height:22, fill:"#99f6e4", stroke:"#0f766e", "stroke-width":1.3}));
+    g.appendChild(ns("rect", {x:sx-2, y:sy-14, width:28, height:14, fill:"#bfdbfe", stroke:"#1d4ed8", "stroke-width":1.3}));
+    g.appendChild(ns("rect", {x:sx+5, y:sy, width:14, height:44, fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":1.3}));
+    /* Pfeil: Laenge zeigt die Spannkraft */
+    var pl = 12 + 54 * FV / maxF;
+    g.appendChild(ns("line", {x1:sx+12, y1:sy-18, x2:sx+12, y2:sy-18-pl,
+      stroke: ueber ? "#dc2626" : "#1d4ed8", "stroke-width":3,
+      "marker-end": ueber ? "url(#pfeilBrot)" : "url(#pfeilBblau)"}));
+
+    g.appendChild(svgText(bx+128, by+22, f.name, {anchor:"middle", size:13, fill:"#334155", weight:700}));
+    g.appendChild(svgText(bx+128, by+40, zLabel("reibungszahl","μ") + " = " + z(f.my,2),
+      {anchor:"middle", size:12, fill:"#64748b"}));
+    if(ueber){
+      g.appendChild(svgText(bx+128, by+58, "Schraube überdehnt",
+        {anchor:"middle", size:12, fill:"#dc2626", weight:700}));
+    }
+  });
+
+  var faktor = werte[1] / werte[0];
+  var t = el("vergleichText");
+  t.className = "merke";
+  t.innerHTML = "Bei halber Reibung kommt die <b>" + z(faktor,1) +
+    "-fache</b> Spannkraft heraus &ndash; bei genau demselben Drehmoment. " +
+    (werte[1] > streck
+      ? "Die ge&ouml;lte Schraube wird dabei bereits &uuml;ber die Streckgrenze hinaus belastet."
+      : "Wer geschmierte und trockene Schrauben mit demselben Wert anzieht, erzeugt also " +
+        "v&ouml;llig unterschiedliche Verbindungen.");
+}
+
+/* --- Streuband: wo landet die Spannkraft? --------------------------------- */
+function zeichneStreuband(){
+  var svg = el("svgStreuband"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var m = gewindeMasse(el("gGewinde").value);
+  var MA = parseFloat(el("gMoment").value);
+  var myJetzt = parseFloat(el("gMyStreu").value);
+  var mindest = parseFloat(el("gMindest").value) * 1000;
+  el("oMindest").textContent = z(mindest/1000, 0) + " kN";
+
+  var myVon = 0.06, myBis = 0.26;
+  var lx = 84, by = 268, bh = 210, bw = 610;
+
+  var FbeiMy = function(my){ return vorspannkraftAusMoment(m, MA * 1000, my, my); };
+  var streck = klasseWerte("8.8", m.d).Rp * m.As;
+  var maxF = Math.max(FbeiMy(myVon), streck, mindest) * 1.12;
+
+  var px = function(my){ return lx + (my - myVon) / (myBis - myVon) * bw; };
+  var py = function(F){ return by - F / maxF * bh; };
+
+  /* Achsen */
+  g.appendChild(ns("line", {x1:lx, y1:by, x2:lx+bw+8, y2:by, stroke:"#334155", "stroke-width":1.4}));
+  g.appendChild(ns("line", {x1:lx, y1:by, x2:lx, y2:by-bh-14, stroke:"#334155", "stroke-width":1.4}));
+  g.appendChild(svgText(lx+bw, by+34, zLabel("reibungszahl","μ"),
+    {anchor:"end", size:12.5, fill:"#475569", weight:600}));
+  g.appendChild(svgText(lx-4, by-bh-20, zLabel("vorspannkraft","F_V") + " in kN",
+    {size:12.5, fill:"#475569", weight:600}));
+  var schritt = Math.pow(10, Math.floor(Math.log(maxF/1000/4) / Math.LN10));
+  if(maxF/1000/schritt > 20) schritt *= 5; else if(maxF/1000/schritt > 8) schritt *= 2;
+  for(var kn = 0; kn <= maxF/1000; kn += schritt){
+    var yk = py(kn*1000);
+    if(yk < by - bh - 6) break;
+    g.appendChild(ns("line", {x1:lx-5, y1:yk, x2:lx, y2:yk, stroke:"#94a3b8", "stroke-width":1}));
+    g.appendChild(svgText(lx-9, yk+4, z(kn,0), {anchor:"end", size:11, fill:"#64748b"}));
+  }
+  for(var my = myVon; my <= myBis + 1e-9; my += 0.04){
+    g.appendChild(ns("line", {x1:px(my), y1:by, x2:px(my), y2:by+5, stroke:"#94a3b8", "stroke-width":1}));
+    g.appendChild(svgText(px(my), by+19, z(my,2), {anchor:"middle", size:11, fill:"#64748b"}));
+  }
+
+  /* Verbotene Zonen */
+  g.appendChild(ns("rect", {x:lx, y:py(maxF), width:bw, height:py(streck)-py(maxF),
+    fill:"#fee2e2", opacity:0.7}));
+  g.appendChild(ns("rect", {x:lx, y:py(mindest), width:bw, height:by-py(mindest),
+    fill:"#f1f5f9", opacity:0.8}));
+  g.appendChild(ns("line", {x1:lx, y1:py(streck), x2:lx+bw, y2:py(streck),
+    stroke:"#dc2626", "stroke-width":1.6}));
+  g.appendChild(svgText(lx+8, py(streck)-7, "Streckgrenze – darüber wird die Schraube überdehnt",
+    {size:11.5, fill:"#b91c1c", weight:700}));
+  g.appendChild(ns("line", {x1:lx, y1:py(mindest), x2:lx+bw, y2:py(mindest),
+    stroke:"#64748b", "stroke-width":1.6, "stroke-dasharray":"6 4"}));
+  g.appendChild(svgText(lx+8, py(mindest)+16, "benötigte Spannkraft – darunter rutscht die Verbindung",
+    {size:11.5, fill:"#475569", weight:700}));
+
+  /* Kurve */
+  var d = "";
+  for(var i = 0; i <= 100; i++){
+    var mm = myVon + (myBis - myVon) * i / 100;
+    d += (i === 0 ? "M" : " L") + px(mm).toFixed(1) + "," + py(FbeiMy(mm)).toFixed(1);
+  }
+  g.appendChild(ns("path", {d:d, fill:"none", stroke:"#1d4ed8", "stroke-width":3}));
+
+  /* Streubereich der gewaehlten Werkstoffpaarung im Gewinde: hier bewusst ein
+     breites, typisches Band, damit die Streuung sichtbar wird */
+  var bandVon = Math.max(myVon, myJetzt - 0.04), bandBis = Math.min(myBis, myJetzt + 0.04);
+  g.appendChild(ns("rect", {x:px(bandVon), y:py(FbeiMy(bandVon)), width:px(bandBis)-px(bandVon),
+    height:Math.abs(py(FbeiMy(bandBis)) - py(FbeiMy(bandVon))), fill:"#1d4ed8", opacity:0.12}));
+  g.appendChild(svgText((px(bandVon)+px(bandBis))/2, py(FbeiMy(bandBis))+16,
+    "übliche Streuung ±0,04", {anchor:"middle", size:11, fill:"#1d4ed8", weight:600}));
+
+  /* Marke beim aktuellen Wert */
+  var Fj = FbeiMy(myJetzt);
+  g.appendChild(ns("line", {x1:px(myJetzt), y1:by, x2:px(myJetzt), y2:py(Fj),
+    stroke:"#1d4ed8", "stroke-width":1, "stroke-dasharray":"4 3"}));
+  g.appendChild(ns("circle", {cx:px(myJetzt), cy:py(Fj), r:6, fill:"#1d4ed8",
+    stroke:"#fff", "stroke-width":2}));
+  g.appendChild(svgText(px(myJetzt)+12, py(Fj)-10, z(Fj/1000,1) + " kN",
+    {size:13, fill:"#1d4ed8", weight:700}));
+
+  var FoBand = FbeiMy(bandVon), FuBand = FbeiMy(bandBis);
+  var t = el("bandText");
+  if(FoBand > streck){
+    t.className = "warnung";
+    t.innerHTML = "<b>Zu viel Drehmoment.</b> Schon bei etwas geringerer Reibung landet die " +
+      "Spannkraft bei " + z(FoBand/1000,1) + " kN und damit über der Streckgrenze &ndash; " +
+      "die Schraube wird bleibend gedehnt.";
+  }else if(FuBand < mindest){
+    t.className = "warnung";
+    t.innerHTML = "<b>Zu wenig Drehmoment.</b> Bei etwas höherer Reibung bleiben nur " +
+      z(FuBand/1000,1) + " kN übrig &ndash; weniger als die benötigten " +
+      z(mindest/1000,0) + " kN. Die Verbindung kann rutschen.";
+  }else{
+    t.className = "gut";
+    t.innerHTML = "<b>Passt.</b> Über die ganze übliche Streuung der Reibung bleibt die " +
+      "Spannkraft zwischen " + z(FuBand/1000,1) + " und " + z(FoBand/1000,1) +
+      " kN &ndash; also oberhalb der benötigten " + z(mindest/1000,0) +
+      " kN und unterhalb der Streckgrenze.";
+  }
+  begriffeZeichnen(t);
 }
 
 function zeichneAufteilung(){
@@ -1316,7 +1637,7 @@ function zeichneAufteilung(){
   var my = parseFloat(el("gMyStreu").value);
   el("oMyStreu").textContent = z(my,2);
 
-  var m = gewindeMasse("M10");
+  var m = gewindeMasse(el("gGewinde").value);
   var FM = vorspannkraft(m, "8.8", my, 0.9);
   var M = drehmomente(m, FM, my, my);
 
@@ -1326,7 +1647,8 @@ function zeichneAufteilung(){
     {name:"Kopfreibung",    wert:M.kopf,    farbe:"#b91c1c"}
   ];
   var x = 20, gesamt = M.gesamt, breite = 660;
-  g.appendChild(svgText(20, 24, "Beispiel M10, Festigkeitsklasse 8.8", {size:12.5, weight:700, fill:"#334155"}));
+  g.appendChild(svgText(20, 24, "Beispiel " + m.bez + ", Festigkeitsklasse 8.8",
+    {size:12.5, weight:700, fill:"#334155"}));
   for(var i=0;i<teile.length;i++){
     var w = breite * teile[i].wert / gesamt;
     g.appendChild(ns("rect",{x:x, y:40, width:w, height:40, fill:teile[i].farbe}));
@@ -1353,6 +1675,38 @@ function zeichneAufteilung(){
 /* ============================================================================
    7  AUFBAU  -  parametrische Schraubenzeichnung
    ========================================================================== */
+
+/* Der sinnvolle Drehmomentbereich haengt stark von der Groesse ab -
+   M4 braucht Nm, M24 mehrere hundert. */
+function momentBereichSetzen(){
+  var m = gewindeMasse(el("gGewinde").value);
+  var typisch = drehmomente(m, vorspannkraft(m, "8.8", 0.12, 0.9), 0.12, 0.12).gesamt / 1000;
+  var s = el("gMoment");
+  s.min = Math.max(0.5, Math.round(typisch * 0.25 * 2) / 2);
+  s.max = Math.round(typisch * 2.2);
+  s.step = typisch > 100 ? 5 : (typisch > 20 ? 1 : 0.5);
+
+  var mind = el("gMindest");
+  var FM = vorspannkraft(m, "8.8", 0.12, 0.9) / 1000;
+  mind.min = 1; mind.max = Math.max(2, Math.round(FM * 1.4)); mind.step = 1;
+  mind.value = Math.max(1, Math.round(FM * 0.45));
+
+  /* Startwert nicht blind aus dem Auslegungswert ableiten, sondern aus den
+     beiden Grenzen des Streubands: Bei kleinen Gewinden fiele er sonst durch
+     die Rundung sofort in eine Warnung, und der erste Eindruck waere ein
+     Fehlerfall statt des Normalfalls. */
+  var myMitte = parseFloat(el("gMyStreu").value) || 0.12;
+  var beiwert = function(my){ return beiwertGewinde(m, my) + beiwertKopf(m, my); };
+  var streck = klasseWerte("8.8", m.d).Rp * m.As;
+  var obenNmm = 0.92 * streck * beiwert(Math.max(0.02, myMitte - 0.04));
+  var untenNmm = mind.value * 1000 * 1.15 * beiwert(myMitte + 0.04);
+  var start = Math.min(typisch, obenNmm / 1000);
+  if(start < untenNmm / 1000) start = (obenNmm + untenNmm) / 2000;
+
+  var stufe = parseFloat(s.step);
+  s.value = Math.max(parseFloat(s.min),
+            Math.min(parseFloat(s.max), Math.round(start / stufe) * stufe));
+}
 
 function normGewindelaenge(d, l){
   var b = (l <= 125) ? 2*d + 6 : (l <= 200 ? 2*d + 12 : 2*d + 25);
@@ -1949,11 +2303,27 @@ function start(){
   ["gVor","gMyT","gQuer"].forEach(function(id){
     el(id).addEventListener("input", zeichneReib);
   });
-  ["gGewinde","gMyG1"].forEach(function(id){
-    el(id).addEventListener("input", zeichneEbene);
-    el(id).addEventListener("change", zeichneEbene);
+  function funktionNeu(){
+    zeichneAbwickeln(); zeichneAufteilung(); zeichneVergleich(); zeichneStreuband();
+  }
+  el("gMyG1").addEventListener("input", funktionNeu);
+  el("gMyG1").addEventListener("change", funktionNeu);
+  /* Erst den Drehmomentbereich an die neue Groesse anpassen, dann zeichnen -
+     sonst zeigen die Diagramme kurz das Drehmoment der alten Groesse. */
+  el("gGewinde").addEventListener("change", function(){
+    momentBereichSetzen();
+    funktionNeu();
   });
-  el("gMyStreu").addEventListener("input", zeichneAufteilung);
+  ["gMoment","gMindest"].forEach(function(id){
+    el(id).addEventListener("input", function(){ zeichneVergleich(); zeichneStreuband(); });
+  });
+  el("gMyStreu").addEventListener("input", function(){ zeichneAufteilung(); zeichneStreuband(); });
+  el("gAbwickeln").addEventListener("input", function(){
+    if(abwickelLauf){ cancelAnimationFrame(abwickelLauf); abwickelLauf = null; }
+    abwickelSetzen(parseFloat(this.value) / 100);
+  });
+  el("gUeberhoeht").addEventListener("change", zeichneAbwickeln);
+  el("btnAbwickeln").addEventListener("click", abwickelAbspielen);
 
   /* Ereignisse: Aufbau */
   ["aGewinde","aKopf","aLaenge","aB","aBez","aMasse"].forEach(function(id){
@@ -1988,8 +2358,11 @@ function start(){
   begriffKlicksAktivieren();
   reibungstabelle();
   klassentabelle();
-  zeichneEbene();
+  momentBereichSetzen();
+  zeichneAbwickeln();
   zeichneAufteilung();
+  zeichneVergleich();
+  zeichneStreuband();
   zeichneGewindeprofil();
   zeichneVerspannung();
   rechne();
