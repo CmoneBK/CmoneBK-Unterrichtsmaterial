@@ -156,8 +156,11 @@ svg{display:block; max-width:100%; height:auto}
 .kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
 
 /* Ohne Formelzeichen keine Formeln: dann steht der Zusammenhang als Satz da. */
-body:not(.sym) .sym-only{display:none !important}
-body.sym .wort-only{display:none !important}
+/* Zustandsklassen bewusst mit eigenem Namen: "sym" ist schon die
+   Formatierungsklasse der Formelzeichen. Stuende sie am <body>, wuerde die
+   ganze Seite deren Schrift, Farbe und white-space:nowrap erben. */
+body:not(.zeigt-formelzeichen) .sym-only{display:none !important}
+body.zeigt-formelzeichen .wort-only{display:none !important}
 </style>
 </head>
 <body>
@@ -811,8 +814,8 @@ function begriffeZeichnen(wurzel){
      vermeidet Reihenfolge-Fallen: Rechentexte entstehen erst beim Zeichnen. */
   var basis = wurzel || document;
   if(!wurzel){
-    document.body.classList.toggle("fach", zustand.fach);
-    document.body.classList.toggle("sym", zustand.sym);
+    document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+    document.body.classList.toggle("zeigt-formelzeichen", zustand.sym);
   }
   var knoten = basis.querySelectorAll(".term");
   for(var i=0;i<knoten.length;i++){
@@ -893,10 +896,9 @@ function wort(schluessel, gross){
          (gross ? ' data-cap="1"' : "") + "></span>";
 }
 
-/* Formelzeichen nur zeigen, wenn sie eingeschaltet sind. */
-function zeichenOderNichts(zeichen){
-  return zustand.sym ? " " + zeichen : "";
-}
+/* Frueher wurde das Formelzeichen hier separat angehaengt. Seit wort() eine
+   echte Fundstelle liefert, bringt der Begriff sein Zeichen selbst mit -
+   sonst steht es zweimal da. */
 
 /* ============================================================================
    3  RECHENKERN
@@ -1193,7 +1195,7 @@ function zeichneReib(){
   var pfeilLang = Math.min(10 + FV * 1.4, 34);
   g.appendChild(ns("line",{x1:x0+150,y1:y-24,x2:x0+150,y2:y-24-pfeilLang,
     stroke:"#1d4ed8","stroke-width":3,"marker-end":"url(#pfeilBblau)"}));
-  g.appendChild(svgText(x0+150, y-34-pfeilLang,
+  g.appendChild(svgText(x0+150, y-42-pfeilLang,
     zLabel("vorspannkraft","F_V") + " = " + z(FV,0) + " kN",
     {anchor:"middle", size:12, fill:"#1d4ed8", weight:700}));
 
@@ -1226,17 +1228,15 @@ function zeichneReib(){
   var txt = el("reibText");
   if(haelt){
     txt.className = "gut";
-    txt.innerHTML = "<b>Hält.</b> Die " + wort("reibkraft") +
-      zeichenOderNichts("F<sub>R</sub>") + " = " + z(FR,2) + " kN ist größer als die " +
-      wort("querkraft") + zeichenOderNichts("F<sub>Q</sub>") + " = " + z(FQ,2) +
+    txt.innerHTML = "<b>Hält.</b> Die " + wort("reibkraft") + " = " + z(FR,2) + " kN ist größer als die " +
+      wort("querkraft") + " = " + z(FQ,2) +
       " kN. Die Schraube selbst wird dabei nicht quer belastet und kann daher auch nicht " +
       wort("abgeschert") + " werden.";
     begriffeZeichnen(txt);
   }else{
     txt.className = "warnung";
-    txt.innerHTML = "<b>Rutscht.</b> Die " + wort("querkraft") +
-      zeichenOderNichts("F<sub>Q</sub>") + " = " + z(FQ,2) + " kN übersteigt die " +
-      wort("reibkraft") + zeichenOderNichts("F<sub>R</sub>") + " = " + z(FR,2) +
+    txt.innerHTML = "<b>Rutscht.</b> Die " + wort("querkraft") + " = " + z(FQ,2) + " kN übersteigt die " +
+      wort("reibkraft") + " = " + z(FR,2) +
       " kN. Die Bauteile verschieben sich, bis die Schraube am Lochrand anliegt. " +
       "Dann wird sie quer belastet und kann " + wort("abgeschert") +
       " werden – dafür ist sie nicht vorgesehen.";
@@ -1679,7 +1679,7 @@ function zeichneVerspannung(){
   }else{
     t.className = "gut";
     t.innerHTML = "<b>Die Berührstelle bleibt geschlossen.</b> Von der " +
-      wort("betriebskraft") + zeichenOderNichts("F<sub>A</sub>") + " = " + z(FA,0) +
+      wort("betriebskraft") + " = " + z(FA,0) +
       " kN kommen nur " + z(FSA,1) + " kN zusätzlich in der Schraube an (" +
       Math.round(phi*100) + " %). Die restlichen " + z(FPA,1) +
       " kN entlasten die Bauteile. Es bleiben " + z(FKR,1) + " kN " +
