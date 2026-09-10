@@ -115,6 +115,47 @@ td.mitte,th.mitte{text-align:center}
 .ez .balken i{display:block; height:100%; border-radius:6px}
 .ez .grund{font-size:.82rem; color:var(--muted)}
 .ez.top{border-color:var(--primary); box-shadow:0 0 0 2px var(--primary-light)}
+
+/* --- Fachbegriffe: gleiches Prinzip wie in der Schraubverbindungs-App --- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
+  font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt durch
+   die Farbe auf. So begegnet der Begriff dem Lernenden ab jetzt an jeder
+   Stelle wieder und praegt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+
+/* Der Hinweis zur Normdarstellung steht nur, wenn sie eingeschaltet ist. */
+body:not(.zeigt-norm) .nur-norm{display:none !important}
 </style>
 </head>
 <body>
@@ -125,6 +166,15 @@ td.mitte,th.mitte{text-align:center}
   <p class="lead">Kraftschluss, Formschluss, Stoffschluss &ndash; wie sie wirken und wann man welches
     Verfahren w&auml;hlt.</p>
 </header>
+
+<div class="schalter">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <label class="sw"><input type="checkbox" id="swNorm"><span class="track"></span>Zeichnung nach Norm</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.</span>
+</div>
 
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="ueberblick"  aria-selected="true">&Uuml;berblick</button>
@@ -150,7 +200,7 @@ td.mitte,th.mitte{text-align:center}
         <svg class="zeichnung" id="svgUeK" viewBox="0 0 320 190" role="img"
              aria-label="Prinzipbild Kraftschluss"></svg>
         <p><b>Reibung h&auml;lt.</b> Eine Kraft presst die Teile aneinander. &Uuml;bertragen wird
-        die Last durch Reibung an der Ber&uuml;hrfl&auml;che.</p>
+        die Last durch die <span class="term" data-t="reibkraft"></span> an der <span class="term" data-t="wirkflaeche"></span>.</p>
         <p class="fussnote">Wird die Last zu gro&szlig;, rutschen die Teile.</p>
       </div>
       <div>
@@ -159,7 +209,7 @@ td.mitte,th.mitte{text-align:center}
              aria-label="Prinzipbild Formschluss"></svg>
         <p><b>Die Form h&auml;lt.</b> Die Teile greifen ineinander. Die Last dr&uuml;ckt gegen
         Flanken, Bolzen oder Nasen.</p>
-        <p class="fussnote">Wird die Last zu gro&szlig;, schert das Element ab.</p>
+        <p class="fussnote">Wird die Last zu gro&szlig;, schert das <span class="term" data-t="verbindungselement"></span> ab.</p>
       </div>
       <div>
         <span class="marke stoff">Stoffschluss</span>
@@ -167,14 +217,16 @@ td.mitte,th.mitte{text-align:center}
              aria-label="Prinzipbild Stoffschluss"></svg>
         <p><b>Der Werkstoff h&auml;lt.</b> Die Teile werden durch Schmelze, Lot oder Klebstoff
         auf molekularer Ebene verbunden.</p>
-        <p class="fussnote">L&ouml;sen geht nur durch Zerst&ouml;ren der Verbindung.</p>
+        <p class="fussnote">Die Verbindung ist <span class="term" data-t="unloesbar"></span>.</p>
       </div>
     </div>
 
     <div class="merke">
-      <b>Faustregel:</b> Kraftschluss ist l&ouml;sbar und spielfrei, braucht aber eine
-      dauerhafte Vorspannung. Formschluss ist einfach und sicher, hat aber meist etwas Spiel.
-      Stoffschluss ist dicht und leicht, aber nicht mehr zerst&ouml;rungsfrei l&ouml;sbar.
+      <b>Faustregel:</b> <span class="term" data-t="kraftschluss" data-cap="1"></span> ist <span class="term" data-t="loesbar"></span>
+      und spielfrei, braucht aber eine dauerhafte <span class="term" data-t="vorspannkraft"></span>.
+      <span class="term" data-t="formschluss" data-cap="1"></span> ist einfach und sicher, hat aber meist etwas
+      <span class="term" data-t="spiel"></span>. <span class="term" data-t="stoffschluss" data-cap="1"></span> ist dicht und leicht,
+      aber <span class="term" data-t="unloesbar"></span>.
     </div>
   </div>
 
@@ -199,11 +251,11 @@ td.mitte,th.mitte{text-align:center}
     <h2><span class="marke kraft">Kraftschluss</span> &ndash; Reibung &uuml;bertr&auml;gt die Last</h2>
     <p class="sub">Auch Reibschluss genannt. Eine Normalkraft presst die Fl&auml;chen aneinander.</p>
     <p>Alle kraftschl&uuml;ssigen Verbindungen funktionieren nach demselben Muster: Ein Element
-    erzeugt eine <b>Normalkraft</b> senkrecht zur Ber&uuml;hrfl&auml;che. Daraus entsteht Reibung,
-    und diese Reibung &uuml;bertr&auml;gt die eigentliche Last. Reicht sie nicht aus, rutscht die
+    erzeugt eine <span class="term" data-t="normalkraft"></span>. Daraus entsteht die <span class="term" data-t="reibkraft"></span>,
+    und die &uuml;bertr&auml;gt die eigentliche Last. Reicht sie nicht aus, rutscht die
     Verbindung durch &ndash; sie geht nicht schlagartig kaputt, sondern verliert ihre Funktion.</p>
     <div class="merke">
-      <b>Gemeinsame Grenze:</b> &Uuml;bertragbare Kraft = Reibungszahl &middot; Normalkraft.
+      <b>Gemeinsame Grenze:</b> &Uuml;bertragbare Kraft = <span class="term" data-t="reibungszahl"></span> &middot; <span class="term" data-t="normalkraft"></span>.
       Beide Gr&ouml;&szlig;en streuen &ndash; deshalb rechnet man kraftschl&uuml;ssige
       Verbindungen immer mit Sicherheit gegen Rutschen.
     </div>
@@ -219,6 +271,10 @@ td.mitte,th.mitte{text-align:center}
       <input type="range" id="reg-kraft" min="0" max="100" step="1" value="0" aria-label="Ablauf">
     </div>
     <p id="phase-kraft"></p>
+    <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert nach
+      DIN ISO 128-50 &ndash; benachbarte Teile unterschiedlich in Richtung oder Abstand &ndash;,
+      K&ouml;rperkanten als breite Volllinie, Mittellinien strichpunktiert. Die farbigen Pfeile
+      und Beschriftungen sind didaktische Zus&auml;tze und geh&ouml;ren nicht zur Zeichnung.</p>
     <div id="info-kraft"></div>
   </div>
 
@@ -233,13 +289,16 @@ td.mitte,th.mitte{text-align:center}
   <div class="karte">
     <h2><span class="marke form">Formschluss</span> &ndash; die Geometrie &uuml;bertr&auml;gt die Last</h2>
     <p class="sub">Die Teile greifen ineinander, die Last dr&uuml;ckt gegen Wirkfl&auml;chen.</p>
-    <p>Formschl&uuml;ssige Verbindungen brauchen keine Vorspannung. Die Kraft geht &uuml;ber
-    Flanken, Bolzen oder Nasen &ndash; entscheidend sind <b>Fl&auml;chenpressung</b> und
-    <b>Scherquerschnitt</b> der Wirkfl&auml;chen. Damit sich die Teile f&uuml;gen lassen, braucht
-    es fast immer etwas Spiel; bei wechselnder Last f&uuml;hrt dieses Spiel zu Schl&auml;gen.</p>
+    <p>Formschl&uuml;ssige Verbindungen brauchen keine <span class="term" data-t="vorspannkraft"></span>.
+    Die Kraft geht &uuml;ber Flanken, Bolzen oder Nasen &ndash; entscheidend sind
+    <span class="term" data-t="flaechenpressung"></span> und <span class="term" data-t="scherquerschnitt"></span> der
+    <span class="term" data-t="wirkflaechen"></span>. Damit sich die Teile f&uuml;gen lassen, braucht es fast
+    immer etwas <span class="term" data-t="spiel"></span>; bei wechselnder Last f&uuml;hrt dieses
+    <span class="term" data-t="spiel"></span> zu Schl&auml;gen.</p>
     <div class="merke">
-      <b>Gemeinsame Grenze:</b> Das Verbindungselement wird auf Abscheren und die Wirkfl&auml;che
-      auf Fl&auml;chenpressung belastet. Beides muss gepr&uuml;ft werden.
+      <b>Gemeinsame Grenze:</b> Das <span class="term" data-t="verbindungselement"></span> wird auf
+      <span class="term" data-t="abscheren"></span> und die <span class="term" data-t="wirkflaeche"></span> auf
+      <span class="term" data-t="flaechenpressung"></span> belastet. Beides muss gepr&uuml;ft werden.
     </div>
   </div>
 
@@ -253,6 +312,10 @@ td.mitte,th.mitte{text-align:center}
       <input type="range" id="reg-form" min="0" max="100" step="1" value="0" aria-label="Ablauf">
     </div>
     <p id="phase-form"></p>
+    <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert nach
+      DIN ISO 128-50 &ndash; benachbarte Teile unterschiedlich in Richtung oder Abstand &ndash;,
+      K&ouml;rperkanten als breite Volllinie, Mittellinien strichpunktiert. Die farbigen Pfeile
+      und Beschriftungen sind didaktische Zus&auml;tze und geh&ouml;ren nicht zur Zeichnung.</p>
     <div id="info-form"></div>
   </div>
 
@@ -268,12 +331,12 @@ td.mitte,th.mitte{text-align:center}
     <h2><span class="marke stoff">Stoffschluss</span> &ndash; der Werkstoff selbst h&auml;lt</h2>
     <p class="sub">Schmelze, Lot oder Klebstoff verbinden die Teile auf molekularer Ebene.</p>
     <p>Stoffschl&uuml;ssige Verbindungen &uuml;bertragen die Last &uuml;ber die gesamte
-    Verbindungsfl&auml;che. Sie sind dicht, brauchen keine Bohrungen und tragen bei d&uuml;nnen
-    Blechen mehr als jede Schraube. Der Preis: Sie lassen sich nur durch Zerst&ouml;ren l&ouml;sen,
+    <span class="term" data-t="fuegeflaeche"></span>. Sie sind dicht, brauchen keine Bohrungen und tragen bei
+    d&uuml;nnen Blechen mehr als jede Schraube. Der Preis: Sie sind <span class="term" data-t="unloesbar"></span>,
     und der Werkstoff wird durch W&auml;rme oder Klebstoff beeinflusst.</p>
     <div class="merke">
       <b>Der Unterschied in einem Satz:</b> Beim <b>Schwei&szlig;en</b> schmilzt der
-      Grundwerkstoff, beim <b>L&ouml;ten</b> nur das Lot, beim <b>Kleben</b> gar nichts.
+      <span class="term" data-t="grundwerkstoff"></span>, beim <b>L&ouml;ten</b> nur das <span class="term" data-t="lot"></span>, beim <b>Kleben</b> gar nichts.
     </div>
   </div>
 
@@ -287,6 +350,10 @@ td.mitte,th.mitte{text-align:center}
       <input type="range" id="reg-stoff" min="0" max="100" step="1" value="0" aria-label="Ablauf">
     </div>
     <p id="phase-stoff"></p>
+    <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert nach
+      DIN ISO 128-50 &ndash; benachbarte Teile unterschiedlich in Richtung oder Abstand &ndash;,
+      K&ouml;rperkanten als breite Volllinie, Mittellinien strichpunktiert. Die farbigen Pfeile
+      und Beschriftungen sind didaktische Zus&auml;tze und geh&ouml;ren nicht zur Zeichnung.</p>
     <div id="info-stoff"></div>
   </div>
 
@@ -316,7 +383,8 @@ td.mitte,th.mitte{text-align:center}
     <p class="sub">Viele Verbindungen wirken nach zwei Prinzipien gleichzeitig.</p>
     <p>Die Einteilung in drei Prinzipien ist ein Ordnungsschema, kein Naturgesetz. In der Praxis
     kombiniert man sie gezielt: Der Niet klemmt <em>und</em> greift formschl&uuml;ssig, die
-    geklebte Schraube h&auml;lt durch Reibung <em>und</em> Klebstoff. Solche Kombinationen
+    geklebte Schraube h&auml;lt durch die <span class="term" data-t="reibkraft"></span> <em>und</em> durch
+    Klebstoff. Solche Kombinationen
     gleichen die Schw&auml;chen der einzelnen Prinzipien aus.</p>
   </div>
 
@@ -330,6 +398,10 @@ td.mitte,th.mitte{text-align:center}
       <input type="range" id="reg-sonder" min="0" max="100" step="1" value="0" aria-label="Ablauf">
     </div>
     <p id="phase-sonder"></p>
+    <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert nach
+      DIN ISO 128-50 &ndash; benachbarte Teile unterschiedlich in Richtung oder Abstand &ndash;,
+      K&ouml;rperkanten als breite Volllinie, Mittellinien strichpunktiert. Die farbigen Pfeile
+      und Beschriftungen sind didaktische Zus&auml;tze und geh&ouml;ren nicht zur Zeichnung.</p>
     <div id="info-sonder"></div>
   </div>
 
@@ -374,10 +446,69 @@ td.mitte,th.mitte{text-align:center}
    1  ZEICHEN-WERKZEUG
    ========================================================================== */
 function el(id){ return document.getElementById(id); }
+
+/* ---------------------------------------------------------------------------
+   Normdarstellung
+   Welches Bauteil eine Flaeche zeigt, verraet ihre Fuellfarbe. Daran haengt
+   auch die Schraffur: nach DIN ISO 128-50 muessen sich aneinandergrenzende
+   Teile in Richtung oder Abstand unterscheiden. Der Umweg ueber die Farbe
+   spart es, alle sechzehn Zeichenfunktionen anzufassen.
+   --------------------------------------------------------------------------- */
+var NORM_STOFF = {
+  "#e2e8f0":"a", "#ccfbf1":"a",
+  "#99f6e4":"b", "#5eead4":"b", "#fdba74":"b", "#f97316":"b",
+  "#dbeafe":"c", "#bfdbfe":"c",
+  "#fde68a":"d", "#ddd6fe":"d", "#c4b5fd":"d", "#a78bfa":"d", "#fbbf24":"d", "#cbd5e1":"d"
+};
+/* Was hinter der Schnittebene liegt, ist nicht geschnitten und bekommt
+   deshalb keine Schraffur - im Normmodus uebernimmt genau das die Aufgabe,
+   die sonst der hellere Farbton hat. */
+var NORM_HINTEN = {"#eafcf8":1, "#d5faf3":1, "#f1f5f9":1};
+var NORM_KANTE = "#111827", NORM_BREIT = 2.2, NORM_SCHMAL = 0.8;
+
+/* DIN ISO 128-50: Vollteile - Wellen, Schrauben, Muttern, Bolzen, Niete,
+   Stifte, Passfedern - werden in Laengsrichtung nicht geschnitten dargestellt
+   und bleiben ohne Schraffur. Quer geschnitten dagegen schon. Welche Flaechen
+   das in einer Zeichnung betrifft, sagt "vollteile" beim Verfahren; die
+   Passfeder schaltet fuer ihren Querschnitt mit querGeschnitten() um. */
+var aktVollteile = null, querSchnitt = false;
+function querGeschnitten(an){ querSchnitt = !!an; }
+var MUSTER_PRAEFIX = "sf-";
+var FLAECHEN = {rect:1, path:1, circle:1, ellipse:1, polygon:1};
+var normErlaubt = true;   /* die Prinzipskizzen im Ueberblick bleiben schematisch */
+var inDefs = false;
+
+function normModus(){ return zustand.norm && normErlaubt && !inDefs; }
+
+function normFassung(e, attr){
+  var f = String(attr.fill).toLowerCase();
+  if(f === "none") return;
+  var stoff = NORM_STOFF[f];
+  var hinten = NORM_HINTEN[f];
+  var weiss = f === "#ffffff" || f === "#fff";
+  if(!stoff && !hinten && !weiss) return;   /* Werkzeuge und Pfeile bleiben, wie sie sind */
+
+  var ohneSchraffur = hinten || weiss || aktVollteile === "alle" ||
+    (aktVollteile && !querSchnitt && aktVollteile.indexOf(f) >= 0);
+  e.setAttribute("fill", ohneSchraffur ? "#ffffff" : "url(#" + MUSTER_PRAEFIX + stoff + ")");
+  if(attr.stroke && attr.stroke !== "none"){
+    e.setAttribute("stroke", NORM_KANTE);
+    e.setAttribute("stroke-width", NORM_BREIT);
+  }
+}
+
 function ns(name, attr){
   var e = document.createElementNS("http://www.w3.org/2000/svg", name);
   for(var a in attr){ if(attr.hasOwnProperty(a)) e.setAttribute(a, attr[a]); }
+  if(attr && attr.fill && FLAECHEN[name] && normModus()) normFassung(e, attr);
   return e;
+}
+
+/* Mittellinie: schmale Strichpunktlinie, ueber die Kontur hinausgezogen. */
+function mittellinien(g, segmente){
+  segmente.forEach(function(a){
+    linie(g, a[0], a[1], a[2], a[3], NORM_KANTE, NORM_SCHMAL, {dash:"20 3 5 3"});
+  });
 }
 function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild); }
 function txt(g, x, y, s, opt){
@@ -431,9 +562,23 @@ function pfeil(g, x1, y1, x2, y2, farbe, sw){
       in einem ausgeblendeten Reiter. Ein Marker in einem display:none-SVG
       wird nicht gezeichnet, die Pfeile blieben dann ohne Spitze. */
 var MARKER_PRAEFIX = "sp-";
+/* Schraffurrichtung und -abstand je Werkstoff. 45 Grad ist der Normalfall;
+   der Gegenlauf und der engere Abstand trennen benachbarte Teile. */
+var SCHRAFFUR = [["a", 45, 7], ["b", 135, 7], ["c", 45, 4], ["d", 135, 4]];
 function spitzen(svg, farben){
   MARKER_PRAEFIX = "sp-" + svg.id + "-";
+  MUSTER_PRAEFIX = "sf-" + svg.id + "-";
   var defs = ns("defs", {});
+  inDefs = true;
+  SCHRAFFUR.forEach(function(m){
+    var pat = ns("pattern", {id:MUSTER_PRAEFIX + m[0], width:m[2], height:m[2],
+      patternUnits:"userSpaceOnUse", patternTransform:"rotate(" + m[1] + ")"});
+    pat.appendChild(ns("rect", {x:0, y:0, width:m[2], height:m[2], fill:"#ffffff"}));
+    pat.appendChild(ns("line", {x1:0, y1:0, x2:0, y2:m[2],
+      stroke:NORM_KANTE, "stroke-width":NORM_SCHMAL}));
+    defs.appendChild(pat);
+  });
+  inDefs = false;
   farben.forEach(function(f){
     /* refX auf die Spitze: So endet der Pfeil genau am Zielpunkt statt
        darueber hinauszuschiessen. userSpaceOnUse haelt die Spitze in allen
@@ -460,10 +605,70 @@ var C = {
   warm:"#fdba74", heiss:"#f97316", glut:"#fbbf24",
   lot:"#fde68a", lotS:"#b45309",
   kleb:"#ddd6fe", klebS:"#6d28d9",
-  grau:"#e2e8f0", grauS:"#64748b"
+  grau:"#e2e8f0", grauS:"#64748b",
+  /* Flaechen hinter der Schnittebene: derselbe Werkstoff, nur heller. Weiss
+     waere falsch - da ist kein Hohlraum, sondern die Rueckwand der Nut. */
+  aH:"#eafcf8", bH:"#d5faf3", grauH:"#f1f5f9"
 };
 function mische(t){ return Math.max(0, Math.min(1, t)); }
 function stufe(t, von, bis){ return mische((t - von) / Math.max(1e-6, bis - von)); }
+
+
+/* ============================================================================
+   1b  FACHBEGRIFFE
+   Fachbegriff und alltagssprachliche Fassung. Zwei Regeln, damit der Satz in
+   beiden Stufen grammatisch stimmt:
+   1. Gleiches Geschlecht wie der Fachbegriff - der Artikel steht im Satz und
+      wird nicht mitgetauscht.
+   2. Kein vorangestelltes Adjektiv, sonst muesste sich seine Endung mit dem
+      Fall aendern ("die zulaessige" / "der zulaessigen"). Stattdessen ein
+      nachgestellter Zusatz: "Massabweichung, die erlaubt ist".
+   "kurz" ist die Kurzfassung fuer Zeichnungsbeschriftungen, wo der ganze
+   Ausdruck nicht hinpasst.
+   ========================================================================== */
+var TERME = {
+  fuegen:           {a:"Zusammenbringen",                         f:"Fügen"},
+  kraftschluss:     {a:"Halt durch Reibung",                      f:"Kraftschluss",      kurz:"Halt durch Reibung"},
+  formschluss:      {a:"Halt durch ineinandergreifende Formen",   f:"Formschluss",       kurz:"Halt durch die Form"},
+  stoffschluss:     {a:"Halt durch eine verbindende Schicht",     f:"Stoffschluss",      kurz:"Halt durch die Schicht"},
+  normalkraft:      {a:"Kraft senkrecht auf die Fläche",          f:"Normalkraft",       kurz:"Kraft senkrecht zur Fläche"},
+  reibkraft:        {a:"Kraft aus der Reibung",                   f:"Reibkraft",         kurz:"Reibung"},
+  reibungszahl:     {a:"Kennzahl für die Reibung",                f:"Reibungszahl"},
+  vorspannkraft:    {a:"Spannkraft der Schraube",                 f:"Vorspannkraft",     kurz:"Spannkraft"},
+  flaechenpressung: {a:"Pressung auf die Berührfläche",           f:"Flächenpressung",   kurz:"Pressung"},
+  trennfuge:        {a:"Berührstelle",                            f:"Trennfuge"},
+  querkraft:        {a:"Kraft von der Seite",                     f:"Querkraft",         kurz:"Seitenkraft"},
+  drehmoment:       {a:"Drehen der Welle",                        f:"Drehmoment",        kurz:"Drehen"},
+  abscheren:        {a:"Durchtrennen quer zur Achse",             f:"Abscheren"},
+  abgeschert:       {a:"quer durchtrennt",                        f:"abgeschert"},
+  kerbwirkung:      {a:"Spannungsspitze an einem Absatz",         f:"Kerbwirkung"},
+  loesbar:          {a:"wieder auseinandernehmbar",               f:"lösbar"},
+  unloesbar:        {a:"nur durch Zerstören trennbar",            f:"unlösbar"},
+  uebermass:        {a:"Maß, um das die Welle größer ist",        f:"Übermaß"},
+  pressverband:     {a:"Sitz durch Aufschrumpfen",                f:"Pressverband"},
+  passfeder:        {a:"Leiste in der Nut",                       f:"Passfeder"},
+  wirkflaeche:      {a:"Fläche, die die Kraft überträgt",         f:"Wirkfläche"},
+  wirkflaechen:     {a:"Flächen, die die Kraft übertragen",       f:"Wirkflächen"},
+  scherquerschnitt: {a:"Querschnitt, der abgeschert wird",        f:"Scherquerschnitt"},
+  spiel:            {a:"bisschen Luft zwischen den Teilen",       f:"Spiel",             kurz:"Luft"},
+  grundwerkstoff:   {a:"Werkstoff der Bauteile",                  f:"Grundwerkstoff"},
+  zusatzwerkstoff:  {a:"Draht, der zugeführt wird",               f:"Zusatzwerkstoff"},
+  schmelzbad:       {a:"Metall, das gerade flüssig ist",          f:"Schmelzbad"},
+  lot:              {a:"Metall mit niedrigerem Schmelzpunkt",     f:"Lot"},
+  waermeeinfluss:   {a:"Zone, die die Hitze verändert hat",       f:"Wärmeeinflusszone", kurz:"Hitzezone"},
+  benetzung:        {a:"Verteilung der Flüssigkeit auf der Oberfläche", f:"Benetzung"},
+  adhaesion:        {a:"Haftung an der Oberfläche",               f:"Adhäsion"},
+  kohaesion:        {a:"Festigkeit im Klebstoff selbst",          f:"Kohäsion"},
+  fuegeflaeche:     {a:"Fläche, an der verbunden wird",           f:"Fügefläche"},
+  umformen:         {a:"Verformen ohne Späne",                    f:"Umformen"},
+  schliesskopf:     {a:"Kopf, der beim Nieten entsteht",          f:"Schließkopf"},
+  setzkopf:         {a:"Kopf, den der Niet mitbringt",            f:"Setzkopf"},
+  durchsetzfuegen:  {a:"Clinchen",                                f:"Durchsetzfügen"},
+  verbindungselement:{a:"Teil, das die Verbindung herstellt",     f:"Verbindungselement", kurz:"Verbindungsteil"},
+  toleranz:         {a:"Maßabweichung, die erlaubt ist",          f:"Toleranz"},
+  elastisch:        {a:"federnd",                                 f:"elastisch"},
+  plastisch:        {a:"bleibend verformt",                       f:"plastisch"}
+};
 
 /* ============================================================================
    2  VERFAHREN
@@ -475,9 +680,11 @@ function verfahren(o){ VERFAHREN.push(o); return o; }
 /* ---------------------------------------------------------- KRAFTSCHLUSS -- */
 
 verfahren({
-  id:"schraube", gruppe:"kraft", name:"Schraubverbindung",
+  id:"schraube",
+  vollteile:["#dbeafe"],
+  achse:[[250,30,250,214]], gruppe:"kraft", name:"Schraubverbindung",
   prinzip:"Die angezogene Schraube wird gedehnt und presst die Bauteile aneinander. " +
-          "Die Reibung an der Trennfuge überträgt die Last.",
+          "Die " + wort("reibkraft") + " an der " + wort("trennfuge") + " überträgt die Last.",
   phasen:[
     {ab:0,    text:"Die Teile liegen lose aufeinander, die Mutter ist noch nicht angezogen."},
     {ab:0.35, text:"Die Mutter wird gedreht und wandert am Gewinde hoch. Die Fuge schließt sich."},
@@ -520,7 +727,7 @@ verfahren({
       var p = 10 + 32*kraft;
       kraftpfeil(g, cx, oben-24, cx, oben-24-p, "#1d4ed8");
       kraftpfeil(g, cx, yEnde+8, cx, yEnde+8+p, "#1d4ed8");
-      txt(g, cx+12, oben-30-p/2, "Spannkraft", {fill:"#1d4ed8"});
+      txt(g, cx+12, oben-30-p/2, zWort("vorspannkraft"), {fill:"#1d4ed8"});
       for(var i=0;i<4;i++){
         var x = lx + 34 + i*58;
         if(Math.abs(x-cx) < 34) continue;
@@ -536,9 +743,12 @@ verfahren({
 });
 
 verfahren({
-  id:"pressverband", gruppe:"kraft", name:"Pressverband",
-  prinzip:"Die Nabe ist innen kleiner als die Welle. Erwärmt man sie, lässt sie sich aufschieben; " +
-          "beim Abkühlen schrumpft sie auf und presst mit hoher Kraft.",
+  id:"pressverband",
+  vollteile:["#e2e8f0"],
+  achse:[[100,150,540,150]], gruppe:"kraft", name:"Pressverband",
+  prinzip:"Die Nabe ist innen um das " + wort("uebermass") + " kleiner als die Welle. " +
+          "Erwärmt man sie, lässt sie sich aufschieben; beim Abkühlen schrumpft sie auf " +
+          "und presst mit hoher Kraft.",
   phasen:[
     {ab:0,    text:"Nabe und Welle im Ausgangszustand. Die Bohrung ist um das Übermaß kleiner als die Welle."},
     {ab:0.28, text:"Die Nabe wird erwärmt und dehnt sich aus – jetzt passt sie über die Welle."},
@@ -562,7 +772,7 @@ verfahren({
 
     rect(g, wl, cy-wr, wrx-wl, 2*wr, "#e2e8f0", "#475569");
     txt(g, wl+6, cy-wr-8, "Welle", {fill:"#475569", size:12});
-    linie(g, wl-16, cy, wrx+16, cy, "#94a3b8", 1, {dash:"14 3 3 3"});
+    if(!zustand.norm) linie(g, wl-16, cy, wrx+16, cy, "#94a3b8", 1, {dash:"14 3 3 3"});
 
     var farbe = waerme > 0 && kuehl < 1
       ? (waerme > 0.5 ? C.heiss : C.warm) : C.bF;
@@ -575,7 +785,8 @@ verfahren({
     txt(g, nabeX-70, cy-nr-dehnung-10, "Nabe", {fill:C.bS, size:12});
 
     if(t < 0.28){
-      txt(g, wl, cy+wr+34, "Bohrung kleiner als die Welle: Übermaß", {fill:"#b45309", size:12});
+      txt(g, wl, cy+wr+34, "Bohrung kleiner als die Welle: " + zWort("uebermass"),
+        {fill:"#b45309", size:12});
       linie(g, nabeX-70, cy-wr, nabeX+70, cy-wr, "#b45309", 1.4, {dash:"4 3"});
     }
     if(waerme > 0 && kuehl < 1){
@@ -594,7 +805,7 @@ verfahren({
           kraftpfeil(g, x, cy + v*(nr+14), x, cy + v*(wr+3), "#dc2626", 2.4);
         }
       });
-      txt(g, nabeX+80, cy+nr+22, "Pressung", {fill:"#dc2626", size:12.5});
+      txt(g, nabeX+80, cy+nr+22, zWort("flaechenpressung"), {fill:"#dc2626", size:12.5});
       txt(g, wl, cy+wr+52, "Reibung überträgt jetzt das Drehmoment",
         {fill:"#0f766e", size:12, opacity:kuehl});
     }
@@ -602,7 +813,9 @@ verfahren({
 });
 
 verfahren({
-  id:"klemmnabe", gruppe:"kraft", name:"Klemmverbindung",
+  id:"klemmnabe",
+  vollteile:["#dbeafe"],
+  achse:[[196,145,404,145],[300,41,300,249]], gruppe:"kraft", name:"Klemmverbindung",
   prinzip:"Eine geschlitzte Nabe wird mit einer Schraube zusammengezogen. Sie klemmt auf der Welle.",
   phasen:[
     {ab:0,    text:"Die geschlitzte Nabe sitzt mit leichtem Spiel auf der Welle."},
@@ -643,7 +856,8 @@ verfahren({
                      cx + Math.cos(w)*(wr+5), cy + Math.sin(w)*(wr+5), "#dc2626", 2.2);
         }
       });
-      txt(g, cx-nr-14, cy-nr-6, "Pressung rundum", {anchor:"end", fill:"#dc2626", size:12});
+      txt(g, cx-nr-14, cy-nr-6, zWort("flaechenpressung") + " rundum",
+        {anchor:"end", fill:"#dc2626", size:12});
       kraftpfeil(g, cx-92, by+7, cx-70, by+7, "#1d4ed8", 2.6);
       kraftpfeil(g, cx+92, by+7, cx+70, by+7, "#1d4ed8", 2.6);
     }
@@ -653,7 +867,9 @@ verfahren({
 });
 
 verfahren({
-  id:"spannsatz", gruppe:"kraft", name:"Kegelspannsatz",
+  id:"spannsatz",
+  vollteile:["#e2e8f0"],
+  achse:[[96,145,544,145]], gruppe:"kraft", name:"Kegelspannsatz",
   prinzip:"Zwei Kegelringe werden axial zusammengezogen. Dabei weiten sie sich nach außen und " +
           "schrumpfen nach innen – sie klemmen Welle und Nabe gleichzeitig.",
   phasen:[
@@ -716,14 +932,21 @@ verfahren({
 /* ----------------------------------------------------------- FORMSCHLUSS -- */
 
 verfahren({
-  id:"passfeder", gruppe:"form", name:"Passfeder",
-  prinzip:"Ein Stahlklotz in einer Nut überträgt das Drehmoment zwischen Welle und Nabe. " +
-          "Die Last drückt gegen die Flanken der Feder.",
+  id:"passfeder",
+  vollteile:["#e2e8f0","#dbeafe"],
+  achse:function(t){
+    var a = [[26,150,444,150]];
+    if(t >= 0.81) a.push([466,150,614,150], [540,76,540,224]);
+    return a;
+  }, gruppe:"form", name:"Passfeder",
+  prinzip:"Eine " + wort("passfeder") + " in einer Nut überträgt das " + wort("drehmoment") +
+          " zwischen Welle und Nabe. Die Last drückt gegen die Flanken der Feder.",
   phasen:[
     {ab:0,    text:"Welle mit Nut, Passfeder und Nabe liegen bereit."},
     {ab:0.3,  text:"Die Passfeder wird in die Wellennut eingelegt."},
-    {ab:0.55, text:"Die Nabe wird aufgeschoben – ihre Nut nimmt die Feder auf."},
-    {ab:0.8,  text:"Das Drehmoment drückt gegen die Flanken. Es wirkt Flächenpressung, kein Reibschluss."}],
+    {ab:0.55, text:"Die Nabe wird aufgeschoben – ihre Nut nimmt die Feder auf. Die hellen Flächen in den Nuten liegen hinter der Schnittebene: dort steht Werkstoff, kein Hohlraum."},
+    {ab:0.8,  text:"Das " + wort("drehmoment") + " drückt gegen die Flanken. Es wirkt " +
+                     wort("flaechenpressung") + ", kein Reibschluss."}],
   plus:["Einfach, billig, überall bekannt","Nabe axial verschiebbar (Führung möglich)",
         "Bei Überlast schert die Feder – das Bauteil bleibt heil"],
   minus:["Nut schwächt die Welle stark (Kerbwirkung)","Spiel führt bei Lastwechsel zu Schlägen",
@@ -739,15 +962,6 @@ verfahren({
     var oben = cy - wr - nutT - luft;  /* Nutgrund in der Nabe */
 
     /* --- Laengsschnitt ------------------------------------------------- */
-    rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
-    rect(g, nutX, cy-wr, nutB, nutT, "#ffffff", "#475569", {sw:1.3});
-    txt(g, lx+2, cy+wr+22, "Welle mit Nut", {fill:"#475569", size:12});
-
-    /* Die Feder faellt in die Wellennut und ragt zur Haelfte heraus. */
-    var fedY = cy - wr - nutT - 62 + legen*62;
-    rect(g, nutX+2, fedY, nutB-4, 2*nutT, C.eF, C.eS, {sw:1.6, rx:2});
-    txt(g, nutX+nutB+14, fedY+40, "Passfeder", {fill:C.eS, size:12});
-
     /* Die Nabe besteht aus zwei Baendern: ein volles Rechteck wuerde die Welle
        verdecken. Ihre Nut laeuft ueber die ganze Nabenlaenge durch - nur
        deshalb laesst sich die Nabe ueber die Feder schieben. Eine Tasche in
@@ -755,6 +969,20 @@ verfahren({
     var nabeX = 450 - schieben*(450-150), nb = 160;
     rect(g, nabeX, cy-nr, nb, oben-(cy-nr), C.bF, C.bS, {sw:1.8});
     rect(g, nabeX, cy+wr, nb, nr-wr, C.bF, C.bS, {sw:1.8});
+    /* Der Schnitt laeuft mitten durch die Nut. Dahinter ist kein Hohlraum,
+       sondern die hintere Nutwand - dieselbe Nabe, nur nicht geschnitten und
+       deshalb heller. Frueher stand hier Weiss, das las sich wie Luft. */
+    rect(g, nabeX, oben, nb, (cy-wr)-oben, C.bH, "none");
+
+    rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
+    /* Genauso in der Welle: hinter der Nut steht Werkstoff, nicht nichts. */
+    rect(g, nutX, cy-wr, nutB, nutT, C.grauH, "#475569", {sw:1.3});
+    txt(g, lx+2, cy+wr+22, "Welle mit Nut", {fill:"#475569", size:12});
+
+    /* Die Feder faellt in die Wellennut und ragt zur Haelfte heraus. */
+    var fedY = cy - wr - nutT - 62 + legen*62;
+    rect(g, nutX+2, fedY, nutB-4, 2*nutT, C.eF, C.eS, {sw:1.6, rx:2});
+    txt(g, nutX+nutB+14, fedY+40, "Passfeder", {fill:C.eS, size:12});
     txt(g, nabeX-8, cy-nr+14, "Nabe", {anchor:"end", fill:C.bS, size:12});
 
     if(schieben < 1){
@@ -775,10 +1003,13 @@ verfahren({
     /* Im Laengsschnitt sind die tragenden Flanken nicht zu sehen: sie liegen
        quer zur Zeichenebene. Deshalb kommt zur Lastphase ein Querschnitt dazu. */
     if(last > 0.05){
+      /* Ab hier laeuft der Schnitt quer zur Achse - jetzt bekommen auch Welle
+         und Feder ihre Schraffur. */
+      querGeschnitten(true);
       var qx = 540, qy = 150, rw = 30, rn = 56, kb = 11, kt = 11;
       g.appendChild(ns("circle", {cx:qx, cy:qy, r:rn, fill:C.bF, stroke:C.bS,
         "stroke-width":1.8}));
-      rect(g, qx-kb, qy-rw-kt-4, 2*kb, kt+4, "#ffffff", C.bS, {sw:1.2});
+      rect(g, qx-kb, qy-rw-kt-4, 2*kb, kt+4, C.bH, C.bS, {sw:1.2});
       g.appendChild(ns("circle", {cx:qx, cy:qy, r:rw, fill:"#e2e8f0",
         stroke:"#475569", "stroke-width":1.4}));
       rect(g, qx-kb, qy-rw, 2*kb, kt, "#ffffff", "#475569", {sw:1.2});
@@ -786,16 +1017,23 @@ verfahren({
       kraftpfeil(g, qx-54, qy-rw+7, qx-kb-2, qy-rw+7, "#dc2626", 2.6);
       kraftpfeil(g, qx+54, qy-rw-6, qx+kb+2, qy-rw-6, "#dc2626", 2.6);
       txt(g, qx, qy+rn+20, "Querschnitt", {anchor:"middle", fill:"#334155", size:12});
-      txt(g, lx+2, cy+nr+34, "Die Flanken tragen – Flächenpressung, kein Reibschluss",
+      querGeschnitten(false);
+      txt(g, lx+2, cy+nr+34, "Die Flanken tragen – " + zWort("flaechenpressung") + ", kein Reibschluss",
         {fill:"#7c3aed", size:12});
     }
   }
 });
 
 verfahren({
-  id:"zahnwelle", gruppe:"form", name:"Zahnwellenverbindung",
-  prinzip:"Statt einer Feder übertragen viele Zähne rundum das Moment. Dadurch verteilt sich " +
-          "die Flächenpressung auf eine große Fläche.",
+  id:"zahnwelle",
+  achse:function(t){
+    var nx = 500 - stufe(t, 0.35, 0.7)*300;
+    var a = [[200-104,138,200+104,138],[200,34,200,242]];
+    if(nx - 200 > 24) a.push([nx-104,138,nx+104,138],[nx,34,nx,242]);
+    return a;
+  }, gruppe:"form", name:"Zahnwellenverbindung",
+  prinzip:"Statt einer Feder übertragen viele Zähne rundum das " + wort("drehmoment") + ". " +
+          "Dadurch verteilt sich die " + wort("flaechenpressung") + " auf eine große Fläche.",
   phasen:[
     {ab:0,    text:"Zahnwelle und Nabe mit passender Innenverzahnung."},
     {ab:0.35, text:"Die Nabe wird aufgeschoben, die Zähne greifen ineinander."},
@@ -857,20 +1095,23 @@ verfahren({
         var tx = -Math.sin(a), ty = Math.cos(a);
         kraftpfeil(g, px - tx*30, py - ty*30, px - tx*4, py - ty*4, "#7c3aed", 2);
       }
-      txt(g, cx, cy+nr+30, "alle Zahnflanken tragen gleichzeitig",
+      txt(g, cx, cy+nr+30, "alle Zahnflanken tragen gleichzeitig – " + zWort("flaechenpressung"),
         {anchor:"middle", fill:"#7c3aed", size:12});
     }
   }
 });
 
 verfahren({
-  id:"querstift", gruppe:"form", name:"Stiftverbindung",
-  prinzip:"Ein Stift geht quer durch Nabe und Welle. Er überträgt das Moment und sichert " +
-          "zugleich gegen axiales Verschieben.",
+  id:"querstift",
+  vollteile:["#e2e8f0","#dbeafe"],
+  achse:[[74,185,536,185],[300,113,300,257]], gruppe:"form", name:"Stiftverbindung",
+  prinzip:"Ein Stift geht quer durch Nabe und Welle. Er überträgt das " + wort("drehmoment") +
+          " und sichert zugleich gegen axiales Verschieben.",
   phasen:[
     {ab:0,    text:"Nabe sitzt auf der Welle, die Querbohrung ist gemeinsam gebohrt."},
     {ab:0.35, text:"Der Stift wird eingetrieben."},
-    {ab:0.75, text:"Der Stift überträgt das Moment – er wird dabei auf Abscheren belastet."}],
+    {ab:0.75, text:"Der Stift überträgt das " + wort("drehmoment") + " – er wird dabei auf " +
+                     wort("abscheren") + " belastet."}],
   plus:["Sehr einfach und billig","Sichert gleichzeitig axial",
         "Kann als Sollbruchstelle ausgelegt werden"],
   minus:["Nur kleine Momente","Bohrung schwächt Welle und Nabe erheblich",
@@ -912,15 +1153,17 @@ verfahren({
       txt(g, cx+96, cy-nr+10, "Nabe wird abgezogen", {fill:"#7c3aed", size:11.5});
       kraftpfeil(g, cx-96, cy, cx-148, cy, "#7c3aed", 3);
       txt(g, lx+2, cy+nr+24,
-        "Der Stift wird auf Abscheren belastet – hier zweischnittig",
+        "Der Stift wird auf " + zWort("abscheren") + " belastet – hier zweischnittig",
         {fill:"#7c3aed", size:12, opacity:last});
     }
   }
 });
 
 verfahren({
-  id:"schnapp", gruppe:"form", name:"Schnappverbindung",
-  prinzip:"Eine federnde Nase wird beim Fügen elastisch verformt und rastet dahinter wieder ein.",
+  id:"schnapp",
+  achse:[[300,26,300,262]], gruppe:"form", name:"Schnappverbindung",
+  prinzip:"Eine federnde Nase wird beim Fügen " + wort("elastisch") + " verformt und rastet " +
+          "dahinter wieder ein.",
   phasen:[
     {ab:0,    text:"Das Kunststoffteil mit den Rastnasen steht vor der Öffnung."},
     {ab:0.3,  text:"Beim Einschieben werden die Federarme elastisch nach innen gebogen."},
@@ -1007,7 +1250,9 @@ verfahren({
 });
 
 verfahren({
-  id:"bolzen", gruppe:"form", name:"Bolzen mit Splint",
+  id:"bolzen",
+  vollteile:["#dbeafe"],
+  achse:[[44,150,556,150],[300,98,300,264]], gruppe:"form", name:"Bolzen mit Splint",
   prinzip:"Ein Bolzen verbindet zwei Laschen gelenkig. Ein Splint sichert ihn gegen Herausfallen.",
   phasen:[
     {ab:0,    text:"Zwei Laschen mit fluchtenden Bohrungen."},
@@ -1148,8 +1393,9 @@ verfahren({
 
 verfahren({
   id:"schweissen", gruppe:"stoff", name:"Schweißen",
-  prinzip:"Der Grundwerkstoff wird örtlich aufgeschmolzen. Zusammen mit dem Zusatzwerkstoff " +
-          "entsteht beim Erstarren eine durchgehende Naht.",
+  nurAnsicht:true,
+  prinzip:"Der " + wort("grundwerkstoff") + " wird örtlich aufgeschmolzen. Zusammen mit dem " +
+          wort("zusatzwerkstoff") + " entsteht beim Erstarren eine durchgehende Naht.",
   phasen:[
     {ab:0,    text:"Zwei Bleche mit V-Naht vorbereitet, Spalt gleichmäßig."},
     {ab:0.22, text:"Der Lichtbogen zündet und schmilzt Grundwerkstoff und Draht auf."},
@@ -1321,7 +1567,9 @@ verfahren({
 /* ---------------------------------------------------------- SONDERFORMEN -- */
 
 verfahren({
-  id:"nieten", gruppe:"sonder", name:"Nieten",
+  id:"nieten",
+  vollteile:["#dbeafe"],
+  achse:[[300,48,300,182]], gruppe:"sonder", name:"Nieten",
   prinzip:"Der Nietschaft wird gestaucht. Er füllt die Bohrung formschlüssig aus und zieht " +
           "die Bleche zugleich kraftschlüssig zusammen.",
   wirkt:"form- und kraftschlüssig",
@@ -1372,7 +1620,8 @@ verfahren({
 });
 
 verfahren({
-  id:"clinchen", gruppe:"sonder", name:"Clinchen",
+  id:"clinchen",
+  achse:[[300,68,300,232]], gruppe:"sonder", name:"Clinchen",
   prinzip:"Ein Stempel drückt beide Bleche in eine Matrize. Der Werkstoff fließt und verhakt " +
           "sich – ganz ohne Zusatzteil.",
   wirkt:"formschlüssig durch Umformen",
@@ -1429,7 +1678,9 @@ verfahren({
 });
 
 verfahren({
-  id:"schraubkleben", gruppe:"sonder", name:"Geklebte Schraube",
+  id:"schraubkleben",
+  vollteile:["#dbeafe"],
+  achse:[[300,56,300,248]], gruppe:"sonder", name:"Geklebte Schraube",
   prinzip:"Klebstoff im Gewinde füllt das Spiel aus und verhindert, dass sich die Schraube " +
           "von selbst losdreht.",
   wirkt:"kraft- und stoffschlüssig",
@@ -1494,19 +1745,142 @@ var GRUPPEN = {
   sonder: {name:"Sonderform",   farbe:"#0f766e"}
 };
 
-var zustand = {};   /* je Gruppe: {aktiv, t, lauf} */
+/* Anzeigezustand der ganzen Seite. Der Ablaufzustand der Gruppen liegt in
+   "gruppen" - frueher hiess beides "zustand". */
+var zustand = {fach:false, norm:false};
+var gruppen = {};   /* je Gruppe: {aktiv, t, lauf} */
+
+/* Einzeln aufgedeckte Begriffe. Aufgedeckt wird immer der ganze Schluessel,
+   nicht nur die angeklickte Stelle - sonst steht dasselbe Wort im Text zweimal
+   verschieden da. */
+var aufgedeckt = {};
+
+function paramsLesen(){
+  try{
+    var p = new URLSearchParams(window.location.search);
+    if(p.has("fach")) zustand.fach = p.get("fach") === "1";
+    if(p.has("norm")) zustand.norm = p.get("norm") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    u.searchParams.set("norm", zustand.norm ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Welche Fassung wird gerade gezeigt? Ein einzeln aufgedeckter Begriff dreht
+   die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  /* Mit "wurzel" wird nur ein frisch erzeugter Textblock nachgezogen - Phasen-
+     und Infotexte entstehen erst beim Zeichnen. */
+  var basis = wurzel || document;
+  if(!wurzel){
+    document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+    document.body.classList.toggle("zeigt-norm", zustand.norm);
+  }
+  var knoten = basis.querySelectorAll(".term");
+  for(var i=0;i<knoten.length;i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var t = TERME[schluessel];
+    if(!t) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? t.f : t.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff – klicken für die einfache Formulierung"
+              : "einfache Formulierung – klicken für den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung" : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();   /* damit Zeichnungsbeschriftungen mitziehen */
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zurücksetzen"
+    : anzahl + " aufgedeckte Wörter zurücksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Beschriftung in Zeichnungen: SVG-Text kann kein Markup tragen, deshalb wird
+   hier nur der reine Wortlaut geliefert. Ein einzeln aufgedeckter Begriff
+   schlaegt auch hier durch - sonst stuende in der Zeichnung noch die alte
+   Fassung, waehrend der Text daneben schon den Fachbegriff zeigt. */
+function zWort(schluessel, ersatz){
+  var t = TERME[schluessel];
+  if(!t) return ersatz || schluessel;
+  return zeigtFach(schluessel) ? (t.fkurz || t.f) : (t.kurz || t.a);
+}
+
+/* Begriff fuer Texte, die erst beim Zeichnen entstehen. Ausgegeben wird eine
+   echte Fundstelle, damit sich der Satz wie der Fliesstext verhaelt. */
+function wort(schluessel, gross){
+  if(!TERME[schluessel]) return schluessel;
+  return '<span class="term" data-t="' + schluessel + '"' +
+         (gross ? ' data-cap="1"' : "") + "></span>";
+}
 
 function ausGruppe(gruppe){
   return VERFAHREN.filter(function(v){ return v.gruppe === gruppe; });
 }
 
 function zeichneVerfahren(gruppe){
-  var z = zustand[gruppe];
+  var z = gruppen[gruppe];
   var v = z.aktiv;
   var svg = el("svg-" + gruppe);
   leeren(svg); spitzen(svg, FARBEN);
   var g = ns("g", {}); svg.appendChild(g);
+  aktVollteile = v.nurAnsicht ? "alle" : (v.vollteile || null);
+  querSchnitt = false;
   v.zeichnen(g, z.t);
+  aktVollteile = null;
+  /* Mittellinien gehoeren zur Normdarstellung und liegen ueber den Flaechen.
+     "achse" darf eine Funktion sein: bei der Passfeder kommt der Querschnitt
+     erst in der Lastphase dazu, vorher waere dort eine Achse ohne Bauteil. */
+  if(zustand.norm && v.achse)
+    mittellinien(g, typeof v.achse === "function" ? v.achse(z.t) : v.achse);
 
   /* Phasentext: die letzte Phase, deren Startwert erreicht ist */
   var ph = v.phasen[0];
@@ -1515,10 +1889,11 @@ function zeichneVerfahren(gruppe){
   p.className = (z.t >= v.phasen[v.phasen.length-1].ab) ? "gut" : "merke";
   p.innerHTML = "<b>Schritt " + (v.phasen.indexOf(ph)+1) + " von " + v.phasen.length + ":</b> " +
     ph.text;
+  begriffeZeichnen(p);
 }
 
 function infoSchreiben(gruppe){
-  var v = zustand[gruppe].aktiv;
+  var v = gruppen[gruppe].aktiv;
   el("info-" + gruppe).innerHTML =
     "<h3>Wie es wirkt</h3><p>" + v.prinzip + "</p>" +
     (v.wirkt ? "<p class='fussnote'>Wirkprinzip: <b>" + v.wirkt + "</b></p>" : "") +
@@ -1528,10 +1903,11 @@ function infoSchreiben(gruppe){
       "<div class='minus'><h4>Grenzen</h4><ul>" +
         v.minus.map(function(s){ return "<li>" + s + "</li>"; }).join("") + "</ul></div>" +
     "</div>";
+  begriffeZeichnen(el("info-" + gruppe));
 }
 
 function verfahrenWaehlen(gruppe, id){
-  var z = zustand[gruppe];
+  var z = gruppen[gruppe];
   var liste = ausGruppe(gruppe);
   z.aktiv = liste.filter(function(v){ return v.id === id; })[0] || liste[0];
   z.t = 0;
@@ -1547,7 +1923,7 @@ function verfahrenWaehlen(gruppe, id){
 }
 
 function abspielen(gruppe){
-  var z = zustand[gruppe];
+  var z = gruppen[gruppe];
   if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
   var dauer = 4200, start = null;
   var von = z.t >= 0.999 ? 0 : z.t;
@@ -1563,7 +1939,7 @@ function abspielen(gruppe){
 }
 
 function gruppeAufbauen(gruppe){
-  zustand[gruppe] = {aktiv:null, t:0, lauf:null};
+  gruppen[gruppe] = {aktiv:null, t:0, lauf:null};
   var liste = ausGruppe(gruppe);
   var wahl = el("wahl-" + gruppe);
   liste.forEach(function(v){
@@ -1575,7 +1951,7 @@ function gruppeAufbauen(gruppe){
     wahl.appendChild(b);
   });
   el("reg-" + gruppe).addEventListener("input", function(){
-    var z = zustand[gruppe];
+    var z = gruppen[gruppe];
     if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
     z.t = parseFloat(this.value) / 100;
     zeichneVerfahren(gruppe);
@@ -1592,6 +1968,7 @@ function gruppeAufbauen(gruppe){
          "</td><td>" + v.einsatz + "</td></tr>";
   });
   el("tab-" + gruppe).innerHTML = h + "</tbody>";
+  begriffeZeichnen(el("tab-" + gruppe));
 
   verfahrenWaehlen(gruppe, liste[0].id);
 }
@@ -1716,6 +2093,9 @@ function prinziptabelle(){
    Die grossen Zeichnungen verkleinert einzusetzen waere naheliegend, aber ihre
    Beschriftungen werden dabei unleserlich klein. */
 function prinzipbilder(){
+  /* Prinzipskizzen zeigen kein Bauteil, sondern eine Idee. Eine Schnitt-
+     schraffur waere hier sinnlos, deshalb bleibt die Normdarstellung aus. */
+  normErlaubt = false;
   var cy = 96, lx = 40, rx = 280, d = 34;
 
   /* --- Kraftschluss: Normalkraft presst, Reibung haelt --- */
@@ -1755,6 +2135,7 @@ function prinzipbilder(){
   kraftpfeil(g, 92, cy+d+34, 52, cy+d+34, "#c2410c", 3);
   kraftpfeil(g, 228, cy+d+34, 268, cy+d+34, "#c2410c", 3);
   txt(g, 116, cy+d+38, "die Schicht trägt", {fill:"#c2410c", size:13});
+  normErlaubt = true;
 }
 
 /* ============================================================================
@@ -1767,11 +2148,49 @@ function reiterSetzen(name){
   }
   var panels = document.querySelectorAll(".panel");
   for(var j=0;j<panels.length;j++){ panels[j].hidden = panels[j].id !== "p-" + name; }
-  if(zustand[name]) zeichneVerfahren(name);
+  if(gruppen[name]) zeichneVerfahren(name);
   if(name === "ueberblick") prinzipbilder();
 }
 
+function allesNeuZeichnen(){
+  ["kraft","form","stoff","sonder"].forEach(function(gr){
+    if(gruppen[gr] && gruppen[gr].aktiv) zeichneVerfahren(gr);
+  });
+  prinzipbilder();
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swNorm").checked = zustand.norm;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("swNorm").addEventListener("change", function(){
+    zustand.norm = this.checked;
+    document.body.classList.toggle("zeigt-norm", zustand.norm);
+    allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert – Fachbegriffe " + (zustand.fach ? "an" : "aus") +
+                      ", Normdarstellung " + (zustand.norm ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig, function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
 function start(){
+  paramsLesen();
   var kn = document.querySelectorAll(".tabs button");
   for(var i=0;i<kn.length;i++){
     kn[i].addEventListener("click", function(){ reiterSetzen(this.getAttribute("data-tab")); });
@@ -1780,6 +2199,10 @@ function start(){
   prinziptabelle();
   auswahlAufbauen();
   prinzipbilder();
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+  begriffeZeichnen();
+  allesNeuZeichnen();
   reiterSetzen("ueberblick");
 }
 
