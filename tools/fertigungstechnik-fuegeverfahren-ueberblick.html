@@ -733,35 +733,60 @@ verfahren({
   einsatz:"Zahnräder, Riemenscheiben, Kupplungen auf Wellen",
   zeichnen:function(g, t){
     var legen = stufe(t, 0.3, 0.5), schieben = stufe(t, 0.55, 0.78), last = stufe(t, 0.8, 1);
-    var cy = 150, wr = 34, lx = 60, rx = 600;
-    var nutB = 70, nutT = 13, nutX = 250, nr = wr + 42;
+    var cy = 150, wr = 34, lx = 40, rx = 430;
+    var nutB = 70, nutT = 13, nutX = 200, nr = wr + 42;
+    var luft = 4;                      /* Spiel ueber dem Federruecken */
+    var oben = cy - wr - nutT - luft;  /* Nutgrund in der Nabe */
 
-    /* Welle mit Nut in der Oberflaeche */
+    /* --- Laengsschnitt ------------------------------------------------- */
     rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
     rect(g, nutX, cy-wr, nutB, nutT, "#ffffff", "#475569", {sw:1.3});
-    txt(g, lx+4, cy+wr+20, "Welle mit Nut", {fill:"#475569", size:12});
+    txt(g, lx+2, cy+wr+22, "Welle mit Nut", {fill:"#475569", size:12});
 
-    /* Passfeder faellt in die Nut - sie ragt halb heraus */
-    var fedY = cy - wr - nutT - 58 + legen*58;
+    /* Die Feder faellt in die Wellennut und ragt zur Haelfte heraus. */
+    var fedY = cy - wr - nutT - 62 + legen*62;
     rect(g, nutX+2, fedY, nutB-4, 2*nutT, C.eF, C.eS, {sw:1.6, rx:2});
-    txt(g, nutX+nutB+12, fedY+12, "Passfeder", {fill:C.eS, size:12});
+    txt(g, nutX+nutB+14, fedY+40, "Passfeder", {fill:C.eS, size:12});
 
-    /* Nabe als zwei Baender - ein volles Rechteck wuerde die Welle verdecken.
-       Im oberen Band ist die Nut ausgespart, dort sitzt die Feder. */
-    var nabeX = 620 - schieben*(620-190), nb = 160, oNut = nabeX + 60;
-    pfad(g, "M"+nabeX+","+(cy-nr)+" L"+(nabeX+nb)+","+(cy-nr)+
-            " L"+(nabeX+nb)+","+(cy-wr)+" L"+(oNut+nutB)+","+(cy-wr)+
-            " L"+(oNut+nutB)+","+(cy-wr-nutT)+" L"+oNut+","+(cy-wr-nutT)+
-            " L"+oNut+","+(cy-wr)+" L"+nabeX+","+(cy-wr)+" Z", C.bF, C.bS, {sw:1.8});
+    /* Die Nabe besteht aus zwei Baendern: ein volles Rechteck wuerde die Welle
+       verdecken. Ihre Nut laeuft ueber die ganze Nabenlaenge durch - nur
+       deshalb laesst sich die Nabe ueber die Feder schieben. Eine Tasche in
+       der Nabenmitte, wie sie naheliegt, waere nicht montierbar. */
+    var nabeX = 450 - schieben*(450-150), nb = 160;
+    rect(g, nabeX, cy-nr, nb, oben-(cy-nr), C.bF, C.bS, {sw:1.8});
     rect(g, nabeX, cy+wr, nb, nr-wr, C.bF, C.bS, {sw:1.8});
-    txt(g, nabeX+nb+10, cy-nr+16, "Nabe mit Nut", {fill:C.bS, size:12});
+    txt(g, nabeX-8, cy-nr+14, "Nabe", {anchor:"end", fill:C.bS, size:12});
 
+    if(schieben < 1){
+      kraftpfeil(g, nabeX+54, cy-nr-14, nabeX-14, cy-nr-14, "#1d4ed8", 3);
+      txt(g, nabeX+60, cy-nr-10, "aufschieben", {fill:"#1d4ed8", size:11.5});
+      if(legen >= 1)
+        txt(g, nabeX+6, oben+16, "Nut über die ganze Nabenlänge",
+          {fill:"#1d4ed8", size:11.5});
+    }else{
+      /* Das Spiel liegt ueber die ganze Nabenlaenge an, nicht nur ueber der
+         Feder - die Linie zeigt das, die Beschriftung steht links daneben. */
+      linie(g, nabeX+4, oben, nabeX+nb-4, oben, "#b45309", 2);
+      txt(g, nabeX-8, oben+4, "Spiel über der Feder",
+        {anchor:"end", fill:"#b45309", size:11.5});
+    }
+
+    /* --- Querschnitt --------------------------------------------------- */
+    /* Im Laengsschnitt sind die tragenden Flanken nicht zu sehen: sie liegen
+       quer zur Zeichenebene. Deshalb kommt zur Lastphase ein Querschnitt dazu. */
     if(last > 0.05){
-      kraftpfeil(g, nutX-52, cy-wr-6, nutX-4, cy-wr-6, "#dc2626", 3);
-      kraftpfeil(g, nutX+nutB+52, cy-wr+16, nutX+nutB+4, cy-wr+16, "#dc2626", 3);
-      txt(g, nutX-58, cy-wr-16, "Drehmoment", {anchor:"end", fill:"#dc2626", size:12});
-      txt(g, nutX+nutB+58, cy-wr+20, "Gegenkraft", {fill:"#dc2626", size:12});
-      txt(g, lx+4, cy+nr+34, "Die Flanken tragen – Flächenpressung, kein Reibschluss",
+      var qx = 540, qy = 150, rw = 30, rn = 56, kb = 11, kt = 11;
+      g.appendChild(ns("circle", {cx:qx, cy:qy, r:rn, fill:C.bF, stroke:C.bS,
+        "stroke-width":1.8}));
+      rect(g, qx-kb, qy-rw-kt-4, 2*kb, kt+4, "#ffffff", C.bS, {sw:1.2});
+      g.appendChild(ns("circle", {cx:qx, cy:qy, r:rw, fill:"#e2e8f0",
+        stroke:"#475569", "stroke-width":1.4}));
+      rect(g, qx-kb, qy-rw, 2*kb, kt, "#ffffff", "#475569", {sw:1.2});
+      rect(g, qx-kb, qy-rw-kt, 2*kb, 2*kt, C.eF, C.eS, {sw:1.6});
+      kraftpfeil(g, qx-54, qy-rw+7, qx-kb-2, qy-rw+7, "#dc2626", 2.6);
+      kraftpfeil(g, qx+54, qy-rw-6, qx+kb+2, qy-rw-6, "#dc2626", 2.6);
+      txt(g, qx, qy+rn+20, "Querschnitt", {anchor:"middle", fill:"#334155", size:12});
+      txt(g, lx+2, cy+nr+34, "Die Flanken tragen – Flächenpressung, kein Reibschluss",
         {fill:"#7c3aed", size:12});
     }
   }
@@ -784,41 +809,56 @@ verfahren({
   einsatz:"Getriebe, Gelenkwellen, Schaltmuffen",
   zeichnen:function(g, t){
     var schieben = stufe(t, 0.35, 0.7), last = stufe(t, 0.75, 1);
-    var cx = 210, cy = 140, wr = 54, nr = 94, z = 12;
+    var cx = 200, cy = 138, wr = 52, nr = 92, z = 12, zh = 12, spiel = 2;
 
-    function zahnPfad(mx, my, r, zahnH, innen){
-      var d = "";
-      for(var i=0;i<z*2;i++){
-        var a = i * Math.PI / z;
-        var rr = (i % 2 === 0) ? r : r + (innen ? -zahnH : zahnH);
-        d += (i === 0 ? "M" : " L") + (mx + Math.cos(a)*rr).toFixed(1) + "," +
-             (my + Math.sin(a)*rr).toFixed(1);
+    /* Ein Zahn besteht aus Fussflaeche, Flanke, Kopfflaeche, Flanke - alle
+       gleich breit. Nur bei dieser Symmetrie passt die um eine halbe Teilung
+       versetzte Nabe zwischen die Wellenzaehne, ohne sie zu ueberdecken. */
+    var TEIL = [[0.00, 0], [0.30, 0], [0.50, 1], [0.80, 1]];
+    function kontur(mx, my, rA, rB, ph){
+      var d = "", teilung = 2*Math.PI/z, i, k, a, r;
+      for(i = 0; i < z; i++){
+        for(k = 0; k < 4; k++){
+          a = (i + TEIL[k][0] + ph) * teilung;
+          r = TEIL[k][1] ? rB : rA;
+          d += (d ? " L" : "M") + (mx + Math.cos(a)*r).toFixed(1) + "," +
+               (my + Math.sin(a)*r).toFixed(1);
+        }
       }
       return d + " Z";
     }
-    function kreisPfad(mx, my, r){
-      return "M"+(mx-r)+","+my+" a "+r+","+r+" 0 1,0 "+(2*r)+",0 a "+r+","+r+" 0 1,0 "+(-2*r)+",0 Z";
+    function kreis(mx, my, r){
+      return "M"+(mx-r).toFixed(1)+","+my+" a "+r+","+r+" 0 1,0 "+(2*r)+",0 a "+
+             r+","+r+" 0 1,0 "+(-2*r)+",0 Z";
     }
 
-    pfad(g, zahnPfad(cx, cy, wr, 11, false), "#e2e8f0", "#475569", {sw:1.6});
-    txt(g, cx-wr, cy+nr+30, "Zahnwelle", {fill:"#475569", size:12});
+    pfad(g, kontur(cx, cy, wr, wr+zh, 0), "#e2e8f0", "#475569", {sw:1.6});
+    txt(g, cx, cy+4, "Zahnwelle", {anchor:"middle", fill:"#475569", size:12});
 
-    /* Die Nabe als Ring zeichnen (Aussenkreis plus Zahnkontur als Loch),
-       sonst deckt ihre Bohrung die Welle zu. */
-    var nx = 520 - schieben*(520-cx);
-    var ring = pfad(g, kreisPfad(nx, cy, nr) + " " + zahnPfad(nx, cy, wr + 11, 11, true),
-      C.bF, C.bS, {sw:1.8});
+    /* Nabe als Ring: Aussenkreis plus Zahnkontur als Loch (evenodd), sonst
+       deckt ihre Bohrung die Welle zu. Der Versatz von einer halben Teilung
+       laesst Zahn und Luecke ineinandergreifen. */
+    var nx = 500 - schieben*(500-cx);
+    var ring = pfad(g, kreis(nx, cy, nr) + " " +
+      kontur(nx, cy, wr+zh+spiel, wr+spiel, 0.5), C.bF, C.bS, {sw:1.8});
     ring.setAttribute("fill-rule", "evenodd");
-    txt(g, nx+nr+10, cy-nr+14, "Nabe", {fill:C.bS, size:12});
+    txt(g, nx, cy-nr+22, "Nabe", {anchor:"middle", fill:C.bS, size:12});
 
+    if(schieben > 0 && schieben < 1){
+      kraftpfeil(g, nx+nr+54, cy, nx+nr+8, cy, "#1d4ed8", 3);
+      txt(g, nx+nr+16, cy-12, "aufschieben", {fill:"#1d4ed8", size:11.5});
+    }
     if(last > 0.05){
-      for(var i=0;i<z;i++){
-        var a = i * 2*Math.PI / z + 0.16;
-        kraftpfeil(g, cx + Math.cos(a)*(wr+30), cy + Math.sin(a)*(wr+30),
-                   cx + Math.cos(a)*(wr+8),  cy + Math.sin(a)*(wr+8), "#7c3aed", 2);
+      /* Das Moment wirkt in Umfangsrichtung: die Pfeile laufen tangential
+         an den Flanken entlang, nicht radial auf die Mitte zu. */
+      for(var i = 0; i < z; i++){
+        var a = (i + 0.4) * 2*Math.PI / z;
+        var px = cx + Math.cos(a)*(wr + zh/2), py = cy + Math.sin(a)*(wr + zh/2);
+        var tx = -Math.sin(a), ty = Math.cos(a);
+        kraftpfeil(g, px - tx*30, py - ty*30, px - tx*4, py - ty*4, "#7c3aed", 2);
       }
-      txt(g, cx+nr+30, cy+nr-10, "alle Flanken tragen gleichzeitig",
-        {fill:"#7c3aed", size:12});
+      txt(g, cx, cy+nr+30, "alle Zahnflanken tragen gleichzeitig",
+        {anchor:"middle", fill:"#7c3aed", size:12});
     }
   }
 });
@@ -839,35 +879,41 @@ verfahren({
   dicht:"nein", aufwand:"gering",
   einsatz:"Handhebel, Stellräder, Sicherungen gegen Überlast",
   zeichnen:function(g, t){
-    var treiben = stufe(t, 0.35, 0.7), last = stufe(t, 0.75, 1);
-    var cy = 160, wr = 32, lx = 110, rx = 520, cx = 300;
+    var treiben = stufe(t, 0.35, 0.72), last = stufe(t, 0.78, 1);
+    var cy = 185, wr = 26, nr = 54, lx = 90, rx = 520, cx = 300, sr = 7;
 
     rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
-    var nr = wr + 34;
     rect(g, cx-80, cy-nr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
     rect(g, cx-80, cy+wr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
-    txt(g, lx, cy-wr-10, "Welle", {fill:"#475569", size:12});
-    txt(g, cx+86, cy-nr+16, "Nabe", {fill:C.bS, size:12});
+    txt(g, lx+2, cy+wr+18, "Welle", {fill:"#475569", size:12});
+    txt(g, cx+16, cy-nr+18, "Nabe", {fill:C.bS, size:12});
 
-    /* Bohrung */
-    linie(g, cx-7, cy-nr, cx-7, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
-    linie(g, cx+7, cy-nr, cx+7, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
+    /* gemeinsam gebohrte Querbohrung */
+    linie(g, cx-sr, cy-nr, cx-sr, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
+    linie(g, cx+sr, cy-nr, cx+sr, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
 
-    var stiftY = cy - nr - 70 + treiben*70;
-    rect(g, cx-7, stiftY, 14, 2*nr, C.eF, C.eS, {sw:1.6, rx:3});
-    txt(g, cx+18, stiftY+16, "Stift", {fill:C.eS, size:12});
+    /* Der Stift steht am Anfang vollstaendig ausserhalb der Nabe und faehrt
+       erst waehrend der Animation ein. */
+    var stiftL = 2*nr, frei = cy - nr - 22;
+    var stiftY = (frei - stiftL) + treiben*((cy - nr) - (frei - stiftL));
+    rect(g, cx-sr, stiftY, 2*sr, stiftL, C.eF, C.eS, {sw:1.6, rx:3});
+    txt(g, cx-sr-10, stiftY+16, "Stift", {anchor:"end", fill:C.eS, size:12});
 
-    if(treiben > 0 && treiben < 1){
-      kraftpfeil(g, cx, stiftY-38, cx, stiftY-12, "#b45309", 2.6);
-      txt(g, cx+14, stiftY-26, "eintreiben", {fill:"#b45309", size:11.5});
+    if(treiben < 1){
+      /* Der Treibpfeil steht neben dem Stift - ueber ihm ist am Anfang
+         kein Platz mehr im Bild. */
+      kraftpfeil(g, cx+46, stiftY+4, cx+46, stiftY+40, "#b45309", 2.6);
+      txt(g, cx+54, stiftY+30, "eintreiben", {fill:"#b45309", size:11.5});
     }
     if(last > 0.05){
-      kraftpfeil(g, cx-104, cy-wr-12, cx-84, cy-wr-12, "#7c3aed", 3);
-      kraftpfeil(g, cx+104, cy+wr+12, cx+84, cy+wr+12, "#7c3aed", 3);
-      txt(g, lx, cy+nr+30, "Der Stift wird auf Abscheren belastet",
+      linie(g, cx-18, cy-wr, cx+18, cy-wr, "#dc2626", 2.6, {opacity:last});
+      linie(g, cx-18, cy+wr, cx+18, cy+wr, "#dc2626", 2.6, {opacity:last});
+      kraftpfeil(g, cx+92, cy-nr+18, cx+144, cy-nr+18, "#7c3aed", 3);
+      txt(g, cx+96, cy-nr+10, "Nabe wird abgezogen", {fill:"#7c3aed", size:11.5});
+      kraftpfeil(g, cx-96, cy, cx-148, cy, "#7c3aed", 3);
+      txt(g, lx+2, cy+nr+24,
+        "Der Stift wird auf Abscheren belastet – hier zweischnittig",
         {fill:"#7c3aed", size:12, opacity:last});
-      linie(g, cx-16, cy-wr, cx+16, cy-wr, "#dc2626", 2.4, {opacity:last});
-      linie(g, cx-16, cy+wr, cx+16, cy+wr, "#dc2626", 2.4, {opacity:last});
     }
   }
 });
@@ -876,10 +922,10 @@ verfahren({
   id:"schnapp", gruppe:"form", name:"Schnappverbindung",
   prinzip:"Eine federnde Nase wird beim Fügen elastisch verformt und rastet dahinter wieder ein.",
   phasen:[
-    {ab:0,    text:"Das Kunststoffteil mit der Rastnase steht vor der Öffnung."},
-    {ab:0.3,  text:"Beim Einschieben wird die Nase elastisch weggebogen."},
-    {ab:0.62, text:"Hinter der Kante federt sie zurück und rastet ein."},
-    {ab:0.85, text:"Jetzt hält die Verbindung formschlüssig – ganz ohne zusätzliches Teil."}],
+    {ab:0,    text:"Das Kunststoffteil mit den Rastnasen steht vor der Öffnung."},
+    {ab:0.3,  text:"Beim Einschieben werden die Federarme elastisch nach innen gebogen."},
+    {ab:0.74, text:"Sobald die Nasen über die Kante treten, federn die Arme zurück."},
+    {ab:0.86, text:"Die Rastflächen stützen sich auf der Platte ab – formschlüssig, ganz ohne zusätzliches Teil."}],
   plus:["Kein zusätzliches Verbindungselement","Montage in Sekunden, ohne Werkzeug",
         "Sehr günstig bei großen Stückzahlen"],
   minus:["Nur kleine Kräfte","Kunststoff altert und kriecht",
@@ -888,44 +934,73 @@ verfahren({
   werkstoff:"vor allem Kunststoff", dicht:"nein", aufwand:"sehr gering",
   einsatz:"Gehäuse, Abdeckungen, Steckverbinder, Clips",
   zeichnen:function(g, t){
-    var ein = stufe(t, 0.3, 0.62), raste = stufe(t, 0.62, 0.85), fest = stufe(t, 0.85, 1);
-    var cx = 300, py = 120, pd = 20;            /* Platte mit Loch */
-    var lochB = 46;
+    var ein = stufe(t, 0.3, 0.74), raste = stufe(t, 0.74, 0.86), fest = stufe(t, 0.86, 1);
+    var cx = 300, py = 70, pd = 20, lochB = 60;
+    var armL = 84, schaft = 20, armD = 11, nasenH = 34, frei = 38, eng = lochB/2;
 
-    /* Gehaeuseplatte mit Durchbruch */
-    rect(g, 80, py, (cx-lochB/2)-80, pd, C.bF, C.bS, {sw:1.8});
-    rect(g, cx+lochB/2, py, 520-(cx+lochB/2), pd, C.bF, C.bS, {sw:1.8});
-    txt(g, 86, py-10, "Gehäuse mit Rastöffnung", {fill:C.bS, size:12});
+    /* Gehaeuseplatte mit Rastoeffnung */
+    rect(g, 70, py, (cx-lochB/2)-70, pd, C.bF, C.bS, {sw:1.8});
+    rect(g, cx+lochB/2, py, 570-(cx+lochB/2), pd, C.bF, C.bS, {sw:1.8});
+    txt(g, 76, py+pd+18, "Gehäuse mit Rastöffnung", {fill:C.bS, size:12});
 
-    /* Rasthaken faehrt von unten durch das Loch */
-    var weg = 178 * ein;
-    var hy = 262 - weg;                          /* Oberkante des Hakens */
-    rect(g, cx-15, hy, 30, 158, C.eF, C.eS, {sw:1.8});
-    txt(g, cx+22, hy+126, "Rasthaken", {fill:C.eS, size:12});
+    /* Der Haken faehrt von unten durch das Loch, schiesst acht Einheiten
+       ueber die Kante hinaus und setzt sich dann auf die Platte. */
+    var start = py + pd + 50, ende = py - nasenH - 8;
+    var hy = (start - ein*(start - ende)) + raste*8;
 
-    /* Widerhaken: im Loch zusammengedrueckt, darueber federt er auf */
-    var offen = Math.max(raste, 1 - Math.min(1, ein*2.2));   /* im Loch schmal */
-    var breit = 15 + 22 * offen;
-    pfad(g, "M"+(cx-15)+","+(hy+34)+" L"+(cx-breit)+","+(hy+34)+" L"+(cx-15)+","+hy+" Z",
-      C.eF, C.eS, {sw:1.6});
-    pfad(g, "M"+(cx+15)+","+(hy+34)+" L"+(cx+breit)+","+(hy+34)+" L"+(cx+15)+","+hy+" Z",
-      C.eF, C.eS, {sw:1.6});
+    /* Wie weit die Nase noch im Loch klemmt, folgt aus der Geometrie: massgebend
+       ist die Breite der Nase auf Hoehe der unteren Lochkante. Der zweite Faktor
+       laesst die Nase auffedern, sobald sie ueber die Plattenoberseite tritt -
+       so wird aus der Rechnung das sichtbare Zurueckschnappen. */
+    var bedarf = mische(((py + pd) - hy) / nasenH);
+    var defl = Math.max(0, (schaft + (frei - schaft)*bedarf) - eng) *
+               mische((hy + nasenH - py) / 14);
+
+    var aussenL = cx - schaft + defl, innenL = aussenL + armD;
+    var aussenR = cx + schaft - defl, innenR = aussenR - armD;
+    var spitzeL = cx - frei + defl,   spitzeR = cx + frei - defl;
+
+    /* Federarme: am Fuss eingespannt, oben ausgelenkt. Die quadratische Kurve
+       gibt am Fuss eine senkrechte Tangente - so sieht die Biegung richtig aus. */
+    pfad(g, "M"+(cx-schaft)+","+(hy+armL)+" Q "+(cx-schaft)+","+(hy+armL*0.45)+
+            " "+aussenL.toFixed(1)+","+hy+" L "+innenL.toFixed(1)+","+hy+
+            " Q "+(cx-schaft+armD)+","+(hy+armL*0.45)+" "+(cx-schaft+armD)+","+(hy+armL)+" Z",
+      C.eF, C.eS, {sw:1.8});
+    pfad(g, "M"+(cx+schaft)+","+(hy+armL)+" Q "+(cx+schaft)+","+(hy+armL*0.45)+
+            " "+aussenR.toFixed(1)+","+hy+" L "+innenR.toFixed(1)+","+hy+
+            " Q "+(cx+schaft-armD)+","+(hy+armL*0.45)+" "+(cx+schaft-armD)+","+(hy+armL)+" Z",
+      C.eF, C.eS, {sw:1.8});
+
+    /* Rastnasen: schraege Einfuehrflaeche oben, waagerechte Rastflaeche unten */
+    pfad(g, "M"+innenL.toFixed(1)+","+hy+" L "+spitzeL.toFixed(1)+","+(hy+nasenH-8)+
+            " L "+spitzeL.toFixed(1)+","+(hy+nasenH)+" L "+innenL.toFixed(1)+","+
+            (hy+nasenH)+" Z", C.eF, C.eS, {sw:1.6});
+    pfad(g, "M"+innenR.toFixed(1)+","+hy+" L "+spitzeR.toFixed(1)+","+(hy+nasenH-8)+
+            " L "+spitzeR.toFixed(1)+","+(hy+nasenH)+" L "+innenR.toFixed(1)+","+
+            (hy+nasenH)+" Z", C.eF, C.eS, {sw:1.6});
+
+    rect(g, cx-46, hy+armL, 92, 26, C.eF, C.eS, {sw:1.8, rx:3});
+    txt(g, cx+54, hy+armL+18, "Bauteil mit Rasthaken", {fill:C.eS, size:12});
 
     if(ein < 1){
-      kraftpfeil(g, cx, hy+186, cx, hy+156, "#1d4ed8", 3);
-      txt(g, cx+14, hy+176, "einschieben", {fill:"#1d4ed8", size:11.5});
+      kraftpfeil(g, cx-124, hy+armL+42, cx-124, hy+armL+10, "#1d4ed8", 3);
+      txt(g, cx-116, hy+armL+32, "einschieben", {fill:"#1d4ed8", size:11.5});
     }
-    if(ein > 0.15 && raste < 0.5){
-      kraftpfeil(g, cx-64, hy+18, cx-30, hy+18, "#b45309", 2.4);
-      kraftpfeil(g, cx+64, hy+18, cx+30, hy+18, "#b45309", 2.4);
-      txt(g, cx-70, hy+8, "elastisch verformt", {anchor:"end", fill:"#b45309", size:11.5});
+    if(defl > 1.5){
+      kraftpfeil(g, spitzeL-62, hy+nasenH-12, spitzeL-8, hy+nasenH-12, "#b45309", 2.4);
+      kraftpfeil(g, spitzeR+62, hy+nasenH-12, spitzeR+8, hy+nasenH-12, "#b45309", 2.4);
+      txt(g, spitzeL-68, hy+nasenH-18, "elastisch verformt",
+        {anchor:"end", fill:"#b45309", size:11.5});
+    }
+    if(defl <= 1.5 && ein > 0.9 && fest < 0.4){
+      txt(g, spitzeR+16, hy+18, "federt zurück", {fill:"#16a34a", size:12});
     }
     if(fest > 0.05){
-      kraftpfeil(g, cx, hy+186, cx, hy+214, "#7c3aed", 3);
-      txt(g, cx+14, hy+206, "Last zieht am Haken", {fill:"#7c3aed", size:11.5});
-      kraftpfeil(g, cx-30, py-24, cx-30, py-4, "#7c3aed", 2.4);
-      kraftpfeil(g, cx+30, py-24, cx+30, py-4, "#7c3aed", 2.4);
-      txt(g, cx+56, py-14, "die Widerhaken stützen sich auf der Platte ab",
+      linie(g, spitzeL, hy+nasenH, innenL, hy+nasenH, "#7c3aed", 3.4);
+      linie(g, innenR, hy+nasenH, spitzeR, hy+nasenH, "#7c3aed", 3.4);
+      kraftpfeil(g, cx, hy+armL+34, cx, hy+armL+62, "#7c3aed", 3);
+      txt(g, cx+10, hy+armL+58, "Last", {fill:"#7c3aed", size:11.5});
+      txt(g, spitzeR+16, py+pd+26, "Rastfläche stützt sich auf der Platte ab",
         {fill:"#7c3aed", size:12});
     }
   }
@@ -983,10 +1058,10 @@ verfahren({
   id:"falz", gruppe:"form", name:"Falzverbindung",
   prinzip:"Zwei Blechränder werden umgebogen, ineinander gehakt und flachgedrückt.",
   phasen:[
-    {ab:0,    text:"Zwei Bleche mit umgebogenen Rändern."},
-    {ab:0.3,  text:"Die Ränder werden ineinander geschoben."},
-    {ab:0.6,  text:"Der Falz wird flachgedrückt."},
-    {ab:0.85, text:"Fertig: eine formschlüssige Verbindung ganz ohne Zusatzteil."}],
+    {ab:0,    text:"Zwei Bleche mit vorgebogenen Rändern – Blech A von oben, Blech B von unten."},
+    {ab:0.3,  text:"Die Ränder werden längs der Falzkante ineinander geschoben. Im Schnitt ist diese Bewegung nicht darstellbar: quer zur Zeichenebene müssten sich die Buge durchdringen."},
+    {ab:0.6,  text:"Der Falz wird flachgedrückt – aus dem offenen Haken werden vier dicht liegende Lagen."},
+    {ab:0.88, text:"Fertig: jeder Bug stößt gegen das Schenkelende des anderen. Das sperrt, ganz ohne Zusatzteil."}],
   plus:["Kein Verbindungselement nötig","Auch bei sehr dünnen Blechen",
         "Sehr günstig, gut automatisierbar"],
   minus:["Nur für dünne, umformbare Bleche","Geringe Festigkeit quer zum Falz",
@@ -995,37 +1070,76 @@ verfahren({
   dicht:"bedingt, mit Dichtmasse", aufwand:"gering, aber Werkzeug nötig",
   einsatz:"Konservendosen, Lüftungskanäle, Karosseriebau",
   zeichnen:function(g, t){
-    var schieben = stufe(t, 0.3, 0.55), pressen = stufe(t, 0.6, 0.85);
-    var cy = 150, dick = 12;
-    var off = 120 * (1 - schieben);
-    var h = 40 - 26*pressen;
+    var schieben = stufe(t, 0.3, 0.55), pressen = stufe(t, 0.6, 0.85), halten = stufe(t, 0.88, 1);
+    var cy = 150, d = 12, s = d/2, lx = 80, rx = 520, weg = 130;
+    var lage = 30 - 18*pressen;        /* Lagenabstand: offen -> flachgedrueckt */
+    var y1 = cy - 1.5*lage, y2 = cy - 0.5*lage, y3 = cy + 0.5*lage, y4 = cy + 1.5*lage;
+    /* Die Schenkel reichen fast bis an den Bug des anderen Blechs. Bleiben sie
+       zu kurz, klafft im flachen Falz eine Luecke, die wie ein Zeichenfehler
+       aussieht - und der Anschlag, der die Verbindung sperrt, fehlt. */
+    var rA = 348, lA = rA - 82, lB = 252, rB = lB + 82;
+    /* Vier duenne Lagen liegen hier direkt aufeinander. Mit den sonst
+       verwendeten, fast gleichen Fuellfarben waeren sie nicht zu trennen. */
+    var fA = C.aF, fB = "#5eead4";
 
-    pfad(g, "M60,"+(cy-dick/2)+" L"+(250-off)+","+(cy-dick/2)+
-            " L"+(250-off)+","+(cy-dick/2-h)+" L"+(250-off-30)+","+(cy-dick/2-h)+
-            " L"+(250-off-30)+","+(cy-dick/2-h+dick)+" L"+(250-off-dick)+","+(cy-dick/2-h+dick)+
-            " L"+(250-off-dick)+","+(cy+dick/2)+" L60,"+(cy+dick/2)+" Z",
-      C.aF, C.aS, {sw:1.8});
-    pfad(g, "M560,"+(cy-dick/2)+" L"+(250+off)+","+(cy-dick/2)+
-            " L"+(250+off)+","+(cy-dick/2-h-dick-2)+" L"+(250+off+42)+","+(cy-dick/2-h-dick-2)+
-            " L"+(250+off+42)+","+(cy-dick/2-h-2)+" L"+(250+off+dick)+","+(cy-dick/2-h-2)+
-            " L"+(250+off+dick)+","+(cy+dick/2)+" L560,"+(cy+dick/2)+" Z",
-      C.bF, C.bS, {sw:1.8});
+    function poly(pts, fill, stroke, op){
+      var dd = "M";
+      for(var i = 0; i < pts.length; i++)
+        dd += (i ? " L" : "") + pts[i][0].toFixed(1) + "," + pts[i][1].toFixed(1);
+      return pfad(g, dd + " Z", fill, stroke, {sw:1.6, opacity:op});
+    }
+    /* Blech A: kommt oben herein, Bug nach unten, Schenkel zurueck nach links.
+       Blech B: kommt unten herein, Bug nach oben, Schenkel zurueck nach rechts.
+       Dadurch liegen die vier Lagen abwechselnd A-B-A-B. */
+    function blechA(dx, op){
+      poly([[lx, y1-s], [rA+dx+s, y1-s], [rA+dx+s, y3+s], [lA+dx, y3+s],
+            [lA+dx, y3-s], [rA+dx-s, y3-s], [rA+dx-s, y1+s], [lx, y1+s]],
+           fA, C.aS, op);
+    }
+    function blechB(dx, op){
+      poly([[rx, y4+s], [lB+dx-s, y4+s], [lB+dx-s, y2-s], [rB+dx, y2-s],
+            [rB+dx, y2+s], [lB+dx+s, y2+s], [lB+dx+s, y4-s], [rx, y4-s]],
+           fB, C.bS, op);
+    }
 
-    txt(g, 66, cy-dick/2-14, "Blech A", {fill:C.aS, size:12});
-    txt(g, 500, cy-dick/2-14, "Blech B", {fill:C.bS, size:12});
+    blechA(0, 1);
+    /* Ein Falz laesst sich in der Schnittebene gar nicht zusammenfuegen - die
+       Buege muessten einander durchdringen. In Wirklichkeit schiebt man die
+       Bleche laengs der Falzkante ineinander, also quer zur Zeichenebene.
+       Deshalb blendet Blech B von der getrennten in die gefuegte Lage um,
+       statt eine Bewegung vorzutaeuschen, die es nicht gibt. */
+    if(schieben < 0.5) blechB(weg, 1 - 2*schieben);
+    if(schieben > 0)   blechB(0, Math.min(1, 2*schieben));
+
+    txt(g, lx+4, y1-s-10, "Blech A", {fill:C.aS, size:12});
+    txt(g, rx-8, y4+s+18, "Blech B", {anchor:"end", fill:C.bS, size:12});
 
     if(schieben < 1){
-      kraftpfeil(g, 150, cy+34, 200, cy+34, "#1d4ed8", 2.6);
-      kraftpfeil(g, 470, cy+34, 420, cy+34, "#1d4ed8", 2.6);
-      txt(g, 250, cy+52, "ineinander schieben", {anchor:"middle", fill:"#1d4ed8", size:11.5});
+      /* Das Zeichen fuer "in die Zeichenebene hinein" */
+      var zx = 130, zy = y1 - s - 40;
+      g.appendChild(ns("circle", {cx:zx, cy:zy, r:9, fill:"#ffffff",
+        stroke:"#1d4ed8", "stroke-width":1.6}));
+      linie(g, zx-6.4, zy-6.4, zx+6.4, zy+6.4, "#1d4ed8", 1.6);
+      linie(g, zx+6.4, zy-6.4, zx-6.4, zy+6.4, "#1d4ed8", 1.6);
+      txt(g, zx+16, zy+5, "längs der Falzkante ineinander schieben",
+        {fill:"#1d4ed8", size:11.5});
     }else if(pressen < 1){
-      kraftpfeil(g, 250, cy-dick/2-h-70, 250, cy-dick/2-h-16, "#b45309", 3);
-      txt(g, 262, cy-dick/2-h-50, "flachdrücken", {fill:"#b45309", size:11.5});
+      rect(g, lB-30, y1-s-32, (rA+s+30)-(lB-30), 15, "#94a3b8", "#334155", {sw:1.4, rx:2});
+      rect(g, lB-30, y4+s+17, (rA+s+30)-(lB-30), 15, "#94a3b8", "#334155", {sw:1.4, rx:2});
+      var mx = (lA + rB) / 2;
+      kraftpfeil(g, mx, y1-s-56, mx, y1-s-36, "#b45309", 3);
+      kraftpfeil(g, mx, y4+s+56, mx, y4+s+36, "#b45309", 3);
+      txt(g, rA+s+40, y1-s-20, "flachdrücken", {fill:"#b45309", size:11.5});
     }else{
-      kraftpfeil(g, 40, cy, 66, cy, "#7c3aed", 3);
-      kraftpfeil(g, 580, cy, 554, cy, "#7c3aed", 3);
-      txt(g, 250, cy+52, "die Haken greifen ineinander",
-        {anchor:"middle", fill:"#7c3aed", size:12});
+      kraftpfeil(g, lx+44, y1, lx+4, y1, "#7c3aed", 3);
+      kraftpfeil(g, rx-44, y4, rx-4, y4, "#7c3aed", 3);
+      /* Hier stossen die Buege gegen das Schenkelende des anderen Blechs -
+         das ist die eigentliche Sperre. */
+      linie(g, rB, y2-s, rB, y2+s, "#dc2626", 3.6, {opacity:halten});
+      linie(g, lA, y3-s, lA, y3+s, "#dc2626", 3.6, {opacity:halten});
+      txt(g, lx+4, y4+s+42,
+        "Vier Blechlagen greifen ineinander – jeder Bug stößt gegen das Schenkelende des anderen",
+        {fill:"#7c3aed", size:12});
     }
   }
 });
