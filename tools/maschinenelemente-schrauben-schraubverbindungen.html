@@ -189,6 +189,7 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
 <div class="tabs" role="tablist">
   <button role="tab" data-tab="grundlagen"     aria-selected="true">Grundlagen</button>
   <button role="tab" data-tab="aufbau"         aria-selected="false">Aufbau</button>
+  <button role="tab" data-tab="zeichnung"      aria-selected="false">Zeichnung</button>
   <button role="tab" data-tab="funktion"       aria-selected="false">Funktion</button>
   <button role="tab" data-tab="fortgeschritten" aria-selected="false">Funktion (Fortgeschritten)</button>
   <button role="tab" data-tab="berechnungen"   aria-selected="false">Berechnungen</button>
@@ -221,8 +222,14 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
         </div>
       </div>
       <div>
-        <svg class="zeichnung" id="svgPrinzip" viewBox="0 0 430 270" role="img"
-             aria-label="Zwei verschraubte Platten mit Schraube und Mutter"></svg>
+        <div class="steuerung">
+          <button class="link" id="btnAnziehen">&#9654;&nbsp; Anziehen abspielen</button>
+          <input type="range" id="gAnziehen" min="0" max="100" step="1" value="0"
+                 aria-label="Anziehen">
+        </div>
+        <svg class="zeichnung" id="svgPrinzip" viewBox="0 0 470 290" role="img"
+             aria-label="Zwei verschraubte Platten: die Mutter wird angezogen, die Schraube wird gedehnt"></svg>
+        <p id="anziehStand"></p>
       </div>
     </div>
   </div>
@@ -348,6 +355,71 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
 
 <!-- ============================================================== FUNKTION -->
 <!-- ============================================================== FUNKTION -->
+<!-- ============================================================== ZEICHNUNG -->
+<section class="panel" id="p-zeichnung" hidden>
+  <div class="karte">
+    <h2>Die Schraubverbindung in der Zeichnung</h2>
+    <p class="sub">So wird eine Schraubverbindung im Schnitt normgerecht dargestellt.</p>
+
+    <div class="felder">
+      <label class="feld">Art der Verbindung
+        <select id="zArt">
+          <option value="durchsteck">Durchsteckschraubung (mit Mutter)</option>
+          <option value="einschraub">Einschraubverbindung (Grundloch)</option>
+        </select></label>
+      <label class="feld">Gewinde
+        <select id="zGewinde"></select></label>
+      <label class="feld">Obere Platte in mm
+        <input type="number" id="zT1" min="4" max="40" step="1" value="12"></label>
+      <label class="feld" id="zT2Feld">Untere Platte in mm
+        <input type="number" id="zT2" min="4" max="60" step="1" value="12"></label>
+    </div>
+
+    <div class="steuerung">
+      <label class="sw"><input type="checkbox" id="zSchraffur" checked><span class="track"></span>Schraffur</label>
+      <label class="sw"><input type="checkbox" id="zMasse" checked><span class="track"></span>Ma&szlig;e</label>
+      <label class="sw"><input type="checkbox" id="zRegeln" checked><span class="track"></span>Normhinweise</label>
+    </div>
+
+    <svg class="zeichnung" id="svgVerbindung" viewBox="0 0 760 430" role="img"
+         aria-label="Normgerechte Schnittdarstellung einer Schraubverbindung"></svg>
+    <p class="fussnote" id="zHinweis"></p>
+  </div>
+
+  <div class="karte">
+    <h2>Die Regeln dahinter</h2>
+    <p class="sub">Die Nummern stehen an den passenden Stellen in der Zeichnung.</p>
+    <div class="tabellenrahmen">
+      <table id="tabRegeln"></table>
+    </div>
+
+    <div class="merke">
+      <b>Die wichtigste Regel:</b> Schraube, Mutter und Scheibe werden im L&auml;ngsschnitt
+      <em>nicht</em> geschnitten. Sie bekommen also keine Schraffur, obwohl die Schnittebene
+      durch sie hindurchgeht. Dasselbe gilt f&uuml;r Wellen, Stifte, Niete, Keile und Rippen.
+    </div>
+
+    <h3>Gewinde in der Zeichnung</h3>
+    <div class="tabellenrahmen">
+      <table>
+        <thead><tr><th></th><th>Au&szlig;engewinde (Schraube)</th><th>Innengewinde (Bauteil, geschnitten)</th></tr></thead>
+        <tbody>
+          <tr><td>Au&szlig;endurchmesser <em>d</em></td>
+              <td>breite Vollinie</td><td>schmale Vollinie</td></tr>
+          <tr><td>Kerndurchmesser <em>d</em><sub>3</sub></td>
+              <td>schmale Vollinie</td><td>breite Vollinie</td></tr>
+          <tr><td>Schraffur</td>
+              <td>keine &ndash; wird nicht geschnitten</td><td>reicht bis zur breiten Linie</td></tr>
+          <tr><td>Gewindeende</td>
+              <td colspan="2">schmale Vollinie quer zur Achse</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fussnote">Merksatz: Die Schraffur h&ouml;rt immer an der <b>breiten</b> Linie auf.
+      Beim Au&szlig;engewinde liegt die breite Linie au&szlig;en, beim Innengewinde innen.</p>
+  </div>
+</section>
+
 <!-- ============================================================== FUNKTION -->
 <section class="panel" id="p-funktion" hidden>
 
@@ -1096,6 +1168,7 @@ var aktuellerReiter = "grundlagen";
 function reiterZeichnen(name){
   if(name === "grundlagen"){ zeichnePrinzip(); zeichneReib(); }
   if(name === "aufbau"){ zeichneSchraube(); zeichneGewindeprofil(); }
+  if(name === "zeichnung") zeichneVerbindung();
   if(name === "funktion"){ zeichneAbwickeln(); zeichneAufteilung();
                           zeichneVergleich(); zeichneStreuband(); }
   if(name === "fortgeschritten") zeichneVerspannung();
@@ -1123,40 +1196,162 @@ function reiterSetzen(name){
    6  GRUNDLAGEN
    ========================================================================== */
 
+/* --- Anziehen als Animation ------------------------------------------------
+   Die Dehnung der Schraube ist nur im Vergleich zum unbelasteten Zustand
+   sichtbar. Deshalb wird dieser als gestrichelte Umrisslinie mitgezeichnet -
+   genau so, wie es im Tabellenbuch dargestellt wird.
+   Ablauf: bis 35 % schliesst sich die Fuge, danach baut sich die Spannkraft
+   auf. Dehnung und Stauchung sind stark ueberhoeht; real sind es Hundertstel
+   Millimeter. */
+var anziehT = 0;
+var anziehLauf = null;
+
 function zeichnePrinzip(){
   var svg = el("svgPrinzip"); leeren(svg); pfeilDefs(svg);
   var g = ns("g", {}); svg.appendChild(g);
 
-  var xm = 190, oben = 70, dicke = 34;
-  /* Zwei Platten */
-  g.appendChild(ns("rect",{x:60,y:oben,width:260,height:dicke,fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
-  g.appendChild(ns("rect",{x:60,y:oben+dicke,width:260,height:dicke,fill:"#99f6e4",stroke:"#0f766e","stroke-width":1.5}));
-  /* Trennfuge */
-  g.appendChild(ns("line",{x1:60,y1:oben+dicke,x2:320,y2:oben+dicke,stroke:"#0f766e","stroke-width":2.5}));
-  /* Schraube */
-  g.appendChild(ns("rect",{x:xm-22,y:oben-20,width:44,height:20,fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
-  g.appendChild(ns("rect",{x:xm-8,y:oben,width:16,height:dicke*2+26,fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.5}));
-  /* Mutter */
-  g.appendChild(ns("rect",{x:xm-20,y:oben+dicke*2,width:40,height:18,fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
+  var t = anziehT;
+  var schliessen = Math.min(1, t / 0.35);          /* Fuge geht zu */
+  var kraft = Math.max(0, (t - 0.35) / 0.65);      /* Spannkraft baut sich auf */
 
-  /* Kraftpfeile: Schraube zieht, Platten werden gepresst */
-  g.appendChild(ns("line",{x1:xm,y1:oben-34,x2:xm,y2:oben-58,stroke:"#1d4ed8","stroke-width":2.5,"marker-end":"url(#pfeilB)"}));
-  g.appendChild(ns("line",{x1:xm,y1:oben+dicke*2+32,x2:xm,y2:oben+dicke*2+56,stroke:"#1d4ed8","stroke-width":2.5,"marker-end":"url(#pfeilB)"}));
-  g.appendChild(svgText(xm+10, oben-46, "F", {size:13, fill:"#1d4ed8", weight:700}));
-  g.appendChild(svgText(xm+10, oben+dicke*2+52, "F", {size:13, fill:"#1d4ed8", weight:700}));
+  var xm = 210, oben = 78, dicke = 30, plattenBreite = 250;
+  var spalt = 11 * (1 - schliessen);
+  var stauchung = 7 * kraft;                       /* ueberhoeht */
+  var dehnung = 11 * kraft;                        /* ueberhoeht */
 
-  /* Pressung in der Fuge */
-  for(var i=0;i<5;i++){
-    var x = 100 + i*40;
-    if(Math.abs(x-xm) < 26) continue;
-    g.appendChild(ns("line",{x1:x,y1:oben+dicke-13,x2:x,y2:oben+dicke-2,stroke:"#0f766e","stroke-width":2,"marker-end":"url(#pfeilB)"}));
-    g.appendChild(ns("line",{x1:x,y1:oben+dicke+13,x2:x,y2:oben+dicke+2,stroke:"#0f766e","stroke-width":2,"marker-end":"url(#pfeilB)"}));
+  var yP1o = oben;
+  var yP1u = yP1o + dicke - stauchung / 2;
+  var yP2o = yP1u + spalt;
+  var yP2u = yP2o + dicke - stauchung / 2;
+  var yMutterU = yP2u + 18;
+  var yEnde = oben + 2 * dicke + 18 + 16 + dehnung;
+  var yEndeLos = oben + 2 * dicke + 18 + 16;       /* ohne Dehnung */
+
+  var lx = xm - plattenBreite / 2, rx = xm + plattenBreite / 2;
+
+  /* Unbelasteter Zustand als Geisterbild */
+  if(kraft > 0.02){
+    var geist = ns("g", {opacity:0.55});
+    g.appendChild(geist);
+    geist.appendChild(ns("rect", {x:lx, y:oben, width:plattenBreite, height:2*dicke,
+      fill:"none", stroke:"#94a3b8", "stroke-width":1.2, "stroke-dasharray":"5 4"}));
+    geist.appendChild(ns("line", {x1:xm-11, y1:yEndeLos, x2:xm+11, y2:yEndeLos,
+      stroke:"#94a3b8", "stroke-width":1.2, "stroke-dasharray":"5 4"}));
   }
-  hinweis(g, xm+22, oben-10, 300, 28, "Kopf", "start");
-  hinweis(g, 250, oben+dicke, 330, 190, "Trennfuge", "start");
-  hinweis(g, xm+20, oben+dicke*2+9, 300, 225, "Mutter", "start");
-  g.appendChild(svgText(20, 250, "Die Schraube zieht – die Bauteile werden gepresst.",
-    {size:12.5, fill:"#64748b"}));
+
+  /* Platten */
+  g.appendChild(ns("rect", {x:lx, y:yP1o, width:plattenBreite, height:yP1u-yP1o,
+    fill:"#ccfbf1", stroke:"#0f766e", "stroke-width":1.6}));
+  g.appendChild(ns("rect", {x:lx, y:yP2o, width:plattenBreite, height:yP2u-yP2o,
+    fill:"#99f6e4", stroke:"#0f766e", "stroke-width":1.6}));
+
+  /* Schraube: Kopf oben, Schaft durch beide Platten, Ende unten */
+  g.appendChild(ns("rect", {x:xm-24, y:oben-19, width:48, height:19,
+    fill:"#bfdbfe", stroke:"#1d4ed8", "stroke-width":1.6}));
+  g.appendChild(ns("rect", {x:xm-9, y:oben, width:18, height:yEnde-oben,
+    fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":1.6}));
+  /* Mutter sitzt auf der unteren Platte und wandert beim Anziehen mit */
+  g.appendChild(ns("rect", {x:xm-21, y:yP2u, width:42, height:18,
+    fill:"#bfdbfe", stroke:"#1d4ed8", "stroke-width":1.6}));
+
+  /* Drehrichtung, solange sich die Fuge noch schliesst */
+  if(schliessen < 1){
+    var dreh = ns("g", {opacity:0.85 * (1 - schliessen) + 0.15});
+    g.appendChild(dreh);
+    dreh.appendChild(ns("path", {d:"M" + (xm+30) + "," + (yP2u+4) +
+      " A 22 22 0 1 1 " + (xm+26) + "," + (yP2u+21),
+      fill:"none", stroke:"#b45309", "stroke-width":2.4, "marker-end":"url(#pfeilB)"}));
+    dreh.appendChild(svgText(xm+58, yP2u+16, "anziehen",
+      {size:12, fill:"#b45309", weight:700}));
+  }
+
+  /* Kraefte erst, wenn die Fuge zu ist */
+  if(kraft > 0.02){
+    var pfeil = 10 + 34 * kraft;
+    g.appendChild(ns("line", {x1:xm, y1:oben-24, x2:xm, y2:oben-24-pfeil,
+      stroke:"#1d4ed8", "stroke-width":3, "marker-end":"url(#pfeilBblau)"}));
+    g.appendChild(ns("line", {x1:xm, y1:yEnde+8, x2:xm, y2:yEnde+8+pfeil,
+      stroke:"#1d4ed8", "stroke-width":3, "marker-end":"url(#pfeilBblau)"}));
+    g.appendChild(svgText(xm+12, oben-28-pfeil/2, zLabel("vorspannkraft","F_V"),
+      {size:12.5, fill:"#1d4ed8", weight:700}));
+
+    /* Pressung in der Fuge */
+    for(var i = 0; i < 5; i++){
+      var x = lx + 26 + i * 50;
+      if(Math.abs(x - xm) < 30) continue;
+      /* Pfeilpaare versetzt, sonst treffen sich die Spitzen und es sieht
+         aus wie ein Zeichenfehler. */
+      var lp = 6 + 10 * kraft;
+      g.appendChild(ns("line", {x1:x-6, y1:yP1u-lp-9, x2:x-6, y2:yP1u-9,
+        stroke:"#0f766e", "stroke-width":2, "marker-end":"url(#pfeilBteal)"}));
+      g.appendChild(ns("line", {x1:x+6, y1:yP2o+lp+9, x2:x+6, y2:yP2o+9,
+        stroke:"#0f766e", "stroke-width":2, "marker-end":"url(#pfeilBteal)"}));
+    }
+
+    /* Dehnung und Stauchung bemassen */
+    if(kraft > 0.25){
+      var mg = ns("g", {opacity:Math.min(1, (kraft-0.25)/0.3)});
+      g.appendChild(mg);
+      masslinie(mg, xm+13, yEndeLos, xm+13, yEnde,
+        (zustand.sym ? "\u0394l" : "Dehnung"), 26);
+      masslinie(mg, rx, oben + 2*dicke, rx, oben + 2*dicke - stauchung,
+        (zustand.sym ? "\u03b4" : "Stauchung"), 34);
+    }
+  }
+
+  /* Beschriftungen */
+  hinweis(g, xm+24, oben-10, rx+26, 40, "Kopf", "start");
+  hinweis(g, rx-18, yP1u, rx+26, yP1u, wort_kurz("trennfuge"), "start");
+  hinweis(g, xm-21, yP2u+9, lx+24, yP2u+46, "Mutter", "end");
+
+  var stand = el("anziehStand");
+  if(stand){
+    if(schliessen < 1){
+      stand.className = "merke";
+      stand.innerHTML = "<b>Schritt 1:</b> Die Mutter wird gedreht und wandert am Gewinde " +
+        "hoch. Die Bauteile werden zusammengezogen, bis sie sich ber&uuml;hren. " +
+        "Bis hierher entsteht noch keine nennenswerte Kraft.";
+    }else if(kraft < 0.98){
+      stand.className = "merke";
+      stand.innerHTML = "<b>Schritt 2:</b> Jetzt baut sich die Kraft auf. Die Schraube wird " +
+        "<b>l&auml;nger</b>, die Bauteile werden <b>d&uuml;nner</b> &ndash; beide verhalten sich " +
+        "wie sehr steife Federn. Die gestrichelte Linie zeigt den unbelasteten Zustand.";
+    }else{
+      stand.className = "gut";
+      stand.innerHTML = "<b>Angezogen.</b> Die Schraube ist gedehnt und zieht Kopf und Mutter " +
+        "zusammen &ndash; diese Kraft presst die Bauteile aneinander. " +
+        "Dehnung und Stauchung sind hier stark &uuml;berh&ouml;ht gezeichnet; " +
+        "in Wirklichkeit sind es Hundertstel Millimeter.";
+    }
+  }
+}
+
+/* Kurzform eines Begriffs fuer Beschriftungen in Zeichnungen. */
+function wort_kurz(schluessel){
+  var t = TERME[schluessel];
+  if(!t) return schluessel;
+  return zeigtFach(schluessel) ? t.f : (t.kurz || t.a);
+}
+
+function anziehSetzen(wert){
+  anziehT = Math.max(0, Math.min(1, wert));
+  el("gAnziehen").value = Math.round(anziehT * 100);
+  zeichnePrinzip();
+}
+
+function anziehAbspielen(){
+  if(anziehLauf){ cancelAnimationFrame(anziehLauf); anziehLauf = null; }
+  var dauer = 3200, start = null;
+  var von = anziehT >= 0.999 ? 0 : anziehT;
+  function schritt(zeit){
+    if(start === null) start = zeit;
+    var p = Math.min(1, (zeit - start) / dauer);
+    var weich = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p + 2, 2) / 2;
+    anziehSetzen(von + (1 - von) * weich);
+    if(p < 1){ anziehLauf = requestAnimationFrame(schritt); }
+    else { anziehLauf = null; }
+  }
+  anziehLauf = requestAnimationFrame(schritt);
 }
 
 /* Werkstoffpaarung waehlen: Der Regler bekommt den Bereich dieser Paarung,
@@ -1265,6 +1460,322 @@ function zeichneReib(){
       " werden – dafür ist sie nicht vorgesehen.";
     begriffeZeichnen(txt);
   }
+}
+
+/* ============================================================================
+   ZEICHNUNG  -  normgerechte Schnittdarstellung einer Schraubverbindung
+   ==========================================================================
+   Linienbreiten nach DIN ISO 128: breite zu schmaler Vollinie im Verhaeltnis
+   2 : 1. Hier 2,0 zu 1,0 Pixel. */
+var BREIT = 2.0, SCHMAL = 1.0;
+
+var REGELN = [
+  {nr:1, text:"Schraube, Mutter und Scheibe werden im Längsschnitt nicht geschnitten – " +
+              "also keine Schraffur.", arten:["durchsteck","einschraub"]},
+  {nr:2, text:"Außengewinde: Außendurchmesser als breite, Kerndurchmesser als schmale " +
+              "Vollinie.", arten:["durchsteck","einschraub"]},
+  {nr:3, text:"Das Gewindeende wird als schmale Vollinie quer zur Achse gezeichnet.",
+   arten:["durchsteck","einschraub"]},
+  {nr:4, text:"Das Durchgangsloch hat Spiel: Es ist größer als der Gewindedurchmesser.",
+   arten:["durchsteck","einschraub"]},
+  {nr:5, text:"Schraffuren benachbarter Teile laufen gegenläufig oder versetzt, damit die " +
+              "Teile unterscheidbar bleiben.", arten:["durchsteck","einschraub"]},
+  {nr:6, text:"Die Mittellinie ist eine schmale Strichpunktlinie und steht über.",
+   arten:["durchsteck","einschraub"]},
+  {nr:7, text:"Innengewinde geschnitten: Kerndurchmesser als breite, Außendurchmesser als " +
+              "schmale Vollinie – genau umgekehrt zum Außengewinde.", arten:["einschraub"]},
+  {nr:8, text:"Die Schraffur reicht bis zur breiten Linie, beim Innengewinde also bis zum " +
+              "Kerndurchmesser.", arten:["einschraub"]},
+  {nr:9, text:"Bohrtiefe größer als Gewindetiefe, Gewindetiefe größer als " +
+              "Einschraubtiefe. Die Bohrspitze wird mit 120° gezeichnet.", arten:["einschraub"]}
+];
+
+/* Schraffurmuster: gegenlaeufig fuer benachbarte Teile (Regel 5). */
+function schraffurDefs(svg){
+  var defs = ns("defs", {});
+  [["schrafA", 45], ["schrafB", -45]].forEach(function(a){
+    var pat = ns("pattern", {id:a[0], width:7, height:7, patternUnits:"userSpaceOnUse",
+      patternTransform:"rotate(" + a[1] + ")"});
+    pat.appendChild(ns("line", {x1:0, y1:0, x2:0, y2:7, stroke:"#475569", "stroke-width":0.8}));
+    defs.appendChild(pat);
+  });
+  svg.appendChild(defs);
+}
+
+/* Rechteck mit Schraffur und breiter Umrisslinie. */
+function bauteil(g, x, y, w, h, muster, schraffur){
+  if(w <= 0 || h <= 0) return;
+  g.appendChild(ns("rect", {x:x, y:y, width:w, height:h,
+    fill: schraffur ? ("url(#" + muster + ")") : "#f8fafc",
+    stroke:"#0f172a", "stroke-width":BREIT}));
+}
+
+/* Senkrechtes Mass mit gedrehter Massszahl - nach DIN 406 wird die Zahl bei
+   senkrechten Masslinien von rechts lesbar geschrieben. Nebenbei braucht sie
+   so kaum Platz in der Breite, sodass mehrere Masse nebeneinander passen. */
+function masslinieSenkrecht(g, x, y1, y2, text, versatz){
+  var lx = x + versatz;
+  g.appendChild(ns("line", {x1:lx, y1:y1, x2:lx, y2:y2, stroke:"#64748b",
+    "stroke-width":1, "marker-start":"url(#pfeilA)", "marker-end":"url(#pfeilB)"}));
+  g.appendChild(ns("line", {x1:x, y1:y1, x2:lx, y2:y1, stroke:"#cbd5e1", "stroke-width":0.8}));
+  g.appendChild(ns("line", {x1:x, y1:y2, x2:lx, y2:y2, stroke:"#cbd5e1", "stroke-width":0.8}));
+  var t = svgText(0, 0, text, {anchor:"middle", size:12, fill:"#475569", weight:600});
+  t.setAttribute("transform", "translate(" + (lx - 5) + "," + ((y1 + y2) / 2) +
+    ") rotate(-90)");
+  g.appendChild(t);
+}
+
+function mittellinie(g, x, y1, y2){
+  g.appendChild(ns("line", {x1:x, y1:y1, x2:x, y2:y2,
+    stroke:"#0f172a", "stroke-width":SCHMAL, "stroke-dasharray":"16 3 3 3"}));
+}
+
+/* Nummerierter Hinweis auf eine Stelle in der Zeichnung. */
+function regelMarke(g, nr, x, y, tx, ty){
+  g.appendChild(ns("line", {x1:x, y1:y, x2:tx, y2:ty,
+    stroke:"#2563eb", "stroke-width":0.9, "stroke-dasharray":"3 2"}));
+  g.appendChild(ns("circle", {cx:tx, cy:ty, r:10, fill:"#eff6ff",
+    stroke:"#2563eb", "stroke-width":1.4}));
+  g.appendChild(svgText(tx, ty + 4.5, String(nr),
+    {anchor:"middle", size:12, fill:"#1d4ed8", weight:700}));
+}
+
+function zeichneVerbindung(){
+  var svg = el("svgVerbindung"); leeren(svg); pfeilDefs(svg); schraffurDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var art = el("zArt").value;
+  var m = gewindeMasse(el("zGewinde").value);
+  var t1 = Math.max(2, parseFloat(el("zT1").value) || 12);
+  var t2 = Math.max(4, parseFloat(el("zT2").value) || 12);
+  var zeigeSchraffur = el("zSchraffur").checked;
+  var zeigeMasse = el("zMasse").checked;
+  var zeigeRegeln = el("zRegeln").checked;
+
+  var einschraub = (art === "einschraub");
+
+  /* --- Masse in mm --- */
+  var d = m.d, Dh = m.Dh, s = m.s, k = m.k;
+  var scheibe = Math.max(1, Math.round(0.2 * d));      /* Scheibendicke */
+  var scheibeD = Math.round(2.2 * d);                   /* Scheibenaussendurchmesser */
+  var mutterH = Math.round(0.8 * d);
+  var ueberstand = Math.max(2, Math.round(1.5 * m.P));
+  var einschraubtiefe = Math.round(1.4 * d);            /* Stahl in Stahl */
+  var gewindetiefe = einschraubtiefe + Math.round(2 * m.P) + 2;
+  var bohrtiefe = gewindetiefe + Math.round(0.3 * d) + 2;
+  var kernloch = d - m.P;                               /* Kernlochbohrer */
+
+  var klemm = einschraub ? t1 : (t1 + t2);
+  var laenge = einschraub
+    ? scheibe + t1 + einschraubtiefe
+    : scheibe + t1 + t2 + scheibe + mutterH + ueberstand;
+  var gewindeL = Math.min(laenge, 2 * d + 6);
+
+  /* --- Massstab --- */
+  var gesamtH = k + laenge + (einschraub ? (bohrtiefe - einschraubtiefe + 6) : 0);
+  var gesamtB = Math.max(scheibeD, s) + 2;
+  var sk = Math.min(300 / gesamtH, 130 / gesamtB, 9);
+
+  var cx = 300, yKopfO = 56;
+  var yKopfU = yKopfO + k * sk;
+  var ySch1U = yKopfU + scheibe * sk;
+  var yP1U = ySch1U + t1 * sk;
+
+  var plattenB = Math.max(scheibeD + 16, 3.4 * d);
+  var pl = cx - plattenB / 2 * sk, pr = cx + plattenB / 2 * sk;
+  var rD = d / 2 * sk, rD3 = m.d3 / 2 * sk, rDh = Dh / 2 * sk;
+  var rKern = kernloch / 2 * sk;
+
+  var yEnde = 0, yP2U = 0, ySch2U = 0, yMutU = 0, yBohrU = 0, yGewU = 0,
+      spitze = 0, yGewO = 0;
+
+  /* ---------------- Bauteile ---------------- */
+  if(einschraub){
+    yBohrU = yP1U + bohrtiefe * sk;
+    yGewU = yP1U + gewindetiefe * sk;
+    yEnde = yP1U + einschraubtiefe * sk;
+    var grundH = (bohrtiefe + Math.round(0.5 * d) + 3) * sk;
+
+    /* Obere Platte mit Durchgangsloch */
+    bauteil(g, pl, ySch1U, cx - rDh - pl, yP1U - ySch1U, "schrafA", zeigeSchraffur);
+    bauteil(g, cx + rDh, ySch1U, pr - (cx + rDh), yP1U - ySch1U, "schrafA", zeigeSchraffur);
+
+    /* Grundkoerper mit Grundloch: Schraffur bis zur breiten Linie, also bis d3 */
+    bauteil(g, pl - 14, yP1U, cx - rD3 - (pl - 14), grundH, "schrafB", zeigeSchraffur);
+    bauteil(g, cx + rD3, yP1U, (pr + 14) - (cx + rD3), grundH, "schrafB", zeigeSchraffur);
+
+    /* Innengewinde: Kerndurchmesser breit (schon als Bauteilkante), Aussen-
+       durchmesser schmal - nur dort sichtbar, wo keine Schraube steckt. */
+    [-1, 1].forEach(function(v){
+      g.appendChild(ns("line", {x1:cx + v*rD, y1:yEnde, x2:cx + v*rD, y2:yGewU,
+        stroke:"#0f172a", "stroke-width":SCHMAL}));
+    });
+    /* Gewindeende im Grundloch (Regel 3) */
+    g.appendChild(ns("line", {x1:cx - rD, y1:yGewU, x2:cx + rD, y2:yGewU,
+      stroke:"#0f172a", "stroke-width":SCHMAL}));
+    /* Kernloch unterhalb des Gewindes plus 120-Grad-Spitze */
+    [-1, 1].forEach(function(v){
+      g.appendChild(ns("line", {x1:cx + v*rD3, y1:yGewU, x2:cx + v*rKern, y2:yGewU,
+        stroke:"#0f172a", "stroke-width":BREIT}));
+      g.appendChild(ns("line", {x1:cx + v*rKern, y1:yGewU, x2:cx + v*rKern, y2:yBohrU,
+        stroke:"#0f172a", "stroke-width":BREIT}));
+    });
+    spitze = rKern / Math.tan(60 * Math.PI / 180);   /* 120 Grad eingeschlossen */
+    g.appendChild(ns("path", {d:"M" + (cx - rKern) + "," + yBohrU + " L" + cx + "," +
+      (yBohrU + spitze) + " L" + (cx + rKern) + "," + yBohrU,
+      fill:"none", stroke:"#0f172a", "stroke-width":BREIT}));
+
+  }else{
+    yP2U = yP1U + t2 * sk;
+    ySch2U = yP2U + scheibe * sk;
+    yMutU = ySch2U + mutterH * sk;
+    yEnde = yMutU + ueberstand * sk;
+
+    bauteil(g, pl, ySch1U, cx - rDh - pl, yP1U - ySch1U, "schrafA", zeigeSchraffur);
+    bauteil(g, cx + rDh, ySch1U, pr - (cx + rDh), yP1U - ySch1U, "schrafA", zeigeSchraffur);
+    bauteil(g, pl, yP1U, cx - rDh - pl, yP2U - yP1U, "schrafB", zeigeSchraffur);
+    bauteil(g, cx + rDh, yP1U, pr - (cx + rDh), yP2U - yP1U, "schrafB", zeigeSchraffur);
+  }
+
+  /* ---------------- Schraube: wird NICHT geschnitten (Regel 1) --------------- */
+  var weiss = "#ffffff";
+  /* Sechskantkopf, Ansicht auf die Schluesselflaeche */
+  var rS = s / 2 * sk, fase = Math.min(rS * 0.16, (k * sk) * 0.3);
+  g.appendChild(ns("path", {d:
+    "M" + (cx - rS) + "," + (yKopfO + fase) + " L" + (cx - rS + fase) + "," + yKopfO +
+    " L" + (cx + rS - fase) + "," + yKopfO + " L" + (cx + rS) + "," + (yKopfO + fase) +
+    " L" + (cx + rS) + "," + yKopfU + " L" + (cx - rS) + "," + yKopfU + " Z",
+    fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
+
+  /* Scheibe unter dem Kopf - ebenfalls ohne Schraffur */
+  var rSch = scheibeD / 2 * sk;
+  g.appendChild(ns("rect", {x:cx - rSch, y:yKopfU, width:2*rSch, height:ySch1U - yKopfU,
+    fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
+
+  /* Schaft und Gewinde */
+  yGewO = yEnde - gewindeL * sk;
+  g.appendChild(ns("rect", {x:cx - rD, y:ySch1U, width:2*rD, height:yEnde - ySch1U,
+    fill:weiss, stroke:"none"}));
+  [-1, 1].forEach(function(v){
+    g.appendChild(ns("line", {x1:cx + v*rD, y1:ySch1U, x2:cx + v*rD, y2:yEnde,
+      stroke:"#0f172a", "stroke-width":BREIT}));
+    g.appendChild(ns("line", {x1:cx + v*rD3, y1:Math.max(yGewO, ySch1U), x2:cx + v*rD3, y2:yEnde,
+      stroke:"#0f172a", "stroke-width":SCHMAL}));
+  });
+  /* Gewindeende an der Schraube (Regel 3) */
+  if(yGewO > ySch1U){
+    g.appendChild(ns("line", {x1:cx - rD, y1:yGewO, x2:cx + rD, y2:yGewO,
+      stroke:"#0f172a", "stroke-width":SCHMAL}));
+  }
+  /* Kuppe */
+  g.appendChild(ns("line", {x1:cx - rD, y1:yEnde, x2:cx + rD, y2:yEnde,
+    stroke:"#0f172a", "stroke-width":BREIT}));
+
+  if(!einschraub){
+    /* Scheibe und Mutter, beide ohne Schraffur */
+    g.appendChild(ns("rect", {x:cx - rSch, y:yP2U, width:2*rSch, height:ySch2U - yP2U,
+      fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
+    g.appendChild(ns("path", {d:
+      "M" + (cx - rS) + "," + ySch2U + " L" + (cx + rS) + "," + ySch2U +
+      " L" + (cx + rS) + "," + (yMutU - fase) + " L" + (cx + rS - fase) + "," + yMutU +
+      " L" + (cx - rS + fase) + "," + yMutU + " L" + (cx - rS) + "," + (yMutU - fase) + " Z",
+      fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
+    /* Mutter und Scheibe werden nicht geschnitten, verdecken die Schraube also.
+       Sichtbar bleibt nur der Ueberstand unterhalb der Mutter. */
+    [-1, 1].forEach(function(v){
+      g.appendChild(ns("line", {x1:cx + v*rD, y1:yMutU, x2:cx + v*rD, y2:yEnde,
+        stroke:"#0f172a", "stroke-width":BREIT}));
+      g.appendChild(ns("line", {x1:cx + v*rD3, y1:yMutU, x2:cx + v*rD3, y2:yEnde,
+        stroke:"#0f172a", "stroke-width":SCHMAL}));
+    });
+  }
+
+  mittellinie(g, cx, yKopfO - 18, (einschraub ? yBohrU + 26 : yEnde) + 18);
+
+  /* ---------------- Bemassung ---------------- */
+  if(zeigeMasse){
+    var mg = ns("g", {}); g.appendChild(mg);
+
+    /* Gewinde und Durchgangsloch bekommen Hinweislinien - so wird in der
+       Praxis bemasst, und die Zeichnung bleibt frei von Masslinien. */
+    hinweis(mg, cx + rD * 0.6, yEnde - 14 * sk / 6, cx + rD + 152, yEnde + 22,
+      m.bez, "start");
+    hinweis(mg, cx - rDh + 2, ySch1U + (yP1U - ySch1U) * 0.35,
+      cx - rDh - 76, ySch1U - 18, "\u2300 " + z(Dh,1), "end");
+
+    /* Schluesselweite ueber dem Kopf */
+    masslinie(mg, cx - rS, yKopfO - 8, cx + rS, yKopfO - 8,
+      (zustand.sym ? "s" : "SW") + " = " + z(s,0), -26);
+
+    /* Klemmlaenge rechts neben den Bauteilen */
+    masslinieSenkrecht(mg, pr, ySch1U, einschraub ? yP1U : yP2U,
+      (zustand.sym ? "l\u2096" : "Klemml\u00e4nge") + " = " + z(klemm,0), 34);
+
+    /* Einschraubverbindung: die drei Tiefen gestaffelt nach links */
+    if(einschraub){
+      masslinieSenkrecht(mg, pl - 14, yP1U, yEnde, "Einschraubtiefe " + z(einschraubtiefe,0), -32);
+      masslinieSenkrecht(mg, pl - 14, yP1U, yGewU, "Gewindetiefe " + z(gewindetiefe,0), -74);
+      masslinieSenkrecht(mg, pl - 14, yP1U, yBohrU, "Bohrtiefe " + z(bohrtiefe,0), -116);
+      mg.appendChild(svgText(cx + rKern + 12, yBohrU + spitze - 2, "120\u00b0",
+        {size:11.5, fill:"#475569", weight:600}));
+    }
+  }
+
+  /* ---------------- Normhinweise ---------------- */
+  var sichtbar = REGELN.filter(function(r){ return r.arten.indexOf(art) >= 0; });
+  if(zeigeRegeln){
+    var rg = ns("g", {}); g.appendChild(rg);
+    /* Die Nummern stehen dicht an ihrer Fundstelle. Eine Spalte am Rand
+       haette lange, sich kreuzende Hinweislinien zur Folge. */
+    var y3 = (yGewO > ySch1U) ? yGewO : (einschraub ? yGewU : yEnde - 24);
+    var stellen = {
+      1: [[cx + rS - 3, yKopfO + k*sk*0.5], [cx + rS + 52, yKopfO + 4]],
+      /* Bei der Einschraubverbindung stehen 2, 3, 7 und 8 als gleichmaessig
+         gestaffelte Spalte rechts - sonst ueberlappen sie sich. */
+      2: [[cx + rD3, einschraub ? yEnde - 20 : yEnde - 26],
+          [cx + rD + 62, einschraub ? yGewU - 84 : yEnde - 4]],
+      /* Ist das Gewindeende der Schraube nicht sichtbar, zeigt die Marke auf
+         das Gewindeende im Grundloch - und bei der Durchsteckschraubung
+         ersatzweise auf die Kerndurchmesserlinie. */
+      3: [[cx + rD*0.4, y3], [cx + rD + 62, einschraub ? yGewU - 46 : y3 - 30]],
+      4: [[cx - rDh, ySch1U + 12], [cx - rDh - 58, ySch1U - 6]],
+      5: [[pl + 26, einschraub ? yP1U + 14 : yP1U], [pl - 34, yP1U + 26]],
+      6: [[cx, yKopfO - 16], [cx - 52, yKopfO - 34]],
+      7: [[cx + rD, einschraub ? (yEnde + yGewU) / 2 : 0], [cx + rD + 62, einschraub ? yGewU - 8 : 0]],
+      8: [[cx + rD3 + 4, einschraub ? yGewU - 10 : 0], [cx + rD + 62, einschraub ? yGewU + 30 : 0]],
+      9: [[cx - rKern * 0.5, einschraub ? yBohrU + spitze * 0.6 : 0],
+          [cx - rKern - 72, einschraub ? yBohrU + spitze + 8 : 0]]
+    };
+    sichtbar.forEach(function(r){
+      var st = stellen[r.nr];
+      regelMarke(rg, r.nr, st[0][0], st[0][1], st[1][0], st[1][1]);
+    });
+  }
+
+  /* ---------------- Regeltabelle ---------------- */
+  var h = "<thead><tr><th style='width:3em'>Nr.</th><th style='text-align:left'>Regel</th>" +
+          "</tr></thead><tbody>";
+  sichtbar.forEach(function(r){
+    h += "<tr><td class='num'><b>" + r.nr + "</b></td><td style='text-align:left'>" +
+         r.text + "</td></tr>";
+  });
+  el("tabRegeln").innerHTML = h + "</tbody>";
+
+  el("zHinweis").innerHTML = einschraub
+    ? "Einschraubverbindung: Die Schraube greift direkt in ein Innengewinde im Bauteil. " +
+      "Die Einschraubtiefe richtet sich nach dem Werkstoff – hier rund 1,4 &middot; d für " +
+      "Stahl in Stahl. In Aluminium oder Guss ist sie größer."
+    : "Durchsteckschraubung: Die Schraube geht durch beide Bauteile und wird mit einer Mutter " +
+      "gekontert. Der Überstand von rund zwei Gewindegängen zeigt, dass die Mutter voll " +
+      "trägt.";
+
+  el("zT2Feld").style.display = einschraub ? "none" : "";
+
+  /* Zeichenflaeche auf den tatsaechlichen Inhalt zuschneiden, damit unten
+     kein grosser leerer Streifen stehen bleibt. */
+  var unten = (einschraub ? yBohrU + spitze : yEnde) + 34;
+  if(zeigeRegeln && einschraub) unten = Math.max(unten, yBohrU + spitze + 40);
+  svg.setAttribute("viewBox", "0 0 760 " + Math.round(Math.max(300, unten)));
 }
 
 /* ============================================================================
@@ -2275,6 +2786,7 @@ function start(){
   auswahlFuellen(el("gGewinde"), GROESSEN, "M10");
   auswahlFuellen(el("aGewinde"), GROESSEN, "M10");
   auswahlFuellen(el("bGewinde"), GROESSEN, "M10");
+  auswahlFuellen(el("zGewinde"), GROESSEN, "M10");
   auswahlFuellen(el("bKlasse"), KLASSENLISTE, "8.8");
   for(var kf in KOPFFORMEN){
     if(!KOPFFORMEN.hasOwnProperty(kf)) continue;
@@ -2300,6 +2812,11 @@ function start(){
   });
 
   /* Ereignisse: Grundlagen */
+  el("gAnziehen").addEventListener("input", function(){
+    if(anziehLauf){ cancelAnimationFrame(anziehLauf); anziehLauf = null; }
+    anziehSetzen(parseFloat(this.value) / 100);
+  });
+  el("btnAnziehen").addEventListener("click", anziehAbspielen);
   ["gVor","gMyT","gQuer"].forEach(function(id){
     el(id).addEventListener("input", zeichneReib);
   });
@@ -2343,6 +2860,12 @@ function start(){
     zeichneSchraube();
   });
 
+  /* Ereignisse: Zeichnung */
+  ["zArt","zGewinde","zT1","zT2","zSchraffur","zMasse","zRegeln"].forEach(function(id){
+    el(id).addEventListener("input", zeichneVerbindung);
+    el(id).addEventListener("change", zeichneVerbindung);
+  });
+
   /* Ereignisse: Funktion */
   ["fVor","fPhi","fA"].forEach(function(id){
     el(id).addEventListener("input", zeichneVerspannung);
@@ -2364,6 +2887,7 @@ function start(){
   zeichneVergleich();
   zeichneStreuband();
   zeichneGewindeprofil();
+  zeichneVerbindung();
   zeichneVerspannung();
   rechne();
   paarungSetzen();            /* setzt den Regler und zeichnet das Reibungsbild */
