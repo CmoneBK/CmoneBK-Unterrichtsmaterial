@@ -1,0 +1,1692 @@
+---
+title: "Maschinenelemente: Schrauben - Schraubverbindungen"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maschinenelemente: Schrauben - Schraubverbindungen</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+  --schraube:#2563eb; --platte:#0f766e;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:14px 18px 60px}
+@media (max-width:640px){ .wrap{padding-top:56px} }
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 14px}
+
+/* ---------- Schalter fuer Fachsprache ---------- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin-bottom:16px;
+}
+.schalter .hinweis{font-size:.82rem; color:var(--muted); flex:1 1 220px; min-width:0}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+button.link{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:8px; padding:6px 12px; font:600 .85rem/1 inherit; cursor:pointer;
+}
+button.link:hover{border-color:var(--primary); color:var(--primary)}
+
+/* ---------- Reiter ---------- */
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+/* ---------- Bausteine ---------- */
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:820px){ .zwei{grid-template-columns:1fr} }
+
+.regler{display:grid; grid-template-columns:auto 1fr auto; gap:6px 12px; align-items:center; margin:10px 0}
+.regler label{font-size:.88rem; font-weight:600}
+.regler input[type=range]{width:100%}
+.regler output{font-variant-numeric:tabular-nums; font-weight:700; color:var(--primary); min-width:5.5em; text-align:right}
+select,input[type=number]{
+  font:inherit; padding:6px 8px; border:1px solid var(--border-strong);
+  border-radius:6px; background:#fff; color:inherit; max-width:100%;
+}
+/* Bewusst kein Flex: sonst wird jedes <sub> im Beschriftungstext zu einem
+   eigenen Flex-Element und die Beschriftung bricht mitten im Formelzeichen um. */
+.feld{display:block; font-size:.88rem; font-weight:600}
+.feld > select, .feld > input{display:block; width:100%; margin-top:4px; font-weight:400}
+.felder{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:12px 0}
+
+.ergebnis{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; margin:14px 0}
+.ez{background:var(--primary-light); border:1px solid #dbeafe; border-radius:10px; padding:10px 12px}
+.ez .l{font-size:.78rem; color:var(--muted); display:block}
+.ez .v{font-size:1.15rem; font-weight:700; color:var(--primary); font-variant-numeric:tabular-nums}
+.ez .e{font-size:.8rem; color:var(--muted); font-weight:400}
+
+table{border-collapse:collapse; width:100%; font-size:.88rem}
+.tabellenrahmen{overflow-x:auto; -webkit-overflow-scrolling:touch}
+th,td{border:1px solid var(--border); padding:6px 9px; text-align:right; white-space:nowrap}
+th{background:#f1f5f9; font-weight:700; text-align:center}
+td:first-child,th:first-child{text-align:left}
+tbody tr:hover{background:#f8fafc}
+td.num{font-variant-numeric:tabular-nums}
+
+.merke{border-left:4px solid var(--accent); background:#fffbeb; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0}
+.merke b{color:#92400e}
+.warnung{border-left:4px solid var(--bad); background:#fef2f2; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.gut{border-left:4px solid var(--ok); background:#f0fdf4; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.fussnote{font-size:.8rem; color:var(--muted); margin-top:10px}
+
+details{border:1px solid var(--border); border-radius:8px; padding:8px 12px; margin:12px 0; background:#fff}
+details summary{cursor:pointer; font-weight:600; color:var(--primary)}
+details[open] summary{margin-bottom:8px}
+.formel{
+  font-family:'Cambria Math',Cambria,Georgia,serif; font-size:1.02rem;
+  background:#f8fafc; border:1px solid var(--border); border-radius:6px;
+  padding:8px 12px; margin:8px 0; overflow-x:auto;
+}
+.formel .kom{font-family:'Segoe UI',sans-serif; font-size:.82rem; color:var(--muted); display:block; margin-top:2px}
+
+svg{display:block; max-width:100%; height:auto}
+.zeichnung{background:#fff; border:1px solid var(--border); border-radius:10px; margin:10px 0}
+.balken{height:26px; border-radius:5px; display:flex; overflow:hidden; border:1px solid var(--border-strong); background:#fff}
+.balken span{display:flex; align-items:center; justify-content:center; font-size:.75rem; color:#fff; font-weight:700; white-space:nowrap; min-width:0; overflow:hidden}
+
+/* Fachbegriffe / Formelzeichen */
+.term{border-bottom:1px dotted transparent}
+body.fach .term{border-bottom-color:var(--border-strong)}
+.sym{
+  font-family:'Cambria Math',Cambria,Georgia,serif; color:var(--primary);
+  font-weight:600; white-space:nowrap;
+}
+.chip{
+  display:inline-block; font-size:.75rem; font-weight:700; padding:1px 7px;
+  border-radius:999px; background:var(--primary-light); color:var(--primary); border:1px solid #dbeafe;
+}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Schraubverbindungen</h1>
+  <p class="lead">Warum eine Schraube h&auml;lt, wie sie aufgebaut ist und wie man sie berechnet.</p>
+</header>
+
+<div class="schalter">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <label class="sw"><input type="checkbox" id="swSym"><span class="track"></span>Formelzeichen</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <span class="hinweis" id="linkHinweis">Ohne Haken steht der Text in Alltagssprache. Die Schalter stehen im Link &ndash; so kann eine bestimmte Stufe geteilt werden.</span>
+</div>
+
+<div class="tabs" role="tablist">
+  <button role="tab" data-tab="grundlagen"   aria-selected="true">Grundlagen</button>
+  <button role="tab" data-tab="aufbau"       aria-selected="false">Aufbau</button>
+  <button role="tab" data-tab="funktion"     aria-selected="false">Funktion</button>
+  <button role="tab" data-tab="berechnungen" aria-selected="false">Berechnungen</button>
+</div>
+
+<!-- ============================================================ GRUNDLAGEN -->
+<section class="panel" id="p-grundlagen">
+
+  <div class="karte">
+    <h2>Was ist eine Schraubverbindung?</h2>
+    <p class="sub">Die wichtigste l&ouml;sbare Verbindung im Maschinenbau.</p>
+    <div class="zwei">
+      <div>
+        <p>Eine Schraubverbindung h&auml;lt zwei oder mehr Bauteile zusammen und l&auml;sst sich
+        zerst&ouml;rungsfrei wieder l&ouml;sen. Beim Anziehen wird die Schraube in die L&auml;nge
+        gezogen &ndash; sie wirkt wie eine sehr steife Feder. Die
+        <span class="term" data-t="teile"></span> werden dabei zusammengedr&uuml;ckt.</p>
+
+        <p>Die Kraft, die dadurch in der Schraube steckt, hei&szlig;t
+        <span class="term" data-t="vorspannkraft"></span>. Genau diese Kraft presst die Bauteile
+        in der <span class="term" data-t="trennfuge"></span> aufeinander.</p>
+
+        <div class="merke">
+          <b>Kernidee:</b> Eine Schraube ist keine Steckachse. Sie soll die Bauteile
+          <em>zusammenpressen</em> &ndash; nicht quer belastet werden.
+        </div>
+      </div>
+      <div>
+        <svg class="zeichnung" id="svgPrinzip" viewBox="0 0 430 270" role="img"
+             aria-label="Zwei verschraubte Platten mit Schraube und Mutter"></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Warum h&auml;lt die Verbindung?</h2>
+    <p class="sub">Nicht die Schraube tr&auml;gt die Querkraft &ndash; sondern die Reibung zwischen den Bauteilen.</p>
+
+    <p>Wirkt eine <span class="term" data-t="querkraft"></span> seitlich auf die Bauteile, so wird sie
+    <strong>nicht</strong> von der Schraube abgeschert. Stattdessen wirkt der
+    <span class="term" data-t="reibschluss"></span> in der Trennfuge dagegen:</p>
+
+    <div class="formel">F<sub>R</sub> = &mu;<sub>T</sub> &middot; F<sub>V</sub> &middot; n
+      <span class="kom">Reibkraft = Reibungszahl in der Trennfuge &middot; Vorspannkraft &middot; Anzahl der Trennfugen</span></div>
+
+    <div class="regler">
+      <label for="gVor">Vorspannkraft F<sub>V</sub></label>
+      <input type="range" id="gVor" min="2" max="40" step="1" value="20">
+      <output id="oVor"></output>
+
+      <label for="gMyT">Reibungszahl &mu;<sub>T</sub></label>
+      <input type="range" id="gMyT" min="0.05" max="0.30" step="0.01" value="0.15">
+      <output id="oMyT"></output>
+
+      <label for="gQuer">Querkraft F<sub>Q</sub></label>
+      <input type="range" id="gQuer" min="0" max="20" step="0.5" value="2">
+      <output id="oQuer"></output>
+    </div>
+
+    <svg class="zeichnung" id="svgReib" viewBox="0 0 700 210" role="img"
+         aria-label="Zwei Platten, die durch Reibung gehalten werden"></svg>
+    <p id="reibText"></p>
+
+    <div class="merke">
+      <b>Daraus folgt:</b> Sinkt die Vorspannkraft &ndash; etwa weil sich die Verbindung setzt oder
+      die Schraube sich lockert &ndash; sinkt die Haltekraft im gleichen Ma&szlig;e.
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Das Gewinde ist eine schiefe Ebene</h2>
+    <p class="sub">Deshalb dreht sich eine angezogene Schraube nicht von allein zur&uuml;ck.</p>
+
+    <div class="zwei">
+      <div>
+        <p>Wickelt man einen Gewindegang ab, entsteht eine schiefe Ebene. Ihre Steigung ergibt sich
+        aus der <span class="term" data-t="steigung"></span> und dem
+        <span class="term" data-t="d2"></span>:</p>
+
+        <div class="formel">tan&nbsp;&phi; = P / (&pi; &middot; d<sub>2</sub>)</div>
+
+        <p>Die Reibung wirkt dem Zur&uuml;ckdrehen entgegen. Weil die Gewindeflanken um 60&deg;
+        geneigt sind, wird die Reibung um den Faktor 1,155 verst&auml;rkt:</p>
+
+        <div class="formel">tan&nbsp;&rho;&prime; = &mu;<sub>G</sub> / cos&nbsp;30&deg; = 1,155 &middot; &mu;<sub>G</sub></div>
+
+        <p>Solange &phi; &lt; &rho;&prime; ist, wirkt die
+        <span class="term" data-t="selbsthemmung"></span>.</p>
+
+        <div class="regler">
+          <label for="gGewinde">Gewinde</label>
+          <select id="gGewinde"></select>
+          <output></output>
+
+          <label for="gMyG1">Reibungszahl &mu;<sub>G</sub></label>
+          <input type="range" id="gMyG1" min="0.02" max="0.30" step="0.01" value="0.12">
+          <output id="oMyG1"></output>
+        </div>
+
+        <div class="ergebnis">
+          <div class="ez"><span class="l"><span class="term" data-t="steigungswinkel" data-cap="1"></span></span>
+            <span class="v" id="ezPhi">&ndash;</span></div>
+          <div class="ez"><span class="l"><span class="term" data-t="reibungswinkel" data-cap="1"></span></span>
+            <span class="v" id="ezRho">&ndash;</span></div>
+        </div>
+        <p id="hemmText"></p>
+      </div>
+      <div>
+        <svg class="zeichnung" id="svgEbene" viewBox="0 0 440 265" role="img"
+             aria-label="Abgewickelter Gewindegang als schiefe Ebene"></svg>
+        <p class="fussnote">Die Darstellung ist &uuml;berh&ouml;ht: Reale Steigungswinkel liegen
+        bei etwa 2&deg; bis 3&deg;.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Was beeinflusst die Vorspannkraft?</h2>
+    <p class="sub">Anziehdrehmoment und Reibung &ndash; und die Reibung streut stark.</p>
+
+    <p>Angezogen wird &uuml;ber das <span class="term" data-t="anziehdrehmoment"></span>. Der
+    gr&ouml;&szlig;te Teil davon geht aber gar nicht in die Vorspannkraft, sondern wird von der
+    Reibung aufgezehrt &ndash; unter dem Kopf und im Gewinde:</p>
+
+    <svg class="zeichnung" id="svgAufteil" viewBox="0 0 700 150" role="img"
+         aria-label="Aufteilung des Anziehdrehmoments"></svg>
+
+    <div class="regler">
+      <label for="gMyStreu">Reibungszahl &mu;<sub>G</sub> = &mu;<sub>K</sub></label>
+      <input type="range" id="gMyStreu" min="0.06" max="0.24" step="0.01" value="0.12">
+      <output id="oMyStreu"></output>
+    </div>
+
+    <p id="streuText"></p>
+
+    <div class="warnung">
+      <b>Praxisfolge:</b> Zieht man mit dem Drehmomentschl&uuml;ssel immer auf denselben Wert an,
+      schwankt die tats&auml;chliche Vorspannkraft trotzdem erheblich &ndash; allein durch
+      unterschiedliche Oberfl&auml;chen, Schmierung und Werkstoffpaarung.
+      Deshalb rechnet man mit einem Anziehfaktor und legt Verbindungen mit Reserve aus.
+    </div>
+
+    <h3>Woran liegt die Streuung?</h3>
+    <div class="tabellenrahmen">
+      <table>
+        <thead><tr><th>Einfluss</th><th>Wirkung auf &mu;</th><th>Folge f&uuml;r F<sub>V</sub></th></tr></thead>
+        <tbody>
+          <tr><td>Schmierung (&Ouml;l, Paste, MoS<sub>2</sub>)</td><td>kleiner</td><td>gr&ouml;&szlig;er</td></tr>
+          <tr><td>Trockene, blanke Stahloberfl&auml;che</td><td>gr&ouml;&szlig;er</td><td>kleiner</td></tr>
+          <tr><td>Verzinkt, unbehandelt</td><td>gr&ouml;&szlig;er und stark streuend</td><td>kleiner, unsicher</td></tr>
+          <tr><td>Rauheit der Auflagefl&auml;che</td><td>gr&ouml;&szlig;er</td><td>kleiner</td></tr>
+          <tr><td>Mehrfaches Anziehen (Einlaufen)</td><td>ver&auml;nderlich</td><td>schwankend</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fussnote">Zahlenwerte zu den Reibungszahlen stehen im Reiter
+      &bdquo;Berechnungen&ldquo;.</p>
+  </div>
+</section>
+
+<!-- ================================================================ AUFBAU -->
+<section class="panel" id="p-aufbau" hidden>
+  <div class="karte">
+    <h2>Aufbau einer Schraube</h2>
+    <p class="sub">Kopfform, Ma&szlig;e und Benennungen &ndash; einstellbar.</p>
+
+    <div class="felder">
+      <label class="feld">Gewinde
+        <select id="aGewinde"></select></label>
+      <label class="feld">Kopfform
+        <select id="aKopf"></select></label>
+      <label class="feld">L&auml;nge <em>l</em> in mm
+        <input type="number" id="aLaenge" min="10" max="200" step="5" value="60"></label>
+      <label class="feld">Gewindel&auml;nge <em>b</em> in mm
+        <input type="number" id="aB" min="6" max="200" step="1"></label>
+    </div>
+    <div class="schalter" style="margin-bottom:8px">
+      <label class="sw"><input type="checkbox" id="aBez" checked><span class="track"></span>Benennungen</label>
+      <label class="sw"><input type="checkbox" id="aMasse" checked><span class="track"></span>Ma&szlig;e</label>
+      <button class="link" id="aAuto">Gewindel&auml;nge nach Norm</button>
+    </div>
+
+    <svg class="zeichnung" id="svgSchraube" viewBox="0 0 900 340" role="img"
+         aria-label="Ma&szlig;stabsgerechte Zeichnung der gew&auml;hlten Schraube"></svg>
+    <p class="fussnote" id="normHinweis"></p>
+
+    <h3>Ma&szlig;e der gew&auml;hlten Schraube</h3>
+    <div class="tabellenrahmen"><table id="tabMasse"></table></div>
+
+    <h3>Die Teile der Schraube</h3>
+    <div class="tabellenrahmen">
+      <table>
+        <thead><tr><th>Teil</th><th style="text-align:left">Aufgabe</th></tr></thead>
+        <tbody>
+          <tr><td>Kopf</td><td style="text-align:left">&Uuml;bertr&auml;gt das Anziehdrehmoment und leitet die
+            <span class="term" data-t="vorspannkraft"></span> &uuml;ber die
+            <span class="term" data-t="auflage"></span> ins Bauteil.</td></tr>
+          <tr><td><span class="term" data-t="schaft" data-cap="1"></span></td><td style="text-align:left">Zentriert das Bauteil und macht die Schraube
+            nachgiebiger &ndash; g&uuml;nstig bei schwingender Belastung.</td></tr>
+          <tr><td>Gewinde</td><td style="text-align:left">Wandelt die Drehbewegung in eine L&auml;ngskraft um
+            (schiefe Ebene) und h&auml;lt die Vorspannkraft.</td></tr>
+          <tr><td><span class="term" data-t="kuppe" data-cap="1"></span></td><td style="text-align:left">Erleichtert das Ansetzen und
+            sch&uuml;tzt den ersten Gewindegang.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Gewindedurchmesser</h3>
+    <svg class="zeichnung" id="svgGewinde" viewBox="0 0 700 230" role="img"
+         aria-label="Gewindeprofil mit Nenn-, Flanken- und Kerndurchmesser"></svg>
+    <div class="merke">
+      <b>Wichtig f&uuml;r die Berechnung:</b> Ma&szlig;gebend ist nicht der Nenndurchmesser
+      <em>d</em>, sondern der <span class="term" data-t="as"></span>. Er liegt zwischen dem
+      <span class="term" data-t="d3"></span> und dem <span class="term" data-t="d2"></span>.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================== FUNKTION -->
+<section class="panel" id="p-funktion" hidden>
+  <div class="karte">
+    <h2>Die verspannte Verbindung</h2>
+    <p class="sub">Schraube und Bauteile bilden zusammen ein Federsystem.</p>
+
+    <p>Beim Anziehen wird die Schraube gedehnt, die Bauteile werden gestaucht. Beide verhalten sich
+    wie Federn: Die Schraube ist die weichere, die Bauteile sind meist deutlich steifer.
+    Die <span class="term" data-t="nachgiebigkeit"></span> beider Partner entscheidet dar&uuml;ber,
+    wie sich eine sp&auml;ter aufgebrachte <span class="term" data-t="betriebskraft"></span>
+    aufteilt.</p>
+
+    <div class="formel">&Phi; = c<sub>S</sub> / (c<sub>S</sub> + c<sub>P</sub>)
+      <span class="kom">Kraftverh&auml;ltnis aus Steifigkeit der Schraube und der Bauteile</span></div>
+
+    <p>Von der Betriebskraft landet nur der Anteil &Phi; zus&auml;tzlich in der Schraube. Der
+    gr&ouml;&szlig;ere Rest entlastet die Bauteile:</p>
+
+    <div class="formel">F<sub>SA</sub> = &Phi; &middot; F<sub>A</sub> &nbsp;&nbsp;&nbsp;
+      F<sub>PA</sub> = (1 &minus; &Phi;) &middot; F<sub>A</sub></div>
+  </div>
+
+  <div class="karte">
+    <h2>Verspannungsschaubild</h2>
+    <p class="sub">Alles Wesentliche in einem Bild &ndash; zum Ausprobieren.</p>
+
+    <div class="regler">
+      <label for="fVor">Vorspannkraft F<sub>V</sub></label>
+      <input type="range" id="fVor" min="5" max="60" step="1" value="30">
+      <output id="ofVor"></output>
+
+      <label for="fPhi">Kraftverh&auml;ltnis &Phi;</label>
+      <input type="range" id="fPhi" min="0.05" max="0.60" step="0.01" value="0.20">
+      <output id="ofPhi"></output>
+
+      <label for="fA">Betriebskraft F<sub>A</sub></label>
+      <input type="range" id="fA" min="0" max="80" step="1" value="20">
+      <output id="ofA"></output>
+    </div>
+
+    <svg class="zeichnung" id="svgVerspann" viewBox="0 0 760 420" role="img"
+         aria-label="Verspannungsschaubild mit Schrauben- und Plattenkennlinie"></svg>
+
+    <div class="ergebnis">
+      <div class="ez"><span class="l">Kraft in der Schraube <span class="sym">F<sub>S,max</sub></span></span>
+        <span class="v" id="ezFS">&ndash;</span></div>
+      <div class="ez"><span class="l"><span class="term" data-t="zusatzkraft" data-cap="1"></span></span>
+        <span class="v" id="ezFSA">&ndash;</span></div>
+      <div class="ez"><span class="l"><span class="term" data-t="restklemm" data-cap="1"></span></span>
+        <span class="v" id="ezFKR">&ndash;</span></div>
+    </div>
+    <p id="verspannText"></p>
+  </div>
+
+  <div class="karte">
+    <h2>Was folgt daraus f&uuml;r die Konstruktion?</h2>
+    <div class="zwei">
+      <div>
+        <h3>Hohe Vorspannkraft ist erw&uuml;nscht</h3>
+        <ul>
+          <li>Sie erzeugt die Reibkraft gegen Querverschieben.</li>
+          <li>Sie verhindert das <span class="term" data-t="klaffen"></span> der Trennfuge.</li>
+          <li>Sie h&auml;lt die Schwankung der Schraubenkraft klein &ndash; wichtig gegen Dauerbruch.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Kleines &Phi; ist g&uuml;nstig</h3>
+        <ul>
+          <li>Nachgiebige Schraube: lang und schlank; ein langer
+              <span class="term" data-t="schaft"></span> hilft zus&auml;tzlich.</li>
+          <li>Steife Bauteile: gro&szlig;e Auflagefl&auml;che, kurze Klemml&auml;nge, kein weiches Zwischenmaterial.</li>
+          <li>Dann kommt von der Betriebskraft nur wenig in der Schraube an.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="warnung">
+      <b>Setzen:</b> Rauheitsspitzen werden mit der Zeit eingeebnet. Die Verbindung
+      &bdquo;setzt sich&ldquo;, die Vorspannkraft sinkt. Deshalb sollen Trennfugenzahl und
+      Rauheit klein bleiben &ndash; und deshalb wird bei wichtigen Verbindungen nachgezogen.
+    </div>
+  </div>
+</section>
+
+<!-- ========================================================== BERECHNUNGEN -->
+<section class="panel" id="p-berechnungen" hidden>
+  <div class="karte">
+    <h2>Schraubenkraft und Anziehdrehmoment</h2>
+    <p class="sub">Wie fest darf angezogen werden &ndash; und mit welchem Drehmoment?</p>
+
+    <div class="felder">
+      <label class="feld">Gewinde
+        <select id="bGewinde"></select></label>
+      <label class="feld"><span class="term" data-t="festigkeitsklasse" data-cap="1"></span>
+        <select id="bKlasse"></select></label>
+      <label class="feld">&mu;<sub>G</sub> (Gewinde)
+        <input type="number" id="bMyG" min="0.04" max="0.35" step="0.01" value="0.12"></label>
+      <label class="feld">&mu;<sub>K</sub> (Kopfauflage)
+        <input type="number" id="bMyK" min="0.04" max="0.35" step="0.01" value="0.12"></label>
+      <label class="feld"><span class="term" data-t="ausnutzung" data-cap="1"></span> &nu;
+        <input type="number" id="bNu" min="0.3" max="1.0" step="0.05" value="0.9"></label>
+    </div>
+
+    <div class="ergebnis">
+      <div class="ez"><span class="l"><span class="term" data-t="as" data-cap="1"></span></span>
+        <span class="v" id="rAs">&ndash;</span> <span class="e">mm&sup2;</span></div>
+      <div class="ez"><span class="l">Montagevorspannkraft <span class="sym">F<sub>M,zul</sub></span></span>
+        <span class="v" id="rFM">&ndash;</span> <span class="e">kN</span></div>
+      <div class="ez"><span class="l"><span class="term" data-t="anziehdrehmoment" data-cap="1"></span></span>
+        <span class="v" id="rMA">&ndash;</span> <span class="e">N&middot;m</span></div>
+      <div class="ez"><span class="l">Zugspannung <span class="sym">&sigma;<sub>z</sub></span></span>
+        <span class="v" id="rSig">&ndash;</span> <span class="e">N/mm&sup2;</span></div>
+      <div class="ez"><span class="l">Vergleichsspannung <span class="sym">&sigma;<sub>red</sub></span></span>
+        <span class="v" id="rRed">&ndash;</span> <span class="e">N/mm&sup2;</span></div>
+      <div class="ez"><span class="l">Auslastung der <span class="term" data-t="streckgrenze"></span></span>
+        <span class="v" id="rAus">&ndash;</span> <span class="e">%</span></div>
+    </div>
+
+    <h3>Wohin geht das Anziehdrehmoment?</h3>
+    <svg class="zeichnung" id="svgMomente" viewBox="0 0 700 150" role="img"
+         aria-label="Aufteilung des Anziehdrehmoments in Steigung, Gewindereibung und Kopfreibung"></svg>
+    <p id="momenteText"></p>
+
+    <details>
+      <summary>Rechenweg anzeigen</summary>
+      <div id="rechenweg"></div>
+    </details>
+  </div>
+
+  <div class="karte">
+    <h2>&Uuml;bertragbare Querkraft</h2>
+    <p class="sub">Wie viel seitliche Last h&auml;lt die Verbindung durch Reibung?</p>
+    <div class="felder">
+      <label class="feld">Anzahl Schrauben
+        <input type="number" id="qN" min="1" max="20" step="1" value="1"></label>
+      <label class="feld">Anzahl Trennfugen
+        <input type="number" id="qFugen" min="1" max="4" step="1" value="1"></label>
+      <label class="feld">&mu;<sub>T</sub> in der Trennfuge
+        <input type="number" id="qMyT" min="0.05" max="0.6" step="0.01" value="0.15"></label>
+      <label class="feld">Rutschsicherheit S<sub>R</sub>
+        <input type="number" id="qSR" min="1" max="3" step="0.1" value="1.2"></label>
+    </div>
+    <div class="ergebnis">
+      <div class="ez"><span class="l">&Uuml;bertragbare Querkraft <span class="sym">F<sub>Q,zul</sub></span></span>
+        <span class="v" id="rFQ">&ndash;</span> <span class="e">kN</span></div>
+    </div>
+    <div class="formel">F<sub>Q,zul</sub> = (&mu;<sub>T</sub> &middot; F<sub>M,zul</sub> &middot; n<sub>S</sub> &middot; n<sub>F</sub>) / S<sub>R</sub></div>
+  </div>
+
+  <div class="karte">
+    <h2>Orientierungswerte</h2>
+    <p class="sub">Berechnet mit den oben eingestellten Reibungszahlen &ndash; nicht aus einer festen Tabelle.</p>
+    <div class="tabellenrahmen"><table id="tabOrient"></table></div>
+    <p class="fussnote" id="orientHinweis"></p>
+  </div>
+
+  <div class="karte">
+    <h2>Reibungszahlen</h2>
+    <p class="sub">Anklicken &uuml;bernimmt den Mittelwert in den Rechner.</p>
+    <div class="tabellenrahmen"><table id="tabReib"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Festigkeitsklassen</h2>
+    <div class="tabellenrahmen"><table id="tabKlassen"></table></div>
+    <div class="merke">
+      <b>So liest man die Kennzeichnung:</b> Die erste Zahl mal 100 ergibt die
+      <span class="term" data-t="zugfestigkeit"></span> in N/mm&sup2;.
+      Multipliziert man beide Zahlen und nimmt das Zehnfache, erh&auml;lt man die
+      <span class="term" data-t="streckgrenze"></span>.
+      Beispiel 8.8: R<sub>m</sub> = 800 N/mm&sup2;, R<sub>p0,2</sub> = 8 &middot; 8 &middot; 10 = 640 N/mm&sup2;.
+    </div>
+  </div>
+</section>
+
+<p class="fussnote">
+  Alle Zahlenwerte sind Orientierungswerte f&uuml;r den Unterricht. Sie ersetzen keine Auslegung
+  nach VDI 2230 und keine Herstellerangaben.
+</p>
+
+</div><!-- /wrap -->
+
+<script>
+"use strict";
+
+/* ============================================================================
+   1  DATEN
+   ========================================================================== */
+
+/* Metrisches ISO-Regelgewinde.
+   P  = Steigung
+   s  = Schluesselweite Sechskant (ISO 4014/4017)
+   k  = Kopfhoehe Sechskant
+   dw = Kopfauflagedurchmesser
+   Dh = Durchgangsloch, Reihe mittel (DIN EN 20273)
+   d2, d3 und As werden gerechnet, nicht abgetippt - siehe gewindeMasse(). */
+var SCHRAUBEN = {
+  M4:  {d:4,  P:0.70, s:7,  k:2.8,  dw:5.9,  Dh:4.5},
+  M5:  {d:5,  P:0.80, s:8,  k:3.5,  dw:6.9,  Dh:5.5},
+  M6:  {d:6,  P:1.00, s:10, k:4.0,  dw:8.9,  Dh:6.6},
+  M8:  {d:8,  P:1.25, s:13, k:5.3,  dw:11.6, Dh:9.0},
+  M10: {d:10, P:1.50, s:16, k:6.4,  dw:14.6, Dh:11.0},
+  M12: {d:12, P:1.75, s:18, k:7.5,  dw:16.6, Dh:13.5},
+  M16: {d:16, P:2.00, s:24, k:10.0, dw:22.5, Dh:17.5},
+  M20: {d:20, P:2.50, s:30, k:12.5, dw:28.2, Dh:22.0},
+  M24: {d:24, P:3.00, s:36, k:15.0, dw:33.6, Dh:26.0}
+};
+var GROESSEN = ["M4","M5","M6","M8","M10","M12","M16","M20","M24"];
+
+var KLASSEN = {
+  "4.6":  {Rm:400,  Rp:240},
+  "5.6":  {Rm:500,  Rp:300},
+  "8.8":  {Rm:800,  Rp:640},   /* ueber M16: 830 / 660, siehe klasseWerte() */
+  "10.9": {Rm:1000, Rp:900},
+  "12.9": {Rm:1200, Rp:1080}
+};
+var KLASSENLISTE = ["4.6","5.6","8.8","10.9","12.9"];
+
+var KOPFFORMEN = {
+  sechskant:      {name:"Sechskant mit Schaft",        norm:"DIN EN ISO 4014 (früher DIN 931)", voll:false, typ:"hex"},
+  sechskantVoll:  {name:"Sechskant, Vollgewinde",      norm:"DIN EN ISO 4017 (früher DIN 933)", voll:true,  typ:"hex"},
+  zylinder:       {name:"Zylinderkopf, Innensechskant",norm:"DIN EN ISO 4762 (früher DIN 912)", voll:false, typ:"zyl"},
+  senk:           {name:"Senkkopf, Innensechskant",    norm:"DIN EN ISO 10642 (früher DIN 7991)",voll:false, typ:"senk"}
+};
+
+var REIBUNGEN = [
+  {flaeche:"Stahl blank, trocken",            von:0.12, bis:0.18},
+  {flaeche:"Stahl blank, geölt",         von:0.10, bis:0.16},
+  {flaeche:"Stahl brüniert, geölt", von:0.10, bis:0.18},
+  {flaeche:"Galvanisch verzinkt, trocken",    von:0.12, bis:0.20},
+  {flaeche:"Galvanisch verzinkt, geölt", von:0.10, bis:0.16},
+  {flaeche:"Zinklamelle, geschmiert",         von:0.08, bis:0.14},
+  {flaeche:"MoS₂-Paste",                 von:0.06, bis:0.12}
+];
+
+/* Fachbegriff / Alltagsvariante / Formelzeichen.
+   Zwei Regeln, damit der Satz in beiden Stufen grammatisch stimmt:
+   1. Gleiches Geschlecht wie der Fachbegriff - der Artikel steht im Satz.
+   2. Kein vorangestelltes Adjektiv, sonst muesste sich seine Endung mit dem
+      Fall aendern ("der tragende" / "dem tragenden"). Stattdessen ein
+      nachgestellter Zusatz: "Querschnitt, der wirklich traegt". */
+var TERME = {
+  vorspannkraft:    {a:"Spannkraft der Schraube",        f:"Vorspannkraft",          s:"F<sub>V</sub>"},
+  klemmkraft:       {a:"Haltekraft in der Fuge",         f:"Klemmkraft",             s:"F<sub>K</sub>"},
+  restklemm:        {a:"verbleibende Haltekraft",        f:"Restklemmkraft",         s:"F<sub>KR</sub>"},
+  betriebskraft:    {a:"Belastung von außen",       f:"Betriebskraft",          s:"F<sub>A</sub>"},
+  zusatzkraft:      {a:"zusätzliche Last in der Schraube", f:"Schraubenzusatzkraft", s:"F<sub>SA</sub>"},
+  querkraft:        {a:"Kraft von der Seite",            f:"Querkraft",              s:"F<sub>Q</sub>"},
+  anziehdrehmoment: {a:"Drehmoment beim Anziehen",       f:"Anziehdrehmoment",       s:"M<sub>A</sub>"},
+  reibschluss:      {a:"Halt durch Reibung",             f:"Reibschluss",            s:""},
+  trennfuge:        {a:"Fuge zwischen den Bauteilen",    f:"Trennfuge",              s:""},
+  teile:            {a:"Bauteile dazwischen",            f:"verspannten Bauteile",   s:""},
+  steigung:         {a:"Höhe je Umdrehung",         f:"Steigung",               s:"P"},
+  d2:               {a:"Durchmesser in der Flankenmitte",f:"Flankendurchmesser",     s:"d<sub>2</sub>"},
+  d3:               {a:"Durchmesser im Gewindegrund",    f:"Kerndurchmesser",        s:"d<sub>3</sub>"},
+  as:               {a:"Querschnitt, der wirklich trägt", f:"Spannungsquerschnitt",  s:"A<sub>S</sub>"},
+  selbsthemmung:    {a:"Klemmwirkung des Gewindes",      f:"Selbsthemmung",          s:""},
+  steigungswinkel:  {a:"Anstiegswinkel",                 f:"Steigungswinkel",        s:"&phi;"},
+  reibungswinkel:   {a:"Grenzwinkel der Reibung",        f:"Reibungswinkel",         s:"&rho;&prime;"},
+  nachgiebigkeit:   {a:"Federung",                       f:"Nachgiebigkeit",         s:"&delta;"},
+  klaffen:          {a:"Abheben",                        f:"Klaffen",                s:""},
+  streckgrenze:     {a:"Grenze der bleibenden Verformung", f:"Streckgrenze",         s:"R<sub>p0,2</sub>"},
+  zugfestigkeit:    {a:"Bruchgrenze",                    f:"Zugfestigkeit",          s:"R<sub>m</sub>"},
+  festigkeitsklasse:{a:"Güteklasse",                f:"Festigkeitsklasse",      s:""},
+  ausnutzung:       {a:"Auslastungsfaktor",              f:"Ausnutzungsgrad",        s:"&nu;"},
+  auflage:          {a:"Kontaktfläche unter dem Kopf", f:"Kopfauflagefläche", s:""},
+  schaft:           {a:"Teil ohne Gewinde",              f:"Schaft",                 s:""},
+  kuppe:            {a:"Schraubenspitze",                f:"Kuppe",                  s:""}
+};
+
+/* ============================================================================
+   2  ZUSTAND UND SPRACHUMSCHALTUNG
+   ========================================================================== */
+
+var zustand = {fach:false, sym:false};
+
+function paramsLesen(){
+  try{
+    var p = new URLSearchParams(window.location.search);
+    if(p.has("fach")) zustand.fach = p.get("fach") === "1";
+    if(p.has("sym"))  zustand.sym  = p.get("sym")  === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    u.searchParams.set("sym",  zustand.sym  ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){
+  return txt.charAt(0).toUpperCase() + txt.slice(1);
+}
+
+function begriffeZeichnen(){
+  document.body.classList.toggle("fach", zustand.fach);
+  var knoten = document.querySelectorAll(".term");
+  for(var i=0;i<knoten.length;i++){
+    var el = knoten[i];
+    var t = TERME[el.getAttribute("data-t")];
+    if(!t) continue;
+    var txt = zustand.fach ? t.f : t.a;
+    if(el.getAttribute("data-cap")) txt = grossErster(txt);
+    var html = txt;
+    if(zustand.sym && t.s) html += ' <span class="sym">' + t.s + "</span>";
+    el.innerHTML = html;
+  }
+}
+
+/* ============================================================================
+   3  RECHENKERN
+   Ein einziger Satz Formeln versorgt Rechner, Diagramme und Tabellen.
+   ========================================================================== */
+
+function gewindeMasse(groesse){
+  var g = SCHRAUBEN[groesse];
+  var d2 = g.d - 0.6495 * g.P;          /* Flankendurchmesser */
+  var d3 = g.d - 1.2269 * g.P;          /* Kerndurchmesser    */
+  var dS = (d2 + d3) / 2;               /* Spannungsdurchmesser */
+  var As = Math.PI / 4 * dS * dS;       /* Spannungsquerschnitt */
+  return {
+    bez:groesse, d:g.d, P:g.P, s:g.s, k:g.k, dw:g.dw, Dh:g.Dh,
+    d2:d2, d3:d3, dS:dS, As:As,
+    DKm:(g.dw + g.Dh) / 2               /* mittlerer Reibdurchmesser am Kopf */
+  };
+}
+
+/* ISO 898-1: ab Nenndurchmesser ueber 16 mm gelten fuer 8.8 hoehere Werte. */
+function klasseWerte(klasse, d){
+  var k = KLASSEN[klasse];
+  if(klasse === "8.8" && d > 16) return {Rm:830, Rp:660};
+  return {Rm:k.Rm, Rp:k.Rp};
+}
+
+/* Momentenbeiwerte je 1 N Vorspannkraft, in mm.
+   Sie sind die einzige Quelle fuer Anziehdrehmoment UND Torsionsspannung -
+   sonst passen Rechenweg und angezeigte Auslastung nicht zusammen. */
+function beiwertGewinde(m, myG){ return 0.16 * m.P + 0.58 * m.d2 * myG; }
+function beiwertKopf(m, myK){ return 0.5 * m.DKm * myK; }
+function polaresWiderstandsmoment(m){ return Math.PI * Math.pow(m.dS, 3) / 16; }
+
+/* Montagevorspannkraft: Beim Anziehen wirken Zug und Torsion gleichzeitig.
+   Gesucht ist die Kraft, bei der die Vergleichsspannung nach von Mises
+   genau den zugelassenen Anteil nu der Streckgrenze erreicht:
+       sigma_red = sqrt(sigma_z^2 + 3*tau^2) = nu * Rp0,2
+   Mit sigma_z = F/As und tau = F*cG/Wp laesst sich F direkt ausrechnen. */
+function vorspannkraft(m, klasse, myG, nu){
+  var w  = klasseWerte(klasse, m.d);
+  var cG = beiwertGewinde(m, myG);
+  var Wp = polaresWiderstandsmoment(m);
+  return nu * w.Rp / Math.sqrt(1/(m.As*m.As) + 3*cG*cG/(Wp*Wp));   /* in N */
+}
+
+/* Anziehdrehmoment und seine drei Anteile, alles in N*mm. */
+function drehmomente(m, FM, myG, myK){
+  var mSteig   = FM * 0.16 * m.P;          /* setzt sich in Vorspannkraft um */
+  var mGewinde = FM * 0.58 * m.d2 * myG;   /* Reibung im Gewinde */
+  var mKopf    = FM * beiwertKopf(m, myK); /* Reibung unter dem Kopf */
+  return {steig:mSteig, gewinde:mGewinde, kopf:mKopf,
+          gesamt:mSteig + mGewinde + mKopf,
+          gewindeAnteil:mSteig + mGewinde};   /* nur dieser Teil verdreht die Schraube */
+}
+
+function spannungen(m, FM, MG){
+  var Wp = polaresWiderstandsmoment(m);
+  var sz = FM / m.As;
+  var tau = MG / Wp;
+  return {sz:sz, tau:tau, red:Math.sqrt(sz*sz + 3*tau*tau), Wp:Wp};
+}
+
+function rechneAlles(groesse, klasse, myG, myK, nu){
+  var m  = gewindeMasse(groesse);
+  var FM = vorspannkraft(m, klasse, myG, nu);
+  var M  = drehmomente(m, FM, myG, myK);
+  var S  = spannungen(m, FM, M.gewindeAnteil);
+  var w  = klasseWerte(klasse, m.d);
+  return {m:m, w:w, FM:FM, M:M, S:S, auslastung:S.red / w.Rp * 100};
+}
+
+/* ============================================================================
+   4  HILFSMITTEL
+   ========================================================================== */
+
+function z(wert, stellen){
+  if(!isFinite(wert)) return "–";
+  return wert.toLocaleString("de-DE", {minimumFractionDigits:stellen, maximumFractionDigits:stellen});
+}
+function el(id){ return document.getElementById(id); }
+function ns(name, attr){
+  var e = document.createElementNS("http://www.w3.org/2000/svg", name);
+  for(var a in attr){ if(attr.hasOwnProperty(a)) e.setAttribute(a, attr[a]); }
+  return e;
+}
+function svgText(x, y, txt, opt){
+  var o = opt || {};
+  var t = ns("text", {x:x, y:y,
+    "font-size": o.size || 12,
+    "font-family":"Segoe UI, system-ui, sans-serif",
+    "text-anchor": o.anchor || "start",
+    fill: o.fill || "#0f172a",
+    "font-weight": o.weight || 400});
+  t.textContent = txt;
+  return t;
+}
+function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild); }
+
+/* Ma&szlig;linie mit Pfeilen und beschriftetem Wert. */
+function masslinie(g, x1, y1, x2, y2, text, versatz){
+  var v = versatz || 0;
+  var waag = Math.abs(y2 - y1) < 0.5;
+  var lx1 = waag ? x1 : x1 + v, lx2 = waag ? x2 : x2 + v;
+  var ly1 = waag ? y1 + v : y1,  ly2 = waag ? y2 + v : y2;
+  g.appendChild(ns("line", {x1:lx1, y1:ly1, x2:lx2, y2:ly2,
+    stroke:"#64748b", "stroke-width":1, "marker-start":"url(#pfeilA)", "marker-end":"url(#pfeilB)"}));
+  if(waag){
+    g.appendChild(ns("line",{x1:x1,y1:y1,x2:x1,y2:ly1,stroke:"#cbd5e1","stroke-width":.8}));
+    g.appendChild(ns("line",{x1:x2,y1:y2,x2:x2,y2:ly2,stroke:"#cbd5e1","stroke-width":.8}));
+    var t = svgText((lx1+lx2)/2, ly1 - 5, text, {anchor:"middle", size:12, fill:"#475569", weight:600});
+    g.appendChild(t);
+  }else{
+    g.appendChild(ns("line",{x1:x1,y1:y1,x2:lx1,y2:y1,stroke:"#cbd5e1","stroke-width":.8}));
+    g.appendChild(ns("line",{x1:x2,y1:y2,x2:lx2,y2:y2,stroke:"#cbd5e1","stroke-width":.8}));
+    /* Liegt die Masslinie links vom Bauteil, muss der Text nach links laufen -
+       sonst schreibt er ueber die Zeichnung. */
+    var linksVom = v < 0;
+    var t2 = svgText(lx1 + (linksVom ? -6 : 6), (ly1+ly2)/2 + 4, text,
+      {size:12, fill:"#475569", weight:600, anchor: linksVom ? "end" : "start"});
+    g.appendChild(t2);
+  }
+}
+/* Pfeilspitzen in mehreren Farben - eine graue Spitze an einer roten Kraftlinie
+   sieht nach Zeichenfehler aus. */
+var PFEILFARBEN = {"":"#64748b", rot:"#dc2626", gruen:"#16a34a", blau:"#1d4ed8", teal:"#0f766e"};
+function pfeilDefs(svg){
+  var defs = ns("defs", {});
+  for(var name in PFEILFARBEN){
+    if(!PFEILFARBEN.hasOwnProperty(name)) continue;
+    var farbe = PFEILFARBEN[name];
+    var mA = ns("marker", {id:"pfeilA"+name, markerWidth:8, markerHeight:8, refX:7, refY:3,
+      orient:"auto", markerUnits:"strokeWidth"});
+    mA.appendChild(ns("path", {d:"M7,0 L7,6 L0,3 z", fill:farbe}));
+    defs.appendChild(mA);
+    var mB = ns("marker", {id:"pfeilB"+name, markerWidth:8, markerHeight:8, refX:1, refY:3,
+      orient:"auto", markerUnits:"strokeWidth"});
+    mB.appendChild(ns("path", {d:"M0,0 L0,6 L7,3 z", fill:farbe}));
+    defs.appendChild(mB);
+  }
+  svg.appendChild(defs);
+}
+/* Beschriftung mit Hinweislinie. */
+function hinweis(g, x, y, tx, ty, text, anchor){
+  g.appendChild(ns("line",{x1:x,y1:y,x2:tx,y2:ty,stroke:"#94a3b8","stroke-width":1,
+    "stroke-dasharray":"3 2"}));
+  g.appendChild(ns("circle",{cx:x,cy:y,r:2.5,fill:"#94a3b8"}));
+  g.appendChild(svgText(tx + (anchor==="end" ? -5 : 5), ty + 4, text,
+    {anchor:anchor||"start", size:12.5, fill:"#334155", weight:600}));
+}
+function balken(node, teile){
+  leeren(node);
+  var summe = 0, i;
+  for(i=0;i<teile.length;i++) summe += teile[i].wert;
+  for(i=0;i<teile.length;i++){
+    var s = document.createElement("span");
+    var anteil = summe > 0 ? teile[i].wert / summe * 100 : 0;
+    s.style.width = anteil + "%";
+    s.style.background = teile[i].farbe;
+    s.textContent = anteil >= 9 ? teile[i].name + " " + Math.round(anteil) + " %" : "";
+    s.title = teile[i].name + ": " + Math.round(anteil) + " %";
+    node.appendChild(s);
+  }
+}
+
+/* ============================================================================
+   5  REITER
+   ========================================================================== */
+
+function reiterSetzen(name){
+  var knoepfe = document.querySelectorAll(".tabs button");
+  for(var i=0;i<knoepfe.length;i++){
+    var aktiv = knoepfe[i].getAttribute("data-tab") === name;
+    knoepfe[i].setAttribute("aria-selected", aktiv ? "true" : "false");
+  }
+  var panels = document.querySelectorAll(".panel");
+  for(var j=0;j<panels.length;j++){
+    panels[j].hidden = panels[j].id !== "p-" + name;
+  }
+  /* Zeichnungen erst berechnen, wenn der Bereich sichtbar ist. */
+  if(name === "aufbau")   zeichneSchraube();
+  if(name === "funktion") zeichneVerspannung();
+}
+
+/* ============================================================================
+   6  GRUNDLAGEN
+   ========================================================================== */
+
+function zeichnePrinzip(){
+  var svg = el("svgPrinzip"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var xm = 190, oben = 70, dicke = 34;
+  /* Zwei Platten */
+  g.appendChild(ns("rect",{x:60,y:oben,width:260,height:dicke,fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:60,y:oben+dicke,width:260,height:dicke,fill:"#99f6e4",stroke:"#0f766e","stroke-width":1.5}));
+  /* Trennfuge */
+  g.appendChild(ns("line",{x1:60,y1:oben+dicke,x2:320,y2:oben+dicke,stroke:"#0f766e","stroke-width":2.5}));
+  /* Schraube */
+  g.appendChild(ns("rect",{x:xm-22,y:oben-20,width:44,height:20,fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:xm-8,y:oben,width:16,height:dicke*2+26,fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.5}));
+  /* Mutter */
+  g.appendChild(ns("rect",{x:xm-20,y:oben+dicke*2,width:40,height:18,fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
+
+  /* Kraftpfeile: Schraube zieht, Platten werden gepresst */
+  g.appendChild(ns("line",{x1:xm,y1:oben-34,x2:xm,y2:oben-58,stroke:"#1d4ed8","stroke-width":2.5,"marker-end":"url(#pfeilB)"}));
+  g.appendChild(ns("line",{x1:xm,y1:oben+dicke*2+32,x2:xm,y2:oben+dicke*2+56,stroke:"#1d4ed8","stroke-width":2.5,"marker-end":"url(#pfeilB)"}));
+  g.appendChild(svgText(xm+10, oben-46, "F", {size:13, fill:"#1d4ed8", weight:700}));
+  g.appendChild(svgText(xm+10, oben+dicke*2+52, "F", {size:13, fill:"#1d4ed8", weight:700}));
+
+  /* Pressung in der Fuge */
+  for(var i=0;i<5;i++){
+    var x = 100 + i*40;
+    if(Math.abs(x-xm) < 26) continue;
+    g.appendChild(ns("line",{x1:x,y1:oben+dicke-13,x2:x,y2:oben+dicke-2,stroke:"#0f766e","stroke-width":2,"marker-end":"url(#pfeilB)"}));
+    g.appendChild(ns("line",{x1:x,y1:oben+dicke+13,x2:x,y2:oben+dicke+2,stroke:"#0f766e","stroke-width":2,"marker-end":"url(#pfeilB)"}));
+  }
+  hinweis(g, xm+22, oben-10, 300, 28, "Kopf", "start");
+  hinweis(g, 250, oben+dicke, 330, 190, "Trennfuge", "start");
+  hinweis(g, xm+20, oben+dicke*2+9, 300, 225, "Mutter", "start");
+  g.appendChild(svgText(20, 250, "Die Schraube zieht – die Bauteile werden gepresst.",
+    {size:12.5, fill:"#64748b"}));
+}
+
+function zeichneReib(){
+  var svg = el("svgReib"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var FV = parseFloat(el("gVor").value);
+  var myT = parseFloat(el("gMyT").value);
+  var FQ = parseFloat(el("gQuer").value);
+  var FR = myT * FV;
+  var haelt = FQ <= FR;
+
+  el("oVor").textContent  = z(FV,0) + " kN";
+  el("oMyT").textContent  = z(myT,2);
+  el("oQuer").textContent = z(FQ,1) + " kN";
+
+  var y = 92, dicke = 30, x0 = 170, breite = 240;
+  var versatz = haelt ? 0 : 26;
+
+  g.appendChild(ns("rect",{x:x0,y:y,width:breite,height:dicke,fill:"#ccfbf1",stroke:"#0f766e","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0-versatz,y:y+dicke,width:breite,height:dicke,fill:"#99f6e4",stroke:"#0f766e","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0+130,y:y-16,width:40,height:16,fill:"#bfdbfe",stroke:"#1d4ed8","stroke-width":1.5}));
+  g.appendChild(ns("rect",{x:x0+142,y:y,width:16,height:dicke*2,fill:"#dbeafe",stroke:"#1d4ed8","stroke-width":1.5}));
+
+  /* Vorspannkraft */
+  var pfeilLang = Math.min(10 + FV * 1.4, 44);
+  g.appendChild(ns("line",{x1:x0+150,y1:y-24,x2:x0+150,y2:y-24-pfeilLang,
+    stroke:"#1d4ed8","stroke-width":3,"marker-end":"url(#pfeilBblau)"}));
+  g.appendChild(svgText(x0+158, y-28-pfeilLang/2, "F_V = " + z(FV,0) + " kN", {size:12, fill:"#1d4ed8", weight:700}));
+
+  /* Querkraft - Beschriftung ueber den Pfeil, sonst laeuft sie aus dem Bild */
+  var qLang = Math.min(8 + FQ * 6, 120);
+  var qx = x0 - versatz;
+  g.appendChild(ns("line",{x1:qx,y1:y+dicke+15,x2:qx-qLang,y2:y+dicke+15,
+    stroke:"#dc2626","stroke-width":3,"marker-end":"url(#pfeilBrot)"}));
+  g.appendChild(svgText(qx-qLang/2, y+dicke+9, "F_Q", {anchor:"middle", size:12, fill:"#dc2626", weight:700}));
+
+  /* Reibkraft in der Fuge */
+  var rLang = Math.min(8 + FR * 6, 150);
+  g.appendChild(ns("line",{x1:x0+40,y1:y+dicke-8,x2:x0+40+rLang,y2:y+dicke-8,
+    stroke:"#16a34a","stroke-width":3,"marker-end":"url(#pfeilBgruen)"}));
+  g.appendChild(svgText(x0+40, y+dicke-14, "F_R", {size:12, fill:"#16a34a", weight:700}));
+
+  /* Vergleichsbalken - Wert immer rechts neben dem Balken, damit er auch bei
+     sehr kurzem Balken lesbar bleibt. */
+  var bx = 450, bw = 150, skala = Math.max(FR, FQ, 1);
+  g.appendChild(svgText(bx, 44, "Kräftevergleich", {size:12.5, weight:700, fill:"#334155"}));
+  [[FR, "#16a34a", "F_R", 56], [FQ, "#dc2626", "F_Q", 88]].forEach(function(a){
+    var w = bw * (a[0]/skala);
+    g.appendChild(ns("rect",{x:bx, y:a[3], width:Math.max(w,2), height:22, fill:a[1], rx:4}));
+    g.appendChild(svgText(bx + Math.max(w,2) + 8, a[3]+16, a[2] + " = " + z(a[0],2) + " kN",
+      {size:12, fill:a[1], weight:700}));
+  });
+
+  var txt = el("reibText");
+  if(haelt){
+    txt.className = "gut";
+    txt.innerHTML = "<b>Hält.</b> Die Reibkraft F<sub>R</sub> = " + z(FR,2) +
+      " kN ist größer als die Querkraft F<sub>Q</sub> = " + z(FQ,2) +
+      " kN. Die Schraube selbst wird dabei nicht auf Abscheren belastet.";
+  }else{
+    txt.className = "warnung";
+    txt.innerHTML = "<b>Rutscht.</b> Die Querkraft F<sub>Q</sub> = " + z(FQ,2) +
+      " kN übersteigt die Reibkraft F<sub>R</sub> = " + z(FR,2) +
+      " kN. Die Bauteile verschieben sich, bis die Schraube am Lochrand anliegt – " +
+      "sie wird dann auf Abscheren belastet, wofür sie nicht vorgesehen ist.";
+  }
+}
+
+function zeichneEbene(){
+  var svg = el("svgEbene"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var groesse = el("gGewinde").value;
+  var m = gewindeMasse(groesse);
+  var myG = parseFloat(el("gMyG1").value);
+  el("oMyG1").textContent = z(myG,2);
+
+  var phi = Math.atan(m.P / (Math.PI * m.d2)) * 180 / Math.PI;
+  var rho = Math.atan(1.155 * myG) * 180 / Math.PI;
+
+  el("ezPhi").innerHTML = z(phi,2) + "&deg;";
+  el("ezRho").innerHTML = z(rho,2) + "&deg;";
+
+  /* Ueberhoehte Darstellung: sonst waere das Dreieck nicht erkennbar. */
+  var x0 = 40, y0 = 185, breite = 260;
+  var hoehe = breite * Math.tan(phi * Math.PI / 180) * 8;
+  hoehe = Math.max(18, Math.min(hoehe, 120));
+
+  g.appendChild(ns("path",{d:"M"+x0+","+y0+" L"+(x0+breite)+","+y0+" L"+(x0+breite)+","+(y0-hoehe)+" Z",
+    fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":1.5}));
+
+  masslinie(g, x0, y0, x0+breite, y0, "π · d₂ = " + z(Math.PI*m.d2,1) + " mm", 30);
+  masslinie(g, x0+breite, y0, x0+breite, y0-hoehe, "P = " + z(m.P,2) + " mm", 26);
+
+  /* Winkelmarkierung: der GEZEICHNETE Winkel, nicht der echte - die Ebene ist
+     ja bewusst ueberhoeht dargestellt. */
+  var alpha = Math.atan2(hoehe, breite);
+  var rBogen = 58;
+  g.appendChild(ns("path",{d:"M"+(x0+rBogen)+","+y0+" A "+rBogen+" "+rBogen+" 0 0 0 "+
+    (x0 + rBogen*Math.cos(alpha))+","+(y0 - rBogen*Math.sin(alpha)),
+    fill:"none", stroke:"#1d4ed8", "stroke-width":1.4}));
+  g.appendChild(svgText(x0 + rBogen + 8, y0 - rBogen*Math.sin(alpha)/2 - 2, "φ",
+    {size:15, fill:"#1d4ed8", weight:700}));
+
+  /* Klotz auf der Ebene */
+  var kx = x0 + breite*0.55;
+  var ky = y0 - hoehe*0.55;
+  g.appendChild(ns("rect",{x:kx-16, y:ky-26, width:32, height:22, fill:"#fed7aa", stroke:"#c2410c",
+    "stroke-width":1.4, transform:"rotate(" + (-Math.atan2(hoehe,breite)*180/Math.PI) + " " + kx + " " + ky + ")"}));
+
+  g.appendChild(svgText(20, 252, "Ein Gewindegang, abgewickelt.", {size:12.5, fill:"#64748b"}));
+
+  var t = el("hemmText");
+  if(phi < rho){
+    t.className = "gut";
+    t.innerHTML = "<b>Selbsthemmend:</b> φ = " + z(phi,2) + "° ist kleiner als ρ′ = " +
+      z(rho,2) + "°. Die Schraube dreht sich durch die Vorspannkraft allein nicht zurück.";
+  }else{
+    t.className = "warnung";
+    t.innerHTML = "<b>Nicht selbsthemmend:</b> φ = " + z(phi,2) + "° ist größer als ρ′ = " +
+      z(rho,2) + "°. Bei so geringer Reibung würde sich die Schraube von selbst lösen. " +
+      "Bei Regelgewinden tritt das praktisch nur bei sehr guter Schmierung auf.";
+  }
+}
+
+function zeichneAufteilung(){
+  var svg = el("svgAufteil"); leeren(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var my = parseFloat(el("gMyStreu").value);
+  el("oMyStreu").textContent = z(my,2);
+
+  var m = gewindeMasse("M10");
+  var FM = vorspannkraft(m, "8.8", my, 0.9);
+  var M = drehmomente(m, FM, my, my);
+
+  var teile = [
+    {name:"Steigung",       wert:M.steig,   farbe:"#16a34a"},
+    {name:"Gewindereibung", wert:M.gewinde, farbe:"#ea580c"},
+    {name:"Kopfreibung",    wert:M.kopf,    farbe:"#b91c1c"}
+  ];
+  var x = 20, gesamt = M.gesamt, breite = 660;
+  g.appendChild(svgText(20, 24, "Beispiel M10, Festigkeitsklasse 8.8", {size:12.5, weight:700, fill:"#334155"}));
+  for(var i=0;i<teile.length;i++){
+    var w = breite * teile[i].wert / gesamt;
+    g.appendChild(ns("rect",{x:x, y:40, width:w, height:40, fill:teile[i].farbe}));
+    var proz = Math.round(teile[i].wert / gesamt * 100);
+    if(w > 60) g.appendChild(svgText(x + w/2, 65, proz + " %", {anchor:"middle", size:14, fill:"#fff", weight:700}));
+    g.appendChild(svgText(x + w/2, 98, teile[i].name, {anchor:"middle", size:11.5, fill:"#475569"}));
+    g.appendChild(svgText(x + w/2, 113, z(teile[i].wert/1000,1) + " N·m", {anchor:"middle", size:11, fill:"#94a3b8"}));
+    x += w;
+  }
+  g.appendChild(svgText(20, 140, "Gesamt M_A = " + z(M.gesamt/1000,1) +
+    " N·m  →  F_V = " + z(FM/1000,1) + " kN",
+    {size:12.5, weight:700, fill:"#1e3a8a"}));
+
+  el("streuText").innerHTML =
+    "Nur rund <b>" + Math.round(M.steig/M.gesamt*100) + " %</b> des Anziehdrehmoments erzeugen " +
+    "tatsächlich Vorspannkraft. Der Rest überwindet die Reibung. Genau deshalb wirkt sich " +
+    "jede &Auml;nderung der Reibungszahl so stark auf die Vorspannkraft aus: " +
+    "Bei &mu; = " + z(my,2) + " ergibt ein Anziehdrehmoment von " + z(M.gesamt/1000,1) +
+    " N·m eine Vorspannkraft von " + z(FM/1000,1) + " kN.";
+}
+
+/* ============================================================================
+   7  AUFBAU  -  parametrische Schraubenzeichnung
+   ========================================================================== */
+
+function normGewindelaenge(d, l){
+  var b = (l <= 125) ? 2*d + 6 : (l <= 200 ? 2*d + 12 : 2*d + 25);
+  return Math.min(b, l);
+}
+
+function zeichneSchraube(){
+  var svg = el("svgSchraube"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var groesse = el("aGewinde").value;
+  var m = gewindeMasse(groesse);
+  var form = KOPFFORMEN[el("aKopf").value];
+  var l = Math.max(10, parseFloat(el("aLaenge").value) || 60);
+  var b = form.voll ? l : Math.max(6, Math.min(parseFloat(el("aB").value) || normGewindelaenge(m.d, l), l));
+  var zeigeBez = el("aBez").checked;
+  var zeigeMasse = el("aMasse").checked;
+
+  /* Kopfmasse: bei Sechskant aus der Norm, sonst proportional. */
+  var kopfD, kopfH, kopfNotiz;
+  if(form.typ === "hex"){
+    kopfD = m.s; kopfH = m.k; kopfNotiz = "Schlüsselweite s und Kopfhöhe k nach Norm.";
+  }else if(form.typ === "zyl"){
+    kopfD = 1.5 * m.d; kopfH = m.d; kopfNotiz = "Kopfmaße proportional dargestellt (d_k ≈ 1,5·d, k ≈ d).";
+  }else{
+    kopfD = 2.0 * m.d; kopfH = 0.55 * m.d; kopfNotiz = "Kopfmaße proportional dargestellt (d_k ≈ 2·d, 90°-Senkung).";
+  }
+
+  /* Massstab so waehlen, dass Laenge und Durchmesser hineinpassen. */
+  /* Beim Senkkopf zaehlt die Laenge l einschliesslich Kopf (der Kopf sitzt ja
+     versenkt im Bauteil), bei allen anderen Kopfformen ohne Kopf. */
+  var lMitKopf = (form.typ === "senk");
+  var platzX = 620, platzY = 150;
+  var gesamtL = lMitKopf ? l : kopfH + l;
+  var maxD = Math.max(kopfD, m.d);
+  var sk = Math.min(platzX / gesamtL, platzY / maxD);
+
+  var ox = 180, oy = 170;                       /* Mittellinie */
+  var xKopfL = ox, xKopfR = ox + kopfH * sk;
+  var xEnde  = (lMitKopf ? xKopfL : xKopfR) + l * sk;
+  var xGewinde = xEnde - b * sk;
+  var rD  = m.d  / 2 * sk;
+  var rD3 = m.d3 / 2 * sk;
+  var rK  = kopfD / 2 * sk;
+
+  var blau = "#1d4ed8", fuell = "#dbeafe";
+
+  /* --- Kopf --- */
+  if(form.typ === "hex"){
+    var fase = Math.min(rK*0.12, kopfH*sk*0.30);
+    g.appendChild(ns("path",{d:
+      "M"+xKopfL+","+(oy-rK+fase)+" L"+(xKopfL+fase)+","+(oy-rK)+
+      " L"+(xKopfR-fase)+","+(oy-rK)+" L"+xKopfR+","+(oy-rK+fase)+
+      " L"+xKopfR+","+(oy+rK-fase)+" L"+(xKopfR-fase)+","+(oy+rK)+
+      " L"+(xKopfL+fase)+","+(oy+rK)+" L"+xKopfL+","+(oy+rK-fase)+" Z",
+      fill:fuell, stroke:blau, "stroke-width":1.8}));
+  }else if(form.typ === "zyl"){
+    g.appendChild(ns("rect",{x:xKopfL, y:oy-rK, width:kopfH*sk, height:rK*2,
+      fill:fuell, stroke:blau, "stroke-width":1.8, rx:2}));
+    var swI = rK*0.55;
+    g.appendChild(ns("rect",{x:xKopfL+2, y:oy-swI, width:kopfH*sk*0.6, height:swI*2,
+      fill:"none", stroke:blau, "stroke-width":1, "stroke-dasharray":"4 3"}));
+  }else{
+    g.appendChild(ns("path",{d:
+      "M"+xKopfL+","+(oy-rK)+" L"+xKopfR+","+(oy-rD)+
+      " L"+xKopfR+","+(oy+rD)+" L"+xKopfL+","+(oy+rK)+" Z",
+      fill:fuell, stroke:blau, "stroke-width":1.8}));
+    var swS = rK*0.45;
+    g.appendChild(ns("rect",{x:xKopfL+2, y:oy-swS, width:kopfH*sk*0.55, height:swS*2,
+      fill:"none", stroke:blau, "stroke-width":1, "stroke-dasharray":"4 3"}));
+  }
+
+  /* --- Schaft --- */
+  if(xGewinde > xKopfR + 0.5){
+    g.appendChild(ns("rect",{x:xKopfR, y:oy-rD, width:xGewinde-xKopfR, height:rD*2,
+      fill:fuell, stroke:blau, "stroke-width":1.8}));
+  }
+
+  /* --- Gewinde: Aussenlinie voll, Kernlinie duenn (Normdarstellung) --- */
+  var kuppe = Math.min(rD*0.8, 10);
+  g.appendChild(ns("path",{d:
+    "M"+xGewinde+","+(oy-rD)+" L"+(xEnde-kuppe)+","+(oy-rD)+
+    " L"+xEnde+","+(oy-rD+kuppe)+" L"+xEnde+","+(oy+rD-kuppe)+
+    " L"+(xEnde-kuppe)+","+(oy+rD)+" L"+xGewinde+","+(oy+rD)+" Z",
+    fill:fuell, stroke:blau, "stroke-width":1.8}));
+  g.appendChild(ns("line",{x1:xGewinde, y1:oy-rD3, x2:xEnde, y2:oy-rD3, stroke:blau, "stroke-width":0.9}));
+  g.appendChild(ns("line",{x1:xGewinde, y1:oy+rD3, x2:xEnde, y2:oy+rD3, stroke:blau, "stroke-width":0.9}));
+  g.appendChild(ns("line",{x1:xGewinde, y1:oy-rD, x2:xGewinde, y2:oy+rD, stroke:blau, "stroke-width":1.2}));
+
+  /* Gewindegaenge andeuten, solange sie noch unterscheidbar sind */
+  var schritt = m.P * sk;
+  if(schritt >= 3){
+    for(var xg = xGewinde + schritt; xg < xEnde - 1; xg += schritt){
+      g.appendChild(ns("line",{x1:xg, y1:oy-rD, x2:xg-schritt*0.5, y2:oy-rD3, stroke:blau, "stroke-width":0.5, opacity:0.5}));
+      g.appendChild(ns("line",{x1:xg, y1:oy+rD, x2:xg-schritt*0.5, y2:oy+rD3, stroke:blau, "stroke-width":0.5, opacity:0.5}));
+    }
+  }
+
+  /* Mittellinie */
+  g.appendChild(ns("line",{x1:xKopfL-24, y1:oy, x2:xEnde+24, y2:oy,
+    stroke:"#94a3b8", "stroke-width":0.9, "stroke-dasharray":"14 3 3 3"}));
+
+  /* --- Benennungen --- */
+  if(zeigeBez){
+    hinweis(g, (xKopfL+xKopfR)/2, oy-rK+3, xKopfL-18, 42, "Kopf", "end");
+    hinweis(g, xKopfR, oy+rK*0.75, xKopfR+16, 300, "Auflagefläche", "start");
+    if(xGewinde > xKopfR + 6){
+      hinweis(g, (xKopfR+xGewinde)/2, oy-rD, (xKopfR+xGewinde)/2, 52, "Schaft", "start");
+    }
+    hinweis(g, (xGewinde+xEnde)/2, oy+rD, (xGewinde+xEnde)/2, 300, "Gewinde", "start");
+    hinweis(g, xEnde-kuppe*0.4, oy-rD+kuppe*0.4, xEnde+6, 62, "Kuppe", "start");
+  }
+
+  /* --- Masse --- */
+  if(zeigeMasse){
+    masslinie(g, (lMitKopf ? xKopfL : xKopfR), oy+rD+8, xEnde, oy+rD+8, "l = " + z(l,0) + " mm", 52);
+    masslinie(g, xGewinde, oy+rD+8, xEnde, oy+rD+8, "b = " + z(b,0) + " mm", 26);
+    masslinie(g, xEnde+10, oy-rD, xEnde+10, oy+rD, "d = " + z(m.d,0), 14);
+    if(form.typ === "hex"){
+      masslinie(g, xKopfL-10, oy-rK, xKopfL-10, oy+rK, "s = " + z(m.s,0), -46);
+    }else{
+      masslinie(g, xKopfL-10, oy-rK, xKopfL-10, oy+rK, "d_k ≈ " + z(kopfD,1), -52);
+    }
+    masslinie(g, xKopfL, oy-rK-8, xKopfR, oy-rK-8, "k = " + z(kopfH,1), -18);
+  }
+
+  g.appendChild(svgText(20, 326, "Maßstab " + z(sk,2) + " : 1 · " + groesse + " · " + form.name,
+    {size:12, fill:"#94a3b8"}));
+
+  el("normHinweis").textContent = form.norm + ". " + kopfNotiz +
+    (lMitKopf ? " Beim Senkkopf wird die Länge l einschließlich Kopf gemessen, da er versenkt sitzt."
+              : " Die Länge l wird ohne Kopf gemessen.") +
+    " Die Zeichnung ist eine vereinfachte Normdarstellung (Gewinde als Doppellinie).";
+
+  /* --- Masstabelle --- */
+  var t = el("tabMasse");
+  t.innerHTML =
+    "<thead><tr><th>Größe</th><th>Bedeutung</th><th>Wert</th></tr></thead><tbody>" +
+    zeile("d",  "Nenndurchmesser (Außendurchmesser)", z(m.d,0)  + " mm") +
+    zeile("P",  "Steigung",                                z(m.P,2)  + " mm") +
+    zeile("d₂", "Flankendurchmesser",                 z(m.d2,3) + " mm") +
+    zeile("d₃", "Kerndurchmesser",                    z(m.d3,3) + " mm") +
+    zeile("A<sub>S</sub>", "Spannungsquerschnitt",         z(m.As,1) + " mm²") +
+    zeile("l",  "Länge (ohne Kopf)",                  z(l,0)    + " mm") +
+    zeile("b",  "Gewindelänge",                       z(b,0)    + " mm") +
+    (form.typ === "hex"
+      ? zeile("s", "Schlüsselweite", z(m.s,0) + " mm") + zeile("k", "Kopfhöhe", z(m.k,1) + " mm")
+      : zeile("d<sub>k</sub>", "Kopfdurchmesser (proportional)", "≈ " + z(kopfD,1) + " mm") +
+        zeile("k", "Kopfhöhe (proportional)", "≈ " + z(kopfH,1) + " mm")) +
+    zeile("D<sub>h</sub>", "Durchgangsloch, Reihe mittel", z(m.Dh,1) + " mm") +
+    "</tbody>";
+
+  function zeile(sym, txt, wert){
+    return "<tr><td><span class='sym'>" + sym + "</span></td><td style='text-align:left'>" +
+           txt + "</td><td class='num'>" + wert + "</td></tr>";
+  }
+}
+
+/* Gewindeprofil als Ausschnittsvergroesserung.
+   Echte Proportionen UND sichtbare Gewindegaenge passen nicht in ein Bild:
+   die Gewindetiefe betraegt nur 0,61 · P, der Durchmesser aber ein Vielfaches
+   davon. Deshalb wie im Tabellenbuch ein Ausschnitt oberhalb der Mittelachse -
+   darin stimmen Steigung, Gewindetiefe und der 60°-Flankenwinkel massstaeblich. */
+function zeichneGewindeprofil(){
+  var svg = el("svgGewinde"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var m = gewindeMasse(el("aGewinde").value);
+  var yD = 75, yD3 = 159;                       /* Aussen- und Kerndurchmesser */
+  var tiefe = (m.d - m.d3) / 2;                 /* Gewindetiefe in mm */
+  var sk = (yD3 - yD) / tiefe;                  /* Pixel je mm - fuer beide Richtungen */
+  var yD2 = yD3 - ((m.d2 - m.d3) / 2) * sk;
+  var p = m.P * sk;
+
+  var xStart = 130, xEnde = 560;
+
+  /* Ein Gewindegang: Grund 0,25·P, Flanke, Spitze 0,125·P, Flanke. */
+  var d = "M" + xStart + "," + yD3;
+  for(var x = xStart; x + p <= xEnde; x += p){
+    d += " L"+(x+p*0.250)+","+yD3 +
+         " L"+(x+p*0.5625)+","+yD +
+         " L"+(x+p*0.6875)+","+yD +
+         " L"+(x+p)+","+yD3;
+  }
+  g.appendChild(ns("path",{d:d, fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":1.8}));
+
+  /* Die drei Durchmesserlinien */
+  [[yD,"d",  "#1d4ed8", z(m.d,0)],
+   [yD2,"d₂","#059669", z(m.d2,2)],
+   [yD3,"d₃","#dc2626", z(m.d3,2)]].forEach(function(a){
+    g.appendChild(ns("line",{x1:105, y1:a[0], x2:xEnde+20, y2:a[0],
+      stroke:a[2], "stroke-width":1.2, "stroke-dasharray":"7 4"}));
+    g.appendChild(svgText(xEnde+28, a[0]+4, a[1] + " = " + a[3] + " mm",
+      {size:12.5, fill:a[2], weight:700}));
+  });
+
+  /* Steigung oben bemassen */
+  masslinie(g, xStart + p*0.5625, yD, xStart + p*1.5625, yD, "P = " + z(m.P,2) + " mm", -22);
+
+  /* Gewindetiefe links */
+  masslinie(g, 70, yD, 70, yD3, "h = " + z(tiefe,2), 8);
+
+  /* Bruchlinie statt Mittelachse: der Ausschnitt endet hier */
+  var bruch = "M40,196";
+  for(var xb = 40; xb < xEnde+20; xb += 22){
+    bruch += " L"+(xb+11)+",203 L"+(xb+22)+",196";
+  }
+  g.appendChild(ns("path",{d:bruch, fill:"none", stroke:"#94a3b8", "stroke-width":1.2}));
+  g.appendChild(svgText(40, 220, "Ausschnitt – die Mittelachse liegt weiter unten.",
+    {size:11.5, fill:"#94a3b8"}));
+
+  g.appendChild(svgText(xEnde+28, 220, "A_S = " + z(m.As,1) + " mm²",
+    {size:12.5, fill:"#1e3a8a", weight:700}));
+}
+
+/* ============================================================================
+   8  FUNKTION  -  Verspannungsschaubild
+   ========================================================================== */
+
+function zeichneVerspannung(){
+  var svg = el("svgVerspann"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var FV  = parseFloat(el("fVor").value);
+  var phi = parseFloat(el("fPhi").value);
+  var FA  = parseFloat(el("fA").value);
+
+  el("ofVor").textContent = z(FV,0) + " kN";
+  el("ofPhi").textContent = z(phi,2);
+  el("ofA").textContent   = z(FA,0) + " kN";
+
+  /* Steifigkeiten so waehlen, dass Phi = cS/(cS+cP) gilt. */
+  var cS = phi, cP = 1 - phi;
+  var fS = FV / cS;             /* Dehnung der Schraube   */
+  var fP = FV / cP;             /* Stauchung der Bauteile */
+
+  /* Solange die Fuge geschlossen ist, teilt sich die Betriebskraft im
+     Verhaeltnis Phi auf. Hebt die Fuge ab, gilt das nicht mehr: dann traegt
+     die Schraube die gesamte Betriebskraft allein. */
+  var FAklaff = FV / (1 - phi);          /* Betriebskraft, bei der die Fuge abhebt */
+  var klafft = FA > FAklaff;
+  var FPA = Math.min((1 - phi) * FA, FV);
+  var FKR = FV - FPA;
+  var FSmax = klafft ? FA : FV + phi * FA;
+  var FSA = FSmax - FV;
+
+  /* Zeichenbereich */
+  var lx = 70, by = 350, bh = 280, bw = 600;
+  var maxF = Math.max(FSmax, FV) * 1.25;
+  var fNeuRoh = fS + FSA / cS;
+  var maxf = Math.max(fS + fP, fNeuRoh) * 1.1;
+  function px(f){ return lx + f / maxf * bw; }
+  function py(F){ return by - F / maxF * bh; }
+
+  /* Achsen */
+  g.appendChild(ns("line",{x1:lx, y1:by, x2:lx+bw+10, y2:by, stroke:"#334155", "stroke-width":1.5}));
+  g.appendChild(ns("line",{x1:lx, y1:by, x2:lx, y2:by-bh-16, stroke:"#334155", "stroke-width":1.5}));
+  g.appendChild(svgText(lx+bw-10, by+26, "Verformung f", {anchor:"end", size:12.5, fill:"#475569"}));
+  g.appendChild(svgText(lx-8, by-bh-22, "Kraft F in kN", {anchor:"start", size:12.5, fill:"#475569"}));
+
+  var xT = px(fS);   /* Schnittpunkt der beiden Kennlinien */
+
+  /* Schraubenkennlinie: steigt von 0 */
+  g.appendChild(ns("line",{x1:px(0), y1:py(0), x2:xT, y2:py(FV),
+    stroke:"#2563eb", "stroke-width":2.5}));
+  /* Plattenkennlinie: faellt zur gemeinsamen Verformung hin */
+  g.appendChild(ns("line",{x1:px(fS+fP), y1:py(0), x2:xT, y2:py(FV),
+    stroke:"#0f766e", "stroke-width":2.5}));
+
+  /* Verspannungsdreieck fuellen */
+  g.appendChild(ns("path",{d:"M"+px(0)+","+py(0)+" L"+xT+","+py(FV)+" L"+px(fS+fP)+","+py(0)+" Z",
+    fill:"#eff6ff", opacity:0.55}));
+
+  /* Betriebskraft: Schraube wird zusaetzlich belastet, Platten entlastet */
+  if(FA > 0){
+    var fNeu = fNeuRoh;
+    var xN = px(fNeu);
+    g.appendChild(ns("line",{x1:px(0), y1:py(0), x2:xN, y2:py(FSmax),
+      stroke:"#2563eb", "stroke-width":1.2, "stroke-dasharray":"5 3"}));
+    g.appendChild(ns("line",{x1:px(fS+fP), y1:py(0), x2:xN, y2:py(Math.max(FKR,0)),
+      stroke:"#0f766e", "stroke-width":1.2, "stroke-dasharray":"5 3"}));
+
+    /* Kraftmarkierungen */
+    g.appendChild(ns("line",{x1:xN, y1:py(FV), x2:xN, y2:py(FSmax),
+      stroke:"#2563eb", "stroke-width":6, opacity:.85}));
+    g.appendChild(svgText(xN+10, py((FV+FSmax)/2)+4, "F_SA = " + z(FSA,1) + " kN",
+      {size:12, fill:"#1d4ed8", weight:700}));
+    if(!klafft){
+      g.appendChild(ns("line",{x1:xN, y1:py(0), x2:xN, y2:py(FKR),
+        stroke:"#0f766e", "stroke-width":6, opacity:.85}));
+      g.appendChild(svgText(xN+10, py(FKR/2)+4, "F_KR = " + z(FKR,1) + " kN",
+        {size:12, fill:"#0f766e", weight:700}));
+    }
+    g.appendChild(ns("line",{x1:xN, y1:by, x2:xN, y2:py(FSmax),
+      stroke:"#94a3b8", "stroke-width":0.8, "stroke-dasharray":"3 3"}));
+  }
+
+  /* Vorspannkraft-Niveau */
+  g.appendChild(ns("line",{x1:lx, y1:py(FV), x2:xT, y2:py(FV),
+    stroke:"#94a3b8", "stroke-width":0.8, "stroke-dasharray":"4 3"}));
+  g.appendChild(svgText(lx-6, py(FV)+4, z(FV,0), {anchor:"end", size:11.5, fill:"#64748b"}));
+  g.appendChild(svgText(lx-6, py(0)+4, "0", {anchor:"end", size:11.5, fill:"#64748b"}));
+
+  g.appendChild(svgText(px(fS*0.35), py(FV*0.42), "Schraube", {size:12.5, fill:"#2563eb", weight:700}));
+  g.appendChild(svgText(px(fS+fP*0.55), py(FV*0.42), "Bauteile", {size:12.5, fill:"#0f766e", weight:700}));
+
+  el("ezFS").innerHTML  = z(FSmax,1) + " <span class='e'>kN</span>";
+  el("ezFSA").innerHTML = z(FSA,1)   + " <span class='e'>kN</span>";
+  el("ezFKR").innerHTML = z(Math.max(FKR,0),1) + " <span class='e'>kN</span>";
+
+  var t = el("verspannText");
+  if(klafft){
+    t.className = "warnung";
+    t.innerHTML = "<b>Die Trennfuge klafft.</b> Schon ab F<sub>A</sub> = " + z(FAklaff,1) +
+      " kN sind die Bauteile vollständig entlastet. Danach gilt die Aufteilung im " +
+      "Verhältnis Φ nicht mehr – die Schraube trägt die Betriebskraft allein, hier also " +
+      "die vollen " + z(FA,0) + " kN. Die Verbindung ist so nicht brauchbar. " +
+      "Abhilfe: höhere Vorspannkraft oder größere Schraube.";
+  }else{
+    t.className = "gut";
+    t.innerHTML = "<b>Die Fuge bleibt geschlossen.</b> Von der Betriebskraft F<sub>A</sub> = " + z(FA,0) +
+      " kN kommen nur " + z(FSA,1) + " kN zusätzlich in der Schraube an (" +
+      Math.round(phi*100) + " %). Die restlichen " + z(FPA,1) +
+      " kN entlasten die Bauteile. Es bleiben " + z(FKR,1) + " kN Klemmkraft übrig.";
+  }
+}
+
+/* ============================================================================
+   9  BERECHNUNGEN
+   ========================================================================== */
+
+function rechne(){
+  var groesse = el("bGewinde").value;
+  var klasse  = el("bKlasse").value;
+  var myG = parseFloat(el("bMyG").value) || 0.12;
+  var myK = parseFloat(el("bMyK").value) || 0.12;
+  var nu  = parseFloat(el("bNu").value)  || 0.9;
+
+  var r = rechneAlles(groesse, klasse, myG, myK, nu);
+
+  el("rAs").textContent  = z(r.m.As, 1);
+  el("rFM").textContent  = z(r.FM/1000, 2);
+  el("rMA").textContent  = z(r.M.gesamt/1000, 1);
+  el("rSig").textContent = z(r.S.sz, 0);
+  el("rRed").textContent = z(r.S.red, 0);
+  el("rAus").textContent = z(r.auslastung, 0);
+
+  /* Momentenaufteilung */
+  var svg = el("svgMomente"); leeren(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+  var teile = [
+    {name:"Steigung",       wert:r.M.steig,   farbe:"#16a34a"},
+    {name:"Gewindereibung", wert:r.M.gewinde, farbe:"#ea580c"},
+    {name:"Kopfreibung",    wert:r.M.kopf,    farbe:"#b91c1c"}
+  ];
+  var x = 20, breite = 660;
+  for(var i=0;i<teile.length;i++){
+    var w = breite * teile[i].wert / r.M.gesamt;
+    g.appendChild(ns("rect",{x:x, y:26, width:w, height:40, fill:teile[i].farbe}));
+    var proz = Math.round(teile[i].wert / r.M.gesamt * 100);
+    if(w > 56) g.appendChild(svgText(x+w/2, 51, proz + " %", {anchor:"middle", size:14, fill:"#fff", weight:700}));
+    g.appendChild(svgText(x+w/2, 84, teile[i].name, {anchor:"middle", size:11.5, fill:"#475569"}));
+    g.appendChild(svgText(x+w/2, 99, z(teile[i].wert/1000,1) + " N·m", {anchor:"middle", size:11, fill:"#94a3b8"}));
+    x += w;
+  }
+  g.appendChild(svgText(20, 128, "M_A = M_St + M_G + M_K = " + z(r.M.gesamt/1000,1) + " N·m",
+    {size:12.5, weight:700, fill:"#1e3a8a"}));
+
+  el("momenteText").innerHTML = "Nur <b>" + Math.round(r.M.steig/r.M.gesamt*100) +
+    " %</b> des Anziehdrehmoments erzeugen Vorspannkraft – der Rest geht in die Reibung.";
+
+  /* Querkraft */
+  var nS = parseFloat(el("qN").value) || 1;
+  var nF = parseFloat(el("qFugen").value) || 1;
+  var myT = parseFloat(el("qMyT").value) || 0.15;
+  var SR = parseFloat(el("qSR").value) || 1.2;
+  el("rFQ").textContent = z(myT * r.FM * nS * nF / SR / 1000, 2);
+
+  rechenwegSchreiben(r, myG, myK, nu, klasse);
+  orientierungstabelle(myG, myK, nu);
+}
+
+function rechenwegSchreiben(r, myG, myK, nu, klasse){
+  var m = r.m;
+  var cG = beiwertGewinde(m, myG);
+  var cK = beiwertKopf(m, myK);
+  el("rechenweg").innerHTML =
+    "<div class='formel'><b>1. Gewindemaße</b></div>" +
+    "<div class='formel'>d₂ = d − 0,6495 · P = " + z(m.d,0) + " − 0,6495 · " +
+      z(m.P,2) + " = <b>" + z(m.d2,3) + " mm</b></div>" +
+    "<div class='formel'>d₃ = d − 1,2269 · P = <b>" + z(m.d3,3) + " mm</b></div>" +
+    "<div class='formel'>A<sub>S</sub> = π/4 · ((d₂ + d₃)/2)² = π/4 · " +
+      z(m.dS,3) + "² = <b>" + z(m.As,1) + " mm²</b>" +
+      "<span class='kom'>W<sub>p</sub> = π · d<sub>S</sub>³ / 16 = " + z(r.S.Wp,0) + " mm³</span></div>" +
+
+    "<div class='formel'><b>2. Wie groß darf die Vorspannkraft werden?</b></div>" +
+    "<div class='formel'>Beim Anziehen wirken gleichzeitig Zug und Torsion:" +
+      "<span class='kom'>σ<sub>z</sub> = F / A<sub>S</sub> und τ = M<sub>G</sub> / W<sub>p</sub> " +
+      "mit M<sub>G</sub> = F · (0,16·P + 0,58·d₂·μ<sub>G</sub>) = F · " + z(cG,4) + " mm</span></div>" +
+    "<div class='formel'>σ<sub>red</sub> = √(σ<sub>z</sub>² + 3·τ²) = ν · R<sub>p0,2</sub> = " +
+      z(nu,2) + " · " + z(r.w.Rp,0) + " = <b>" + z(nu*r.w.Rp,0) + " N/mm²</b></div>" +
+    "<div class='formel'>Nach F aufgelöst:  F<sub>M,zul</sub> = ν · R<sub>p0,2</sub> / " +
+      "√(1/A<sub>S</sub>² + 3·c<sub>G</sub>²/W<sub>p</sub>²) = <b>" + z(r.FM/1000,2) + " kN</b></div>" +
+
+    "<div class='formel'><b>3. Probe</b></div>" +
+    "<div class='formel'>σ<sub>z</sub> = " + z(r.FM,0) + " / " + z(m.As,1) + " = <b>" +
+      z(r.S.sz,0) + " N/mm²</b>&nbsp;&nbsp;&nbsp;τ = " + z(r.M.gewindeAnteil,0) + " / " +
+      z(r.S.Wp,0) + " = <b>" + z(r.S.tau,0) + " N/mm²</b></div>" +
+    "<div class='formel'>σ<sub>red</sub> = √(" + z(r.S.sz,0) + "² + 3 · " + z(r.S.tau,0) +
+      "²) = <b>" + z(r.S.red,0) + " N/mm²</b>" +
+      "<span class='kom'>Das sind " + z(r.auslastung,0) + " % der Streckgrenze der Klasse " +
+      klasse + " – wie mit ν = " + z(nu,2) + " vorgegeben.</span></div>" +
+
+    "<div class='formel'><b>4. Anziehdrehmoment</b></div>" +
+    "<div class='formel'>M<sub>A</sub> = F<sub>M</sub> · (0,16·P + 0,58·d₂·μ<sub>G</sub> " +
+      "+ 0,5·D<sub>Km</sub>·μ<sub>K</sub>)" +
+      "<span class='kom'>D<sub>Km</sub> = (d<sub>w</sub> + D<sub>h</sub>)/2 = (" + z(m.dw,1) + " + " +
+      z(m.Dh,1) + ")/2 = " + z(m.DKm,2) + " mm &nbsp;·&nbsp; " +
+      "d<sub>w</sub> = Kopfauflage, D<sub>h</sub> = Durchgangsloch</span></div>" +
+    "<div class='formel'>= " + z(r.FM,0) + " N · (" + z(0.16*m.P,3) + " + " +
+      z(0.58*m.d2*myG,3) + " + " + z(cK,3) + ") mm = <b>" + z(r.M.gesamt/1000,1) + " N·m</b></div>";
+}
+
+function orientierungstabelle(myG, myK, nu){
+  var klassen = ["8.8","10.9","12.9"];
+  var h = "<thead><tr><th rowspan='2'>Gewinde</th><th rowspan='2'>A<sub>S</sub><br>mm²</th>";
+  klassen.forEach(function(k){ h += "<th colspan='2'>" + k + "</th>"; });
+  h += "</tr><tr>";
+  klassen.forEach(function(){ h += "<th>F<sub>M</sub> kN</th><th>M<sub>A</sub> N·m</th>"; });
+  h += "</tr></thead><tbody>";
+
+  GROESSEN.forEach(function(gr){
+    var m = gewindeMasse(gr);
+    h += "<tr><td><b>" + gr + "</b></td><td class='num'>" + z(m.As,1) + "</td>";
+    klassen.forEach(function(k){
+      var FM = vorspannkraft(m, k, myG, nu);
+      var M = drehmomente(m, FM, myG, myK);
+      h += "<td class='num'>" + z(FM/1000,1) + "</td><td class='num'>" + z(M.gesamt/1000,1) + "</td>";
+    });
+    h += "</tr>";
+  });
+  el("tabOrient").innerHTML = h + "</tbody>";
+
+  el("orientHinweis").innerHTML = "Gerechnet mit μ<sub>G</sub> = " + z(myG,2) +
+    ", μ<sub>K</sub> = " + z(myK,2) + " und ν = " + z(nu,2) +
+    ". Ändert man die Werte oben, ändert sich die Tabelle mit." +
+    "<br><b>Vergleich mit dem Tabellenbuch:</b> Diese Werte liegen rund 5 bis 10 % " +
+    "niedriger. Grund: Hier wird die Torsionsspannung mit dem exakten " +
+    "W<sub>p</sub> = π·d<sub>S</sub>³/16 gerechnet, damit der Rechenweg " +
+    "nachvollziehbar bleibt und die Auslastung genau ν trifft. Die Tabellen nach " +
+    "VDI 2230 verwenden dafür einen vereinfachten Ansatz und kommen deshalb etwas " +
+    "höher heraus. Für eine reale Auslegung gilt die Herstellerangabe.";
+}
+
+function reibungstabelle(){
+  var h = "<thead><tr><th>Oberfläche / Schmierung</th><th>μ von</th><th>μ bis</th><th></th></tr></thead><tbody>";
+  REIBUNGEN.forEach(function(r, i){
+    h += "<tr><td>" + r.flaeche + "</td><td class='num'>" + z(r.von,2) + "</td><td class='num'>" +
+         z(r.bis,2) + "</td><td><button class='link' data-reib='" + i + "'>übernehmen</button></td></tr>";
+  });
+  el("tabReib").innerHTML = h + "</tbody>";
+  var kn = el("tabReib").querySelectorAll("button[data-reib]");
+  for(var i=0;i<kn.length;i++){
+    kn[i].addEventListener("click", function(){
+      var r = REIBUNGEN[parseInt(this.getAttribute("data-reib"), 10)];
+      var mittel = Math.round((r.von + r.bis) / 2 * 100) / 100;
+      el("bMyG").value = mittel; el("bMyK").value = mittel;
+      rechne();
+      el("bMyG").scrollIntoView({behavior:"smooth", block:"center"});
+    });
+  }
+}
+
+function klassentabelle(){
+  var h = "<thead><tr><th>Klasse</th><th>R<sub>m</sub> N/mm²</th><th>R<sub>p0,2</sub> N/mm²</th>" +
+          "<th>Verhältnis</th><th style='text-align:left'>Typischer Einsatz</th></tr></thead><tbody>";
+  var einsatz = {
+    "4.6":"Einfache Verbindungen ohne hohe Belastung",
+    "5.6":"Allgemeiner Stahlbau, untergeordnete Teile",
+    "8.8":"Standard im Maschinenbau",
+    "10.9":"Hoch belastete Verbindungen, Motoren, Fahrwerk",
+    "12.9":"Höchste Belastung, empfindlich gegen Wasserstoffversprödung"
+  };
+  KLASSENLISTE.forEach(function(k){
+    var w = KLASSEN[k];
+    h += "<tr><td><b>" + k + "</b></td><td class='num'>" + w.Rm + "</td><td class='num'>" + w.Rp +
+         "</td><td class='num'>" + z(w.Rp/w.Rm,2) + "</td><td style='text-align:left'>" +
+         einsatz[k] + "</td></tr>";
+  });
+  el("tabKlassen").innerHTML = h + "</tbody>";
+}
+
+/* ============================================================================
+   10  START
+   ========================================================================== */
+
+function auswahlFuellen(select, werte, vorgabe){
+  for(var i=0;i<werte.length;i++){
+    var o = document.createElement("option");
+    o.value = werte[i]; o.textContent = werte[i];
+    if(werte[i] === vorgabe) o.selected = true;
+    select.appendChild(o);
+  }
+}
+
+function start(){
+  paramsLesen();
+  el("swFach").checked = zustand.fach;
+  el("swSym").checked  = zustand.sym;
+  begriffeZeichnen();
+
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked; begriffeZeichnen(); paramsSchreiben();
+  });
+  el("swSym").addEventListener("change", function(){
+    zustand.sym = this.checked; begriffeZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var url = window.location.href;
+    var fertig = function(){
+      var h = el("linkHinweis");
+      var alt = h.innerHTML, klasse = h.className;
+      h.className = "hinweis kopiert";
+      h.textContent = "Link kopiert – Fachbegriffe " + (zustand.fach ? "an" : "aus") +
+                      ", Formelzeichen " + (zustand.sym ? "an" : "aus") + ".";
+      setTimeout(function(){ h.innerHTML = alt; h.className = klasse; }, 2600);
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(url).then(fertig, ersatzKopie);
+    }else{ ersatzKopie(); }
+    function ersatzKopie(){
+      var ta = document.createElement("textarea");
+      ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand("copy"); fertig(); }
+      catch(e){ window.prompt("Link zum Kopieren:", url); }
+      document.body.removeChild(ta);
+    }
+  });
+
+  var knoepfe = document.querySelectorAll(".tabs button");
+  for(var i=0;i<knoepfe.length;i++){
+    knoepfe[i].addEventListener("click", function(){
+      reiterSetzen(this.getAttribute("data-tab"));
+    });
+  }
+
+  /* Auswahllisten */
+  auswahlFuellen(el("gGewinde"), GROESSEN, "M10");
+  auswahlFuellen(el("aGewinde"), GROESSEN, "M10");
+  auswahlFuellen(el("bGewinde"), GROESSEN, "M10");
+  auswahlFuellen(el("bKlasse"), KLASSENLISTE, "8.8");
+  for(var kf in KOPFFORMEN){
+    if(!KOPFFORMEN.hasOwnProperty(kf)) continue;
+    var o = document.createElement("option");
+    o.value = kf; o.textContent = KOPFFORMEN[kf].name;
+    el("aKopf").appendChild(o);
+  }
+  el("aB").value = normGewindelaenge(10, 60);
+
+  /* Ereignisse: Grundlagen */
+  ["gVor","gMyT","gQuer"].forEach(function(id){
+    el(id).addEventListener("input", zeichneReib);
+  });
+  ["gGewinde","gMyG1"].forEach(function(id){
+    el(id).addEventListener("input", zeichneEbene);
+    el(id).addEventListener("change", zeichneEbene);
+  });
+  el("gMyStreu").addEventListener("input", zeichneAufteilung);
+
+  /* Ereignisse: Aufbau */
+  ["aGewinde","aKopf","aLaenge","aB","aBez","aMasse"].forEach(function(id){
+    el(id).addEventListener("input", function(){ zeichneSchraube(); zeichneGewindeprofil(); });
+    el(id).addEventListener("change", function(){ zeichneSchraube(); zeichneGewindeprofil(); });
+  });
+  el("aGewinde").addEventListener("change", function(){
+    el("aB").value = normGewindelaenge(SCHRAUBEN[this.value].d, parseFloat(el("aLaenge").value) || 60);
+    zeichneSchraube(); zeichneGewindeprofil();
+  });
+  el("aKopf").addEventListener("change", function(){
+    el("aB").disabled = KOPFFORMEN[this.value].voll;
+  });
+  el("aAuto").addEventListener("click", function(){
+    var d = SCHRAUBEN[el("aGewinde").value].d;
+    el("aB").value = normGewindelaenge(d, parseFloat(el("aLaenge").value) || 60);
+    zeichneSchraube();
+  });
+
+  /* Ereignisse: Funktion */
+  ["fVor","fPhi","fA"].forEach(function(id){
+    el(id).addEventListener("input", zeichneVerspannung);
+  });
+
+  /* Ereignisse: Berechnungen */
+  ["bGewinde","bKlasse","bMyG","bMyK","bNu","qN","qFugen","qMyT","qSR"].forEach(function(id){
+    el(id).addEventListener("input", rechne);
+    el(id).addEventListener("change", rechne);
+  });
+
+  /* Erstes Zeichnen */
+  zeichnePrinzip();
+  zeichneReib();
+  zeichneEbene();
+  zeichneAufteilung();
+  zeichneGewindeprofil();
+  reibungstabelle();
+  klassentabelle();
+  rechne();
+  reiterSetzen("grundlagen");
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+</body>
+</html>
