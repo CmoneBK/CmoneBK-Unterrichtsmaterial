@@ -464,6 +464,11 @@ var NORM_STOFF = {
    deshalb keine Schraffur - im Normmodus uebernimmt genau das die Aufgabe,
    die sonst der hellere Farbton hat. */
 var NORM_HINTEN = {"#eafcf8":1, "#d5faf3":1, "#f1f5f9":1};
+/* Sehr duenne Querschnitte - eine Lotschicht misst Zehntelmillimeter, eine
+   Klebefuge kaum mehr - werden nach DIN ISO 128-50 nicht schraffiert, sondern
+   ganz geschwaerzt. In der Zeichnung sind sie ueberhoeht, damit man sie sieht;
+   geschwaerzt bleiben sie trotzdem, denn das sagt: hier ist die Schicht duenn. */
+var NORM_DUENN = {"#fde68a":1, "#ddd6fe":1, "#c4b5fd":1, "#a78bfa":1};
 var NORM_KANTE = "#111827", NORM_BREIT = 2.2, NORM_SCHMAL = 0.8;
 
 /* DIN ISO 128-50: Vollteile - Wellen, Schrauben, Muttern, Bolzen, Niete,
@@ -471,8 +476,21 @@ var NORM_KANTE = "#111827", NORM_BREIT = 2.2, NORM_SCHMAL = 0.8;
    und bleiben ohne Schraffur. Quer geschnitten dagegen schon. Welche Flaechen
    das in einer Zeichnung betrifft, sagt "vollteile" beim Verfahren; die
    Passfeder schaltet fuer ihren Querschnitt mit querGeschnitten() um. */
-var aktVollteile = null, querSchnitt = false;
-function querGeschnitten(an){ querSchnitt = !!an; }
+var aktVollteile = null, vollteilSchnitt = false;
+/* Schaltet die Ausnahme fuer Vollteile ab: im Querschnitt und im Ausbruch
+   sind auch sie geschnitten und bekommen ihre Schraffur. */
+function auchVollteileSchneiden(an){ vollteilSchnitt = !!an; }
+
+/* Bruchlinie eines Ausbruchs: schmale Volllinie, freihand gefuehrt. */
+function bruchlinie(g, x, y1, y2){
+  var d = "M" + x + "," + y1, y = y1, i = 0;
+  while(y < y2){
+    var bis = Math.min(y2, y + 11);
+    d += " Q " + (x + (i++ % 2 ? 6 : -6)) + "," + ((y + bis) / 2) + " " + x + "," + bis;
+    y = bis;
+  }
+  return pfad(g, d, "none", NORM_KANTE, {sw:NORM_SCHMAL});
+}
 var MUSTER_PRAEFIX = "sf-";
 var FLAECHEN = {rect:1, path:1, circle:1, ellipse:1, polygon:1};
 var normErlaubt = true;   /* die Prinzipskizzen im Ueberblick bleiben schematisch */
@@ -489,8 +507,9 @@ function normFassung(e, attr){
   if(!stoff && !hinten && !weiss) return;   /* Werkzeuge und Pfeile bleiben, wie sie sind */
 
   var ohneSchraffur = hinten || weiss || aktVollteile === "alle" ||
-    (aktVollteile && !querSchnitt && aktVollteile.indexOf(f) >= 0);
-  e.setAttribute("fill", ohneSchraffur ? "#ffffff" : "url(#" + MUSTER_PRAEFIX + stoff + ")");
+    (aktVollteile && !vollteilSchnitt && aktVollteile.indexOf(f) >= 0);
+  e.setAttribute("fill", NORM_DUENN[f] && !ohneSchraffur ? NORM_KANTE
+    : ohneSchraffur ? "#ffffff" : "url(#" + MUSTER_PRAEFIX + stoff + ")");
   if(attr.stroke && attr.stroke !== "none"){
     e.setAttribute("stroke", NORM_KANTE);
     e.setAttribute("stroke-width", NORM_BREIT);
@@ -564,17 +583,30 @@ function pfeil(g, x1, y1, x2, y2, farbe, sw){
 var MARKER_PRAEFIX = "sp-";
 /* Schraffurrichtung und -abstand je Werkstoff. 45 Grad ist der Normalfall;
    der Gegenlauf und der engere Abstand trennen benachbarte Teile. */
-var SCHRAFFUR = [["a", 45, 7], ["b", 135, 7], ["c", 45, 4], ["d", 135, 4]];
+/* Richtung und Abstand je Werkstoff. Die Linie steckt fertig in der Kachel:
+   "/" laeuft von unten links nach oben rechts, "\\" umgekehrt. Ueber
+   patternTransform gedreht sah beides gleich aus - der Gegenlauf, den
+   DIN ISO 128-50 fuer benachbarte Teile verlangt, fehlte damit. */
+var SCHRAFFUR = [["a", "/", 8], ["b", "\\", 8], ["c", "\\", 4.5], ["d", "/", 4.5]];
 function spitzen(svg, farben){
   MARKER_PRAEFIX = "sp-" + svg.id + "-";
   MUSTER_PRAEFIX = "sf-" + svg.id + "-";
   var defs = ns("defs", {});
   inDefs = true;
   SCHRAFFUR.forEach(function(m){
-    var pat = ns("pattern", {id:MUSTER_PRAEFIX + m[0], width:m[2], height:m[2],
-      patternUnits:"userSpaceOnUse", patternTransform:"rotate(" + m[1] + ")"});
-    pat.appendChild(ns("rect", {x:0, y:0, width:m[2], height:m[2], fill:"#ffffff"}));
-    pat.appendChild(ns("line", {x1:0, y1:0, x2:0, y2:m[2],
+    var w = m[2];
+    var pat = ns("pattern", {id:MUSTER_PRAEFIX + m[0], width:w, height:w,
+      patternUnits:"userSpaceOnUse"});
+    pat.appendChild(ns("rect", {x:0, y:0, width:w, height:w, fill:"#ffffff"}));
+    /* Die Diagonale der Kachel ergibt beim Kacheln eine durchgehende Schar.
+       Sie laeuft ueber die Kachel hinaus: endete sie genau in der Ecke, blieb
+       an jeder Kachelgrenze eine Luecke und die Schraffur wirkte gestrichelt.
+       Was uebersteht, schneidet die Kachel selbst weg. */
+    var u = 1.5;
+    var d = m[1] === "/"
+      ? "M" + (-u) + "," + (w + u) + " L" + (w + u) + "," + (-u)
+      : "M" + (-u) + "," + (-u) + " L" + (w + u) + "," + (w + u);
+    pat.appendChild(ns("path", {d:d, fill:"none",
       stroke:NORM_KANTE, "stroke-width":NORM_SCHMAL}));
     defs.appendChild(pat);
   });
@@ -592,7 +624,7 @@ function spitzen(svg, farben){
   svg.appendChild(defs);
 }
 var FARBEN = ["#dc2626","#1d4ed8","#16a34a","#c2410c","#7c3aed","#0f766e","#64748b",
-              "#b45309","#334155"];
+              "#b45309","#334155","#111827"];
 function kraftpfeil(g, x1, y1, x2, y2, farbe, sw){
   g.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
 }
@@ -972,7 +1004,7 @@ verfahren({
     /* Der Schnitt laeuft mitten durch die Nut. Dahinter ist kein Hohlraum,
        sondern die hintere Nutwand - dieselbe Nabe, nur nicht geschnitten und
        deshalb heller. Frueher stand hier Weiss, das las sich wie Luft. */
-    rect(g, nabeX, oben, nb, (cy-wr)-oben, C.bH, "none");
+    rect(g, nabeX, oben, nb, (cy-wr)-oben, C.bH, C.bS, {sw:1.4});
 
     rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
     /* Genauso in der Welle: hinter der Nut steht Werkstoff, nicht nichts. */
@@ -1005,7 +1037,7 @@ verfahren({
     if(last > 0.05){
       /* Ab hier laeuft der Schnitt quer zur Achse - jetzt bekommen auch Welle
          und Feder ihre Schraffur. */
-      querGeschnitten(true);
+      auchVollteileSchneiden(true);
       var qx = 540, qy = 150, rw = 30, rn = 56, kb = 11, kt = 11;
       g.appendChild(ns("circle", {cx:qx, cy:qy, r:rn, fill:C.bF, stroke:C.bS,
         "stroke-width":1.8}));
@@ -1017,7 +1049,7 @@ verfahren({
       kraftpfeil(g, qx-54, qy-rw+7, qx-kb-2, qy-rw+7, "#dc2626", 2.6);
       kraftpfeil(g, qx+54, qy-rw-6, qx+kb+2, qy-rw-6, "#dc2626", 2.6);
       txt(g, qx, qy+rn+20, "Querschnitt", {anchor:"middle", fill:"#334155", size:12});
-      querGeschnitten(false);
+      auchVollteileSchneiden(false);
       txt(g, lx+2, cy+nr+34, "Die Flanken tragen – " + zWort("flaechenpressung") + ", kein Reibschluss",
         {fill:"#7c3aed", size:12});
     }
@@ -1124,20 +1156,34 @@ verfahren({
     var cy = 185, wr = 26, nr = 54, lx = 90, rx = 520, cx = 300, sr = 7;
 
     rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
+
+    /* Die Welle ist ein Vollteil und wird nicht geschnitten dargestellt - als
+       durchgehende Ansicht verdeckte sie aber den Stift. Ein Ausbruch legt die
+       Bohrung frei; darin ist die Welle geschnitten und wird schraffiert. */
+    if(zustand.norm){
+      var ab = cx - 46, bis = cx + 46;
+      auchVollteileSchneiden(true);
+      rect(g, ab, cy-wr, bis-ab, 2*wr, "#e2e8f0", "none");
+      auchVollteileSchneiden(false);
+      bruchlinie(g, ab, cy-wr, cy+wr);
+      bruchlinie(g, bis, cy-wr, cy+wr);
+    }
+
     rect(g, cx-80, cy-nr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
     rect(g, cx-80, cy+wr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
     txt(g, lx+2, cy+wr+18, "Welle", {fill:"#475569", size:12});
     txt(g, cx+16, cy-nr+18, "Nabe", {fill:C.bS, size:12});
 
-    /* gemeinsam gebohrte Querbohrung */
-    linie(g, cx-sr, cy-nr, cx-sr, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
-    linie(g, cx+sr, cy-nr, cx+sr, cy+nr, "#94a3b8", 1.2, {dash:"4 3"});
+    /* Die gemeinsam gebohrte Querbohrung ist ein Loch, kein Werkstoff: sie
+       durchtrennt die Schraffur der Nabe und die Kontur der Welle. Zwei
+       gestrichelte Hilfslinien, wie sie hier frueher standen, taten das nicht. */
+    rect(g, cx-sr, cy-nr, 2*sr, 2*nr, "#ffffff", "#475569", {sw:1.3});
 
     /* Der Stift steht am Anfang vollstaendig ausserhalb der Nabe und faehrt
        erst waehrend der Animation ein. */
     var stiftL = 2*nr, frei = cy - nr - 22;
     var stiftY = (frei - stiftL) + treiben*((cy - nr) - (frei - stiftL));
-    rect(g, cx-sr, stiftY, 2*sr, stiftL, C.eF, C.eS, {sw:1.6, rx:3});
+    rect(g, cx-sr, stiftY, 2*sr, stiftL, C.eF, C.eS, {sw:1.6});
     txt(g, cx-sr-10, stiftY+16, "Stift", {anchor:"end", fill:C.eS, size:12});
 
     if(treiben < 1){
@@ -1410,8 +1456,8 @@ verfahren({
   einsatz:"Stahlbau, Behälterbau, Fahrzeugrahmen",
   zeichnen:function(g, t){
     var lauf = stufe(t, 0.22, 0.9);
-    var cy = 150, lx = 60, rx = 590, start = 120;
-    var bx = start + lauf*(505-start);
+    var cy = 150, lx = 60, rx = 590, start = lx + 16, ende = rx - 16;
+    var bx = start + lauf*(ende-start);
 
     /* Draufsicht auf die Naht: So laesst sich zeigen, wie der Brenner
        entlangwandert. Im Querschnitt liefe die Naht in die Zeichenebene. */
@@ -1420,16 +1466,21 @@ verfahren({
     txt(g, lx+6, cy-104, "Blech A, Draufsicht", {fill:C.aS, size:12});
     txt(g, lx+6, cy+112, "Blech B", {fill:C.bS, size:12});
 
-    /* noch offener Spalt vor dem Brenner */
-    linie(g, bx, cy, rx, cy, "#94a3b8", 1.4, {dash:"7 5"});
-    if(lauf < 1) txt(g, Math.min(rx-120, bx+40), cy-6, "Spalt", {fill:"#94a3b8", size:11.5});
+    /* noch offener Spalt vor dem Brenner - am Ende bleibt keiner uebrig */
+    if(lauf < 1){
+      linie(g, bx, cy, ende, cy, zustand.norm ? NORM_KANTE : "#94a3b8",
+        zustand.norm ? NORM_SCHMAL : 1.4, {dash:"7 5"});
+      txt(g, Math.min(rx-120, bx+40), cy-6, "Spalt", {fill:"#94a3b8", size:11.5});
+    }
 
     /* erstarrte Naht: Band auf der Fuge, darauf die typischen Schuppen */
     if(bx > start){
-      rect(g, start-6, cy-14, (bx-start)+6, 28, "#cbd5e1", "#64748b", {sw:1.2, rx:3});
+      rect(g, start-6, cy-14, (bx-start)+6, 28, "#cbd5e1",
+        zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2, rx:zustand.norm ? 0 : 3});
       for(var x = start+6; x < bx - 6; x += 13){
         pfad(g, "M"+(x-9)+","+(cy+13)+" Q "+x+","+(cy-13)+" "+(x+9)+","+(cy+13),
-          "none", "#94a3b8", {sw:1});
+          "none", zustand.norm ? NORM_KANTE : "#94a3b8",
+          {sw:zustand.norm ? NORM_SCHMAL : 1});
       }
     }
     if(lauf > 0.02 && lauf < 1){
@@ -1452,6 +1503,22 @@ verfahren({
     if(lauf >= 1){
       txt(g, start, cy+58, "Grundwerkstoff war mit aufgeschmolzen – die Naht ist Teil des Bauteils",
         {fill:"#c2410c", size:12});
+    }
+    /* In einer Zeichnung steht fuer eine Naht das Symbol nach DIN EN ISO 2553,
+       nicht die gezeichnete Raupe. Beides nebeneinander ist zulaessig und hier
+       der Sinn der Sache: die Schueler sollen die Zuordnung sehen. */
+    if(zustand.norm && lauf >= 1){
+      var px = 300, bz = 72, bx2 = 340, bx3 = 440;
+      kraftpfeil(g, bx2, bz, px, cy-14, NORM_KANTE, NORM_SCHMAL);
+      linie(g, bx2, bz, bx3, bz, NORM_KANTE, NORM_SCHMAL);
+      /* Die Strichlinie der Gegenseite gehoert zur Bezugslinie dazu. */
+      linie(g, bx2, bz+7, bx3, bz+7, NORM_KANTE, NORM_SCHMAL, {dash:"9 4"});
+      /* Symbol der V-Naht: Spitze auf der Bezugslinie, Oeffnung nach oben.
+         Ueber der Linie heisst: die Naht liegt auf der Pfeilseite. */
+      pfad(g, "M"+(bx2+20)+","+(bz-17)+" L"+(bx2+30)+","+bz+" L"+(bx2+40)+","+(bz-17),
+        "none", NORM_KANTE, {sw:NORM_BREIT});
+      txt(g, bx3+8, bz+4, "V-Naht nach ISO 2553",
+        {fill:NORM_KANTE, size:11.5, weight:400});
     }
   }
 });
@@ -1478,8 +1545,14 @@ verfahren({
 
     var warmF = waerme > 0 && kuehl < 1
       ? (waerme > 0.6 ? C.warm : "#fef3c7") : C.aF;
-    rect(g, lx, cy-dick, (mitte-spalt/2)-lx, 2*dick, warmF, C.aS, {sw:1.8});
-    rect(g, mitte+spalt/2, cy-dick, rx-(mitte+spalt/2), 2*dick, warmF, C.bS, {sw:1.8});
+    /* Beide Bleche teilten sich dieselbe Fuellfarbe - in der Normdarstellung
+       bekamen sie dadurch dieselbe Schraffurrichtung, obwohl sie aneinander
+       grenzen. Die Waermefarbe ist ein didaktischer Zusatz und gehoert nicht
+       in eine Zeichnung; dort tragen die Bleche ihre eigenen Farben. */
+    var fA = zustand.norm ? C.aF : warmF;
+    var fB = zustand.norm ? C.bF : warmF;
+    rect(g, lx, cy-dick, (mitte-spalt/2)-lx, 2*dick, fA, C.aS, {sw:1.8});
+    rect(g, mitte+spalt/2, cy-dick, rx-(mitte+spalt/2), 2*dick, fB, C.bS, {sw:1.8});
     txt(g, lx+4, cy-dick-10, "Grundwerkstoff bleibt fest", {fill:C.aS, size:12});
 
     /* Lot laeuft von oben in den Spalt */
@@ -1540,7 +1613,7 @@ verfahren({
       var breiteK = (rx-lx-40) * Math.min(1, auftrag + fuegen);
       var hoeheK = fuegen > 0 ? 8 : 14;
       rect(g, lx+20, cy-hoeheK, breiteK, hoeheK, haerten > 0.5 ? "#c4b5fd" : C.kleb,
-        C.klebS, {sw:1.2, rx:3});
+        C.klebS, {sw:1.2, rx:zustand.norm ? 0 : 3});
     }
     rect(g, lx, cy-abstand-dick, rx-lx, dick, C.aF, C.aS, {sw:1.8});
     txt(g, lx+4, cy-abstand-dick-10, "Fügeteil A", {fill:C.aS, size:12});
@@ -1873,7 +1946,7 @@ function zeichneVerfahren(gruppe){
   leeren(svg); spitzen(svg, FARBEN);
   var g = ns("g", {}); svg.appendChild(g);
   aktVollteile = v.nurAnsicht ? "alle" : (v.vollteile || null);
-  querSchnitt = false;
+  vollteilSchnitt = false;
   v.zeichnen(g, z.t);
   aktVollteile = null;
   /* Mittellinien gehoeren zur Normdarstellung und liegen ueber den Flaechen.
