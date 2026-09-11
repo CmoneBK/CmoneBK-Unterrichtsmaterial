@@ -1,0 +1,2196 @@
+---
+title: "Fertigungstechnik: Fügeverfahren - Schweißen"
+---
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fertigungstechnik: Fügeverfahren - Schweißen</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+  --kraft:#1d4ed8; --form:#7c3aed; --stoff:#c2410c;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:14px 18px 60px}
+@media (max-width:640px){ .wrap{padding-top:56px} }
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.drei{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .drei,.zwei{grid-template-columns:1fr} }
+
+/* Auswahl der Verfahren */
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer; font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+
+.steuerung{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:12px 0;
+}
+.steuerung input[type=range]{flex:1 1 220px; min-width:160px}
+button.link{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:8px; padding:6px 12px; font:600 .85rem/1 inherit; cursor:pointer;
+}
+button.link:hover{border-color:var(--primary); color:var(--primary)}
+
+svg{display:block; max-width:100%; height:auto}
+.zeichnung{background:#fff; border:1px solid var(--border); border-radius:10px; margin:10px 0}
+
+table{border-collapse:collapse; width:100%; font-size:.88rem}
+.tabellenrahmen{overflow-x:auto; -webkit-overflow-scrolling:touch}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:#f1f5f9; font-weight:700}
+tbody tr:hover{background:#f8fafc}
+td.mitte,th.mitte{text-align:center}
+
+.merke{border-left:4px solid var(--accent); background:#fffbeb; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0}
+.merke b{color:#92400e}
+.warnung{border-left:4px solid var(--bad); background:#fef2f2; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.gut{border-left:4px solid var(--ok); background:#f0fdf4; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.fussnote{font-size:.8rem; color:var(--muted); margin-top:10px}
+
+.marke{
+  display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.04em;
+  text-transform:uppercase; padding:2px 9px; border-radius:999px; color:#fff;
+}
+.marke.kraft{background:var(--kraft)}
+.marke.form{background:var(--form)}
+.marke.stoff{background:var(--stoff)}
+
+.paar{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px}
+@media (max-width:700px){ .paar{grid-template-columns:1fr} }
+.paar > div{border:1px solid var(--border); border-radius:10px; padding:10px 14px}
+.paar h4{margin:0 0 6px; font-size:.92rem}
+.paar ul{margin:0; padding-left:18px}
+.paar li{margin:2px 0}
+.plus h4{color:var(--ok)}
+.minus h4{color:var(--bad)}
+
+/* Auswahlhilfe */
+.fragen{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:8px; margin:12px 0}
+.frage{display:flex; gap:9px; align-items:flex-start; background:#f8fafc;
+  border:1px solid var(--border); border-radius:8px; padding:9px 12px; cursor:pointer}
+.frage input{margin-top:3px; flex:none}
+.frage span{font-size:.9rem}
+.ergebnis{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:14px}
+@media (max-width:700px){ .ergebnis{grid-template-columns:1fr} }
+.ez{border:1px solid var(--border); border-radius:10px; padding:12px 14px; background:#fff}
+.ez .titel{font-weight:700; margin-bottom:6px}
+.ez .balken{height:12px; border-radius:6px; background:#e2e8f0; overflow:hidden; margin:8px 0}
+.ez .balken i{display:block; height:100%; border-radius:6px}
+.ez .grund{font-size:.82rem; color:var(--muted)}
+.ez.top{border-color:var(--primary); box-shadow:0 0 0 2px var(--primary-light)}
+
+/* --- Fachbegriffe: gleiches Prinzip wie in der Schraubverbindungs-App --- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
+  font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt durch
+   die Farbe auf. So begegnet der Begriff dem Lernenden ab jetzt an jeder
+   Stelle wieder und praegt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+
+/* Der Hinweis zur Normdarstellung steht nur, wenn sie eingeschaltet ist. */
+body:not(.zeigt-norm) .nur-norm{display:none !important}
+/* --- was diese Anwendung zusaetzlich braucht --- */
+.formel{
+  font-family:'Cambria Math',Cambria,Georgia,serif; font-size:1.02rem;
+  background:#f8fafc; border:1px solid var(--border); border-radius:6px;
+  padding:8px 12px; margin:8px 0; overflow-x:auto;
+}
+.formel .kom{font-family:'Segoe UI',sans-serif; font-size:.82rem; color:var(--muted);
+  display:block; margin-top:2px}
+.felder{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin:12px 0}
+.feld{display:flex; flex-direction:column; gap:4px; font-size:.86rem; font-weight:600}
+.feld input[type=range]{width:100%}
+.feld select, .feld input[type=number]{
+  border:1px solid var(--border-strong); border-radius:8px; padding:6px 8px;
+  font:inherit; font-size:.9rem; background:#fff; color:var(--text);
+}
+.feld .ablesung{font-weight:700; color:var(--primary)}
+.werte{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:12px}
+.wert{border:1px solid var(--border); border-radius:10px; padding:10px 12px; background:#fff}
+.wert .l{display:block; font-size:.78rem; color:var(--muted); font-weight:600}
+.wert .z{font-size:1.15rem; font-weight:700; color:var(--primary)}
+.wert.gutwert{border-color:var(--ok)} .wert.gutwert .z{color:var(--ok)}
+.wert.warnwert{border-color:var(--warn)} .wert.warnwert .z{color:var(--warn)}
+.wert.badwert{border-color:var(--bad)} .wert.badwert .z{color:var(--bad)}
+.kacheln{display:grid; grid-template-columns:repeat(auto-fit,minmax(168px,1fr)); gap:10px; margin:12px 0}
+.kachel{
+  border:1px solid var(--border-strong); border-radius:10px; background:#fff;
+  padding:8px; cursor:pointer; text-align:left; font:inherit;
+}
+.kachel:hover{border-color:var(--primary)}
+.kachel[aria-pressed="true"]{border-color:var(--primary); box-shadow:0 0 0 2px var(--primary-light)}
+.kachel svg{width:100%; height:auto; display:block}
+.kachel .name{display:block; font-size:.85rem; font-weight:700; margin-top:6px; color:var(--text)}
+.kachel .sub{display:block; font-size:.76rem; color:var(--muted)}
+.stufe2{border-left:4px solid var(--primary); background:var(--primary-light);
+  padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.stufe2 > summary{cursor:pointer; font-weight:700; color:var(--primary)}
+.stufe2[open] > summary{margin-bottom:8px}
+<!--BAUSTEIN:CSS-ENDE-->
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Schwei&szlig;en</h1>
+  <p class="lead">Was in der Naht passiert, wie die Verfahren arbeiten und welche Fuge
+    zu welcher Blechdicke geh&ouml;rt.</p>
+</header>
+
+<div class="schalter">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <label class="sw"><input type="checkbox" id="swNorm"><span class="track"></span>Zeichnung nach Norm</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.</span>
+</div>
+
+<div class="tabs" role="tablist">
+  <button role="tab" data-tab="grundlagen" aria-selected="true">Grundlagen</button>
+  <button role="tab" data-tab="verfahren"  aria-selected="false">Verfahren</button>
+  <button role="tab" data-tab="naehte"     aria-selected="false">St&ouml;&szlig;e und N&auml;hte</button>
+</div>
+
+<!-- ============================================================ GRUNDLAGEN -->
+<section class="panel" id="p-grundlagen">
+
+  <div class="karte">
+    <h2>Was beim Schwei&szlig;en passiert</h2>
+    <p class="sub">Einteilung nach DIN 1910-100.</p>
+    <p><span class="term" data-t="schweissen" data-cap="1"></span> hei&szlig;t: zwei Werkst&uuml;cke werden unter
+    W&auml;rme oder Druck zu <em>einem</em> Werkst&uuml;ck. Anders als beim L&ouml;ten oder
+    Kleben bleibt der <span class="term" data-t="grundwerkstoff"></span> dabei nicht unber&uuml;hrt &ndash; er
+    wird selbst aufgeschmolzen oder umgeformt. Genau daraus folgen die beiden
+    Eigenheiten, um die es in diesem Werkzeug geht: die Naht ist so fest wie das Bauteil,
+    und das Bauteil ist an dieser Stelle ein anderes geworden.</p>
+    <div class="zwei">
+      <div>
+        <h3><span class="term" data-t="schmelzschweissen" data-cap="1"></span></h3>
+        <p>Die Fugenfl&auml;chen werden &ouml;rtlich aufgeschmolzen, meist mit einem
+        <span class="term" data-t="zusatzwerkstoff"></span>. Beim Erstarren entsteht das
+        <span class="term" data-t="schweissgut"></span>.</p>
+        <p class="fussnote">Gasschmelz-, Lichtbogen- und Strahlschwei&szlig;en.</p>
+      </div>
+      <div>
+        <h3><span class="term" data-t="pressschweissen" data-cap="1"></span></h3>
+        <p>Die Stelle wird erw&auml;rmt und unter Kraft zusammengedr&uuml;ckt. Oft flie&szlig;t
+        gar keine Schmelze &ndash; der Werkstoff wird im teigigen Zustand verschwei&szlig;t.</p>
+        <p class="fussnote">Widerstandspunkt-, Reib- und Ultraschallschwei&szlig;en.</p>
+      </div>
+    </div>
+    <div class="merke">
+      <b>Der Unterschied in einem Satz:</b> Beim <span class="term" data-t="schmelzschweissen"></span>
+      entscheidet die W&auml;rme allein, beim <span class="term" data-t="pressschweissen"></span>
+      entscheiden W&auml;rme <em>und</em> Kraft zusammen.
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Die Zonen der Schwei&szlig;naht</h2>
+    <p class="sub">Jede Stelle hat ihre eigene H&ouml;chsttemperatur &ndash; und davon
+      h&auml;ngt ab, was aus dem Gef&uuml;ge wird.</p>
+    <p>Der Brenner heizt nicht nur die Fuge auf. Neben dem <span class="term" data-t="schweissgut"></span>
+    liegt die <span class="term" data-t="waermeeinfluss"></span>: dort ist nichts geschmolzen, aber das
+    Gef&uuml;ge hat sich trotzdem ver&auml;ndert. Sie ist die Schwachstelle vieler
+    Schwei&szlig;verbindungen. Zieh den Punkt &uuml;ber den Querschnitt.</p>
+    <svg class="zeichnung" id="svgZonen" viewBox="0 0 640 330" role="img"
+         aria-label="Querschnitt der Naht mit Temperaturverlauf"></svg>
+    <div class="steuerung">
+      <label class="feld" style="flex:1 1 260px">
+        <span>Abstand von der Nahtmitte: <span class="ablesung" id="zonAbl">0 mm</span></span>
+        <input type="range" id="regZone" min="0" max="100" step="1" value="0">
+      </label>
+    </div>
+    <div class="kacheln" id="zonLegende" style="grid-template-columns:repeat(auto-fit,minmax(126px,1fr))"></div>
+    <div id="zonText"></div>
+    <p class="fussnote nur-norm">Die Zonenbreiten sind stark &uuml;berh&ouml;ht gezeichnet;
+      bei 10&nbsp;mm Blech misst die ganze W&auml;rmeeinflusszone nur wenige Millimeter.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Ist der Stahl &uuml;berhaupt schwei&szlig;geeignet?</h2>
+    <p class="sub">Kohlenstoff&auml;quivalent CEV nach EN 1011-2.</p>
+    <p>Je mehr Kohlenstoff und Legierungselemente ein Stahl hat, desto st&auml;rker
+    h&auml;rtet die <span class="term" data-t="waermeeinfluss"></span> beim schnellen Abk&uuml;hlen auf &ndash;
+    und desto gr&ouml;&szlig;er ist die Rissgefahr. Das
+    <span class="term" data-t="kohlenstoffaequivalent"></span> fasst diesen Einfluss in einer Zahl zusammen.</p>
+    <div class="felder">
+      <label class="feld"><span>Werkstoff</span>
+        <select id="cevStahl"></select></label>
+      <label class="feld"><span>C-Gehalt in %: <span class="ablesung" id="cevCAbl"></span></span>
+        <input type="range" id="cevC" min="0" max="60" step="1" value="17"></label>
+      <label class="feld"><span>Mn in %: <span class="ablesung" id="cevMnAbl"></span></span>
+        <input type="range" id="cevMn" min="0" max="200" step="5" value="140"></label>
+      <label class="feld"><span>Cr + Mo + V in %: <span class="ablesung" id="cevCrAbl"></span></span>
+        <input type="range" id="cevCr" min="0" max="300" step="5" value="0"></label>
+      <label class="feld"><span>Ni + Cu in %: <span class="ablesung" id="cevNiAbl"></span></span>
+        <input type="range" id="cevNi" min="0" max="300" step="5" value="0"></label>
+    </div>
+    <div class="formel">CEV = C + Mn/6 + (Cr + Mo + V)/5 + (Ni + Cu)/15</div>
+    <div class="werte" id="cevWerte"></div>
+    <div id="cevText"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Verzug und Eigenspannungen</h2>
+    <p class="sub">Warum ein geschwei&szlig;tes Bauteil nicht mehr dort liegt, wo es lag.</p>
+    <p>Beim Abk&uuml;hlen schrumpft das <span class="term" data-t="schweissgut"></span>. Es kann sich aber
+    nicht frei zusammenziehen, weil das kalte Bauteil daran h&auml;ngt. Was nachgibt, wird
+    zum <span class="term" data-t="verzug"></span>; was nicht nachgibt, bleibt als
+    <span class="term" data-t="eigenspannung"></span> im Bauteil stehen.</p>
+    <div class="wahl" id="wahlVerzug"></div>
+    <svg class="zeichnung" id="svgVerzug" viewBox="0 0 640 260" role="img"
+         aria-label="Schrumpfung und Verzug"></svg>
+    <div id="verzugText"></div>
+  </div>
+</section>
+
+<!-- ============================================================= VERFAHREN -->
+<section class="panel" id="p-verfahren" hidden>
+
+  <div class="karte">
+    <h2>Acht Verfahren im Vergleich</h2>
+    <p class="sub">Ordnungsnummern nach DIN EN ISO 4063.</p>
+    <p>Alle Schmelzschwei&szlig;verfahren l&ouml;sen dieselbe Aufgabe: Energie genau
+    dorthin bringen, wo die Fuge ist, und das <span class="term" data-t="schmelzbad"></span> vor der Luft
+    sch&uuml;tzen. Sie unterscheiden sich darin, <em>woher</em> die W&auml;rme kommt und
+    <em>womit</em> geschützt wird &ndash; durch <span class="term" data-t="schutzgas"></span> oder durch
+    <span class="term" data-t="schlacke"></span>. Die Pressschwei&szlig;verfahren am Ende brauchen beides
+    nicht.</p>
+  </div>
+
+  <div class="karte" id="karte-verfahren">
+    <h2>Verfahren ansehen</h2>
+    <div class="wahl" id="wahl-verfahren"></div>
+    <svg class="zeichnung" id="svg-verfahren" viewBox="0 0 640 280" role="img"
+         aria-label="Animation des gew&auml;hlten Verfahrens"></svg>
+    <div class="steuerung">
+      <button class="link" data-play="verfahren">&#9654;&nbsp; Abspielen</button>
+      <input type="range" id="reg-verfahren" min="0" max="100" step="1" value="0" aria-label="Ablauf">
+    </div>
+    <p id="phase-verfahren"></p>
+    <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert nach
+      DIN ISO 128-50 &ndash; benachbarte Teile unterschiedlich in Richtung oder Abstand &ndash;,
+      K&ouml;rperkanten als breite Volllinie. Brenner, Elektroden und Pfeile sind
+      didaktische Zus&auml;tze und geh&ouml;ren nicht zur Zeichnung.</p>
+    <div id="info-verfahren"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Eignung im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tab-verfahren"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Arbeitssicherheit</h2>
+    <p class="sub">Was beim Schwei&szlig;en immer mitl&auml;uft.</p>
+    <div class="paar">
+      <div class="minus"><h4>Strahlung und Hitze</h4>
+        <ul>
+          <li>Der <span class="term" data-t="lichtbogen"></span> strahlt UV ab: Verblitzen der Augen,
+            Sonnenbrand auf ungedeckter Haut</li>
+          <li>Schwei&szlig;erhelm mit passender Schutzstufe, Nacken und Unterarme decken</li>
+          <li>Spritzer und gl&uuml;hende Schlacke: Lederschürze, geschlossene Schuhe</li>
+        </ul>
+      </div>
+      <div class="minus"><h4>Rauch, Gase, Brand</h4>
+        <ul>
+          <li>Schwei&szlig;rauch enth&auml;lt Metalloxide &ndash; absaugen, nicht wegblasen</li>
+          <li>Beim Schwei&szlig;en in Beh&auml;ltern droht Sauerstoffmangel durch Schutzgas</li>
+          <li>Brennbares im Umkreis r&auml;umen, Brandwache nach dem Schwei&szlig;en</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================== STÖSSE UND NÄHTE -->
+<section class="panel" id="p-naehte" hidden>
+
+  <div class="karte">
+    <h2>Sto&szlig;arten</h2>
+    <p class="sub">Wie die Teile zueinander liegen, entscheidet, welche Naht m&ouml;glich ist.</p>
+    <div class="kacheln" id="stoesse"></div>
+    <div id="stossText"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Nahtquerschnitt einstellen</h2>
+    <p class="sub">Richtwerte der <span class="term" data-t="nahtvorbereitung"></span> nach DIN EN ISO 9692-1.</p>
+    <p>Die Fuge muss zwei Dinge leisten: Der Brenner muss bis zur
+    <span class="term" data-t="wurzel"></span> kommen, und es soll so wenig
+    <span class="term" data-t="schweissgut"></span> wie m&ouml;glich hineinpassen. Das erste verlangt einen
+    gro&szlig;en <span class="term" data-t="oeffnungswinkel"></span>, das zweite einen kleinen. Jede Fugenform
+    ist ein Kompromiss zwischen beidem.</p>
+    <div class="wahl" id="wahlNaht"></div>
+    <div class="felder">
+      <label class="feld"><span>Blechdicke t: <span class="ablesung" id="nAblT"></span></span>
+        <input type="range" id="nT" min="1" max="40" step="1" value="10"></label>
+      <label class="feld"><span><span class="term" data-t="oeffnungswinkel" data-cap="1"></span> &alpha;:
+        <span class="ablesung" id="nAblA"></span></span>
+        <input type="range" id="nA" min="0" max="90" step="5" value="60"></label>
+      <label class="feld"><span><span class="term" data-t="steg" data-cap="1"></span> c:
+        <span class="ablesung" id="nAblC"></span></span>
+        <input type="range" id="nC" min="0" max="6" step="1" value="2"></label>
+      <label class="feld"><span><span class="term" data-t="spaltbreite" data-cap="1"></span> b:
+        <span class="ablesung" id="nAblB"></span></span>
+        <input type="range" id="nB" min="0" max="6" step="1" value="2"></label>
+    </div>
+    <svg class="zeichnung" id="svgNaht" viewBox="0 0 640 300" role="img"
+         aria-label="Nahtquerschnitt"></svg>
+    <div class="werte" id="nahtWerte"></div>
+    <div id="nahtText"></div>
+    <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert,
+      Ma&szlig;linien als schmale Volllinien mit Ma&szlig;pfeilen.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Welche Naht bei welcher Dicke?</h2>
+    <div class="tabellenrahmen"><table id="tabNaht"></table></div>
+    <div class="merke">
+      <b>Die Regel dahinter:</b> Das Nahtvolumen w&auml;chst mit dem Quadrat der Dicke.
+      Deshalb lohnt sich ab etwa 12&nbsp;mm die Doppel-V-Naht: sie braucht rund die
+      H&auml;lfte des <span class="term" data-t="schweissgut"></span>, schwei&szlig;t von beiden Seiten
+      gleichm&auml;&szlig;ig und h&auml;lt den <span class="term" data-t="verzug"></span> klein.
+    </div>
+  </div>
+</section>
+
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================================
+   1  ZEICHEN-WERKZEUG
+   ========================================================================== */
+function el(id){ return document.getElementById(id); }
+
+/* ---------------------------------------------------------------------------
+   Normdarstellung
+   Welches Bauteil eine Flaeche zeigt, verraet ihre Fuellfarbe. Daran haengt
+   auch die Schraffur: nach DIN ISO 128-50 muessen sich aneinandergrenzende
+   Teile in Richtung oder Abstand unterscheiden. Der Umweg ueber die Farbe
+   spart es, alle sechzehn Zeichenfunktionen anzufassen.
+   --------------------------------------------------------------------------- */
+var NORM_STOFF = {
+  "#e2e8f0":"a", "#ccfbf1":"a",
+  "#99f6e4":"b", "#5eead4":"b", "#fdba74":"b", "#f97316":"b",
+  "#dbeafe":"c", "#bfdbfe":"c",
+  "#fde68a":"d", "#ddd6fe":"d", "#c4b5fd":"d", "#a78bfa":"d", "#fbbf24":"d", "#cbd5e1":"d"
+};
+/* Was hinter der Schnittebene liegt, ist nicht geschnitten und bekommt
+   deshalb keine Schraffur - im Normmodus uebernimmt genau das die Aufgabe,
+   die sonst der hellere Farbton hat. */
+var NORM_HINTEN = {"#eafcf8":1, "#d5faf3":1, "#f1f5f9":1};
+/* Sehr duenne Querschnitte - eine Lotschicht misst Zehntelmillimeter, eine
+   Klebefuge kaum mehr - werden nach DIN ISO 128-50 nicht schraffiert, sondern
+   ganz geschwaerzt. In der Zeichnung sind sie ueberhoeht, damit man sie sieht;
+   geschwaerzt bleiben sie trotzdem, denn das sagt: hier ist die Schicht duenn. */
+var NORM_DUENN = {"#fde68a":1, "#ddd6fe":1, "#c4b5fd":1, "#a78bfa":1};
+var NORM_KANTE = "#111827", NORM_BREIT = 2.2, NORM_SCHMAL = 0.8;
+
+/* DIN ISO 128-50: Vollteile - Wellen, Schrauben, Muttern, Bolzen, Niete,
+   Stifte, Passfedern - werden in Laengsrichtung nicht geschnitten dargestellt
+   und bleiben ohne Schraffur. Quer geschnitten dagegen schon. Welche Flaechen
+   das in einer Zeichnung betrifft, sagt "vollteile" beim Verfahren; die
+   Passfeder schaltet fuer ihren Querschnitt mit querGeschnitten() um. */
+var aktVollteile = null, vollteilSchnitt = false;
+/* Schaltet die Ausnahme fuer Vollteile ab: im Querschnitt und im Ausbruch
+   sind auch sie geschnitten und bekommen ihre Schraffur. */
+function auchVollteileSchneiden(an){ vollteilSchnitt = !!an; }
+
+/* Bruchlinie eines Ausbruchs: schmale Volllinie, freihand gefuehrt. */
+function bruchlinie(g, x, y1, y2){
+  var d = "M" + x + "," + y1, y = y1, i = 0;
+  while(y < y2){
+    var bis = Math.min(y2, y + 11);
+    d += " Q " + (x + (i++ % 2 ? 6 : -6)) + "," + ((y + bis) / 2) + " " + x + "," + bis;
+    y = bis;
+  }
+  return pfad(g, d, "none", NORM_KANTE, {sw:NORM_SCHMAL});
+}
+var MUSTER_PRAEFIX = "sf-";
+var FLAECHEN = {rect:1, path:1, circle:1, ellipse:1, polygon:1};
+var normErlaubt = true;   /* die Prinzipskizzen im Ueberblick bleiben schematisch */
+var inDefs = false;
+
+function normModus(){ return zustand.norm && normErlaubt && !inDefs; }
+
+function normFassung(e, attr){
+  var f = String(attr.fill).toLowerCase();
+  if(f === "none") return;
+  var stoff = NORM_STOFF[f];
+  var hinten = NORM_HINTEN[f];
+  var weiss = f === "#ffffff" || f === "#fff";
+  if(!stoff && !hinten && !weiss) return;   /* Werkzeuge und Pfeile bleiben, wie sie sind */
+
+  var ohneSchraffur = hinten || weiss || aktVollteile === "alle" ||
+    (aktVollteile && !vollteilSchnitt && aktVollteile.indexOf(f) >= 0);
+  e.setAttribute("fill", NORM_DUENN[f] && !ohneSchraffur ? NORM_KANTE
+    : ohneSchraffur ? "#ffffff" : "url(#" + MUSTER_PRAEFIX + stoff + ")");
+  if(attr.stroke && attr.stroke !== "none"){
+    e.setAttribute("stroke", NORM_KANTE);
+    e.setAttribute("stroke-width", NORM_BREIT);
+  }
+}
+
+function ns(name, attr){
+  var e = document.createElementNS("http://www.w3.org/2000/svg", name);
+  for(var a in attr){ if(attr.hasOwnProperty(a)) e.setAttribute(a, attr[a]); }
+  if(attr && attr.fill && FLAECHEN[name] && normModus()) normFassung(e, attr);
+  return e;
+}
+
+/* Mittellinie: schmale Strichpunktlinie, ueber die Kontur hinausgezogen. */
+function mittellinien(g, segmente){
+  segmente.forEach(function(a){
+    linie(g, a[0], a[1], a[2], a[3], NORM_KANTE, NORM_SCHMAL, {dash:"20 3 5 3"});
+  });
+}
+function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild); }
+/* Beschriftungen haengen oft an einem wandernden Werkzeug. Laeuft das an den
+   Bildrand, stand der Text bisher halb ausserhalb. Deshalb wird die Lage hier
+   an das viewBox des zugehoerigen SVG geklemmt - die Breite wird aus Laenge
+   und Schriftgroesse geschaetzt, das genuegt dafuer. */
+function textKlemmen(g, x, y, s, o){
+  var svg = g.ownerSVGElement;
+  if(!svg || !svg.viewBox || !svg.viewBox.baseVal.width) return [x, y];
+  var vb = svg.viewBox.baseVal;
+  var br = s.length * (o.size || 12) * 0.53;
+  var links = vb.x + 4, rechts = vb.x + vb.width - 4;
+  var a = o.anchor || "start";
+  if(a === "end")         x = Math.max(links + br, Math.min(x, rechts));
+  else if(a === "middle") x = Math.max(links + br/2, Math.min(x, rechts - br/2));
+  else                    x = Math.max(links, Math.min(x, rechts - br));
+  y = Math.max(vb.y + 12, Math.min(y, vb.y + vb.height - 5));
+  return [x, y];
+}
+
+function txt(g, x, y, s, opt){
+  var o = opt || {};
+  var lage = textKlemmen(g, x, y, String(s), o);
+  x = lage[0]; y = lage[1];
+  var t = ns("text", {x:x, y:y, "font-size":o.size || 12,
+    "font-family":"Segoe UI, system-ui, sans-serif",
+    "text-anchor":o.anchor || "start", fill:o.fill || "#334155",
+    "font-weight":o.weight || 600});
+  t.textContent = s;
+  if(o.opacity !== undefined) t.setAttribute("opacity", o.opacity);
+  g.appendChild(t);
+  return t;
+}
+function rect(g, x, y, w, h, fill, stroke, opt){
+  var o = opt || {};
+  var e = ns("rect", {x:x, y:y, width:Math.max(0,w), height:Math.max(0,h),
+    fill:fill, stroke:stroke || "none", "stroke-width":o.sw || 1.6});
+  if(o.rx) e.setAttribute("rx", o.rx);
+  if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
+  g.appendChild(e);
+  return e;
+}
+function pfad(g, d, fill, stroke, opt){
+  var o = opt || {};
+  var e = ns("path", {d:d, fill:fill || "none", stroke:stroke || "none",
+    "stroke-width":o.sw || 1.6});
+  if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
+  if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
+  g.appendChild(e);
+  return e;
+}
+function linie(g, x1, y1, x2, y2, farbe, sw, opt){
+  var o = opt || {};
+  var e = ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe, "stroke-width":sw || 1.4});
+  if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
+  if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
+  g.appendChild(e);
+  return e;
+}
+function pfeil(g, x1, y1, x2, y2, farbe, sw){
+  return ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe,
+    "stroke-width":sw || 3,
+    "marker-end":"url(#" + MARKER_PRAEFIX + farbe.replace("#","") + ")"});
+}
+/* Pfeilspitzen werden je Farbe einmal angelegt.
+   Zwei Fallstricke stecken hier drin:
+   1. Das viewBox ist Pflicht - ohne es zeichnet der Browser die Spitze nicht,
+      obwohl der Marker sauber definiert und referenziert ist.
+   2. Die IDs muessen je SVG eindeutig sein. Legt jedes SVG dieselben IDs an,
+      loest url(#...) auf das erste Vorkommen im Dokument auf - und das liegt
+      in einem ausgeblendeten Reiter. Ein Marker in einem display:none-SVG
+      wird nicht gezeichnet, die Pfeile blieben dann ohne Spitze. */
+var MARKER_PRAEFIX = "sp-";
+/* Schraffurrichtung und -abstand je Werkstoff. 45 Grad ist der Normalfall;
+   der Gegenlauf und der engere Abstand trennen benachbarte Teile. */
+/* Richtung und Abstand je Werkstoff. Die Linie steckt fertig in der Kachel:
+   "/" laeuft von unten links nach oben rechts, "\\" umgekehrt. Ueber
+   patternTransform gedreht sah beides gleich aus - der Gegenlauf, den
+   DIN ISO 128-50 fuer benachbarte Teile verlangt, fehlte damit. */
+var SCHRAFFUR = [["a", "/", 8], ["b", "\\", 8], ["c", "\\", 4.5], ["d", "/", 4.5]];
+function spitzen(svg, farben){
+  MARKER_PRAEFIX = "sp-" + svg.id + "-";
+  MUSTER_PRAEFIX = "sf-" + svg.id + "-";
+  var defs = ns("defs", {});
+  inDefs = true;
+  SCHRAFFUR.forEach(function(m){
+    var w = m[2];
+    var pat = ns("pattern", {id:MUSTER_PRAEFIX + m[0], width:w, height:w,
+      patternUnits:"userSpaceOnUse"});
+    pat.appendChild(ns("rect", {x:0, y:0, width:w, height:w, fill:"#ffffff"}));
+    /* Die Diagonale der Kachel ergibt beim Kacheln eine durchgehende Schar.
+       Sie laeuft ueber die Kachel hinaus: endete sie genau in der Ecke, blieb
+       an jeder Kachelgrenze eine Luecke und die Schraffur wirkte gestrichelt.
+       Was uebersteht, schneidet die Kachel selbst weg. */
+    var u = 1.5;
+    var d = m[1] === "/"
+      ? "M" + (-u) + "," + (w + u) + " L" + (w + u) + "," + (-u)
+      : "M" + (-u) + "," + (-u) + " L" + (w + u) + "," + (w + u);
+    pat.appendChild(ns("path", {d:d, fill:"none",
+      stroke:NORM_KANTE, "stroke-width":NORM_SCHMAL}));
+    defs.appendChild(pat);
+  });
+  inDefs = false;
+  farben.forEach(function(f){
+    /* refX auf die Spitze: So endet der Pfeil genau am Zielpunkt statt
+       darueber hinauszuschiessen. userSpaceOnUse haelt die Spitze in allen
+       Zeichnungen gleich gross, unabhaengig von der Strichstaerke. */
+    var m = ns("marker", {id:MARKER_PRAEFIX + f.replace("#",""), viewBox:"0 0 7 6",
+      markerWidth:10, markerHeight:8.6, refX:7, refY:3,
+      orient:"auto", markerUnits:"userSpaceOnUse"});
+    m.appendChild(ns("path", {d:"M0,0 L0,6 L7,3 z", fill:f}));
+    defs.appendChild(m);
+  });
+  svg.appendChild(defs);
+}
+var FARBEN = ["#dc2626","#1d4ed8","#16a34a","#c2410c","#7c3aed","#0f766e","#64748b",
+              "#b45309","#334155","#111827"];
+function kraftpfeil(g, x1, y1, x2, y2, farbe, sw){
+  g.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
+}
+
+/* Farbwelt: Bauteil A, Bauteil B, Verbindungselement, Waerme, Lot/Kleber */
+var C = {
+  aF:"#ccfbf1", aS:"#0f766e",
+  bF:"#99f6e4", bS:"#0f766e",
+  eF:"#dbeafe", eS:"#1d4ed8",
+  warm:"#fdba74", heiss:"#f97316", glut:"#fbbf24",
+  lot:"#fde68a", lotS:"#b45309",
+  kleb:"#ddd6fe", klebS:"#6d28d9",
+  grau:"#e2e8f0", grauS:"#64748b",
+  /* Flaechen hinter der Schnittebene: derselbe Werkstoff, nur heller. Weiss
+     waere falsch - da ist kein Hohlraum, sondern die Rueckwand der Nut. */
+  aH:"#eafcf8", bH:"#d5faf3", grauH:"#f1f5f9"
+};
+function mische(t){ return Math.max(0, Math.min(1, t)); }
+function stufe(t, von, bis){ return mische((t - von) / Math.max(1e-6, bis - von)); }
+
+
+/* ============================================================================
+   1b  FACHBEGRIFFE
+   Zwei Regeln, damit der Satz in beiden Stufen stimmt: gleiches Geschlecht wie
+   der Fachbegriff, weil der Artikel im Satz stehen bleibt, und kein
+   vorangestelltes Adjektiv, weil sich dessen Endung mit dem Fall aendern
+   muesste. Und kein Relativsatz. "Metall, das in der Fuge
+   erstarrt ist" verlangt vor dem naechsten Verb ein Komma - "... erstarrt ist,
+   liegt die Zone". Der Fachbegriff an derselben Stelle darf dieses Komma nicht
+   haben. Deshalb stehen hier Fuegungen mit Praeposition statt Nebensaetzen.
+   "kurz" ist die Kurzfassung fuer Zeichnungsbeschriftungen.
+   ========================================================================== */
+var TERME = {
+  schweissen:        {a:"Verbinden durch Schmelzen oder Pressen", f:"Schweißen"},
+  schmelzschweissen: {a:"Schweißen mit Schmelze",             f:"Schmelzschweißen"},
+  pressschweissen:   {a:"Schweißen unter Druck",              f:"Pressschweißen"},
+  grundwerkstoff:    {a:"Werkstoff der Bauteile",             f:"Grundwerkstoff"},
+  zusatzwerkstoff:   {a:"Draht zum Auffüllen",          f:"Zusatzwerkstoff", kurz:"Draht"},
+  schweissgut:       {a:"Füllmetall der Naht", f:"Schweißgut"},
+  schmelzbad:        {a:"Metallbad in der Fuge",     f:"Schmelzbad",      kurz:"flüssiges Metall"},
+  waermeeinfluss:    {a:"Hitzezone neben der Naht",  f:"Wärmeeinflusszone", kurz:"Hitzezone"},
+  lichtbogen:        {a:"Stromübergang durch die Luft",  f:"Lichtbogen"},
+  schutzgas:         {a:"Gaspolster gegen die Luft",          f:"Schutzgas"},
+  schlacke:          {a:"Kruste auf der Naht",                f:"Schlacke"},
+  elektrode:         {a:"Stange für den Strom",        f:"Elektrode"},
+  wurzel:            {a:"Stelle ganz unten in der Naht",      f:"Wurzel"},
+  kehlnaht:          {a:"Naht in der Innenecke",              f:"Kehlnaht"},
+  stumpfnaht:        {a:"Naht zwischen zwei Kanten",          f:"Stumpfnaht"},
+  nahtvorbereitung:  {a:"Arbeit an den Kanten vor dem Schweißen", f:"Nahtvorbereitung"},
+  oeffnungswinkel:   {a:"Winkel zwischen den Kanten", f:"Öffnungswinkel", kurz:"Winkel"},
+  steg:              {a:"Rest an der Wurzel", f:"Steg"},
+  spaltbreite:       {a:"Weite zwischen den Kanten",          f:"Spaltbreite",     kurz:"Spalt"},
+  einbrand:          {a:"Tiefgang der Schmelze", f:"Einbrand"},
+  verzug:            {a:"Formfehler durch die Wärme",         f:"Verzug"},
+  eigenspannung:     {a:"Restspannung im Bauteil",    f:"Eigenspannung"},
+  schweisseignung:   {a:"Eignung zum Schweißen",              f:"Schweißeignung"},
+  kohlenstoffaequivalent:{a:"Maß für den Einfluss der Legierung", f:"Kohlenstoffäquivalent", kurz:"CEV"},
+  vorwaermen:        {a:"Anwärmen vor dem Schweißen",         f:"Vorwärmen"},
+  aufhaertung:       {a:"Härte nach schnellem Abkühlen", f:"Aufhärtung"},
+  abschmelzleistung: {a:"Menge Draht je Stunde",              f:"Abschmelzleistung"},
+  tropfenuebergang:  {a:"Weg des Tropfens zum Bauteil",       f:"Tropfenübergang"},
+  dampfkapillare:    {a:"Röhre aus Metalldampf",              f:"Dampfkapillare"},
+  schweisslinse:     {a:"Schmelzstelle zwischen den Blechen",  f:"Schweißlinse",    kurz:"Linse"},
+  wulst:             {a:"Ring am Stoß",   f:"Wulst"},
+  ordnungsnummer:    {a:"Kennzahl des Verfahrens",            f:"Ordnungsnummer"},
+  grobkorn:          {a:"Zone mit groben Körnern",     f:"Grobkornzone"},
+  feinkorn:          {a:"Zone mit feinen Körnern",    f:"Feinkornzone"}
+};
+
+/* Anzeigezustand der ganzen Seite. Der Ablaufzustand der Gruppen liegt in
+   "gruppen" - frueher hiess beides "zustand". */
+var zustand = {fach:false, norm:false};
+var gruppen = {};   /* je Gruppe: {aktiv, t, lauf} */
+
+/* Einzeln aufgedeckte Begriffe. Aufgedeckt wird immer der ganze Schluessel,
+   nicht nur die angeklickte Stelle - sonst steht dasselbe Wort im Text zweimal
+   verschieden da. */
+var aufgedeckt = {};
+
+function paramsLesen(){
+  try{
+    var p = new URLSearchParams(window.location.search);
+    if(p.has("fach")) zustand.fach = p.get("fach") === "1";
+    if(p.has("norm")) zustand.norm = p.get("norm") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    u.searchParams.set("norm", zustand.norm ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Welche Fassung wird gerade gezeigt? Ein einzeln aufgedeckter Begriff dreht
+   die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  /* Mit "wurzel" wird nur ein frisch erzeugter Textblock nachgezogen - Phasen-
+     und Infotexte entstehen erst beim Zeichnen. */
+  var basis = wurzel || document;
+  if(!wurzel){
+    document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+    document.body.classList.toggle("zeigt-norm", zustand.norm);
+  }
+  var knoten = basis.querySelectorAll(".term");
+  for(var i=0;i<knoten.length;i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var t = TERME[schluessel];
+    if(!t) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? t.f : t.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff – klicken für die einfache Formulierung"
+              : "einfache Formulierung – klicken für den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung" : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();   /* damit Zeichnungsbeschriftungen mitziehen */
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zurücksetzen"
+    : anzahl + " aufgedeckte Wörter zurücksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Beschriftung in Zeichnungen: SVG-Text kann kein Markup tragen, deshalb wird
+   hier nur der reine Wortlaut geliefert. Ein einzeln aufgedeckter Begriff
+   schlaegt auch hier durch - sonst stuende in der Zeichnung noch die alte
+   Fassung, waehrend der Text daneben schon den Fachbegriff zeigt. */
+function zWort(schluessel, ersatz){
+  var t = TERME[schluessel];
+  if(!t) return ersatz || schluessel;
+  return zeigtFach(schluessel) ? (t.fkurz || t.f) : (t.kurz || t.a);
+}
+
+/* Begriff fuer Texte, die erst beim Zeichnen entstehen. Ausgegeben wird eine
+   echte Fundstelle, damit sich der Satz wie der Fliesstext verhaelt. */
+function wort(schluessel, gross){
+  if(!TERME[schluessel]) return schluessel;
+  return '<span class="term" data-t="' + schluessel + '"' +
+         (gross ? ' data-cap="1"' : "") + "></span>";
+}
+/* ============================================================================
+   2  VERFAHREN
+   Jedes Verfahren bringt seine Zeichnung selbst mit. "vollteile" nennt die
+   Fuellfarben, die im Laengsschnitt ohne Schraffur bleiben, "nurAnsicht" gilt
+   fuer Bilder, die gar kein Schnitt sind.
+   ========================================================================== */
+var VERFAHREN = [];
+function verfahren(o){ VERFAHREN.push(o); return o; }
+
+/* Zwei Bleche im Stumpfstoss - die Ausgangslage fast aller Bilder hier. */
+function bleche(g, cy, dick, lx, rx, fuge){
+  rect(g, lx, cy-dick, (320-fuge/2)-lx, 2*dick, C.aF, C.aS, {sw:1.8});
+  rect(g, 320+fuge/2, cy-dick, rx-(320+fuge/2), 2*dick, C.bF, C.bS, {sw:1.8});
+}
+
+/* Raupe mit Schuppen - das Bild einer erstarrten Naht. */
+function raupe(g, vonX, bisX, cy, hoch){
+  if(bisX <= vonX) return;
+  rect(g, vonX, cy-hoch, bisX-vonX, 2*hoch, "#cbd5e1",
+    zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
+  for(var x = vonX+7; x < bisX-4; x += 12){
+    pfad(g, "M"+(x-8)+","+(cy+hoch-1)+" Q "+x+","+(cy-hoch+2)+" "+(x+8)+","+(cy+hoch-1),
+      "none", zustand.norm ? NORM_KANTE : "#94a3b8", {sw:zustand.norm ? NORM_SCHMAL : 1});
+  }
+}
+
+/* Hitzewellen ueber der Fuge */
+function hitze(g, mx, y, staerke){
+  for(var i=0;i<3;i++){
+    var x = mx - 34 + i*34;
+    pfad(g, "M"+x+","+y+" q 6,-10 0,-20 q -6,-10 0,-20",
+      "none", C.heiss, {sw:2, opacity:staerke});
+  }
+}
+
+/* ------------------------------------------------------- SCHMELZSCHWEISSEN -- */
+
+verfahren({
+  id:"gas", gruppe:"verfahren", name:"Gasschmelzschweißen",
+  nummer:"311", vollteile:["#dbeafe"],
+  art:"Schmelzschweißen", schutz:"Flammengase",
+  dicken:"0,5 bis 6 mm", werkstoffe:"un- und niedriglegierter Stahl, Kupfer",
+  leistung:"gering", automat:"kaum",
+  einsatz:"Rohrleitungsbau, Reparatur, Installation",
+  prinzip:"Eine Flamme aus Acetylen und Sauerstoff schmilzt die Fuge auf. Der " +
+          wort("zusatzwerkstoff") + " wird von Hand als Stab zugeführt. " +
+          "Die Flammengase halten die Luft vom Bad fern.",
+  phasen:[
+    {ab:0,    text:"Die Flamme wird eingestellt: neutral, mit klar abgegrenztem Kegel."},
+    {ab:0.25, text:"Die Fuge wird angeschmolzen – erst wenn das Bad steht, kommt der Stab dazu."},
+    {ab:0.5,  text:"Brenner und Stab wandern gemeinsam, das Bad läuft mit."},
+    {ab:0.82, text:"Hinter dem Bad erstarrt die Naht. Die Wärme läuft weit ins Blech – große Wärmeeinflusszone."}],
+  plus:["Ohne Strom, überall einsetzbar","Sehr gut steuerbares Bad, gut für dünne Rohre",
+        "Flamme auch zum Wärmen und Richten"],
+  minus:["Geringe Leistung, langsam","Sehr breite Wärmeeinflusszone, viel Verzug",
+         "Gasflaschen: Aufwand und Gefahr"],
+  zeichnen:function(g, t){
+    var lauf = stufe(t, 0.25, 0.9);
+    var cy = 180, dick = 26, lx = 70, rx = 580, start = lx+20, ende = rx-20;
+    var bx = start + lauf*(ende-start);
+
+    bleche(g, cy, dick, lx, rx, 0);
+    raupe(g, start, bx-6, cy-dick, 9);
+    txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
+
+    if(lauf < 1){
+      /* Flamme: Kegel, Reduktionszone, Streuflamme */
+      pfad(g, "M"+(bx-30)+","+(cy-dick-86)+" L"+(bx+30)+","+(cy-dick-86)+
+              " L"+bx+","+(cy-dick-16)+" Z", "#fed7aa", "none", {opacity:0.55});
+      pfad(g, "M"+(bx-16)+","+(cy-dick-72)+" L"+(bx+16)+","+(cy-dick-72)+
+              " L"+bx+","+(cy-dick-24)+" Z", C.glut, "none", {opacity:0.9});
+      pfad(g, "M"+(bx-7)+","+(cy-dick-64)+" L"+(bx+7)+","+(cy-dick-64)+
+              " L"+bx+","+(cy-dick-40)+" Z", "#38bdf8", "none");
+      txt(g, bx+36, cy-dick-70, "Kegel", {fill:"#0369a1", size:11.5});
+      txt(g, bx+36, cy-dick-54, "Flammengase schützen", {fill:"#b45309", size:11.5});
+
+      rect(g, bx-11, cy-dick-138, 22, 56, "#94a3b8", "#334155", {sw:1.4});
+      txt(g, bx-16, cy-dick-130, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
+
+      /* Der Zusatzstab kommt erst dazu, wenn das Bad steht. */
+      if(lauf > 0){
+        var sx = bx + 62 - 26*lauf;
+        linie(g, sx+56, cy-dick-96, sx, cy-dick-14, C.eS, 5);
+        txt(g, sx+62, cy-dick-100, "Zusatzstab", {fill:C.eS, size:11.5});
+        g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:22, ry:10,
+          fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+        txt(g, bx+28, cy-dick+22, "Schmelzbad", {fill:"#b45309", size:11.5});
+      }
+    }
+    if(lauf >= 1){
+      hitze(g, 320, cy-dick-30, 0.5);
+      txt(g, lx+2, cy-dick-64, "Die Wärme läuft weit ins Blech – breite Wärmeeinflusszone",
+        {fill:"#c2410c", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"ehand", gruppe:"verfahren", name:"Lichtbogenhandschweißen",
+  nummer:"111", vollteile:["#dbeafe"],
+  art:"Schmelzschweißen", schutz:"Schlacke und Umhüllungsgase",
+  dicken:"ab 1,5 mm, nach oben offen", werkstoffe:"fast alle schweißgeeigneten Stähle",
+  leistung:"mittel", automat:"nein",
+  einsatz:"Baustelle, Montage, Reparatur, Stahlbau",
+  prinzip:"Zwischen Stabelektrode und Werkstück brennt ein " + wort("lichtbogen") +
+          ". Die Umhüllung verbrennt zu Schutzgas und bildet die " + wort("schlacke") +
+          ", die das Bad abdeckt.",
+  phasen:[
+    {ab:0,    text:"Die Elektrode wird angesetzt und gezündet – kurz aufsetzen, dann abheben."},
+    {ab:0.3,  text:"Der Lichtbogen brennt. Die Umhüllung verbrennt und schirmt das Bad ab."},
+    {ab:0.58, text:"Tropfen für Tropfen wandert Elektrodenwerkstoff ins Bad, die Elektrode wird kürzer."},
+    {ab:0.85, text:"Über der Naht steht die Schlacke. Sie muss abgeklopft werden – sonst bindet die nächste Lage nicht."}],
+  plus:["Kein Schutzgas nötig, deshalb windunempfindlich","Einfache, robuste Ausrüstung",
+        "In allen Positionen und an schwer zugänglichen Stellen"],
+  minus:["Elektrodenwechsel unterbricht ständig","Schlacke abklopfen, sonst Bindefehler",
+         "Leistung und Qualität hängen stark am Schweißer"],
+  zeichnen:function(g, t){
+    var lauf = stufe(t, 0.3, 0.88), putz = stufe(t, 0.88, 1);
+    var cy = 180, dick = 26, lx = 70, rx = 580, start = lx+20, ende = rx-20;
+    var bx = start + lauf*(ende-start);
+
+    bleche(g, cy, dick, lx, rx, 0);
+    raupe(g, start, bx-6, cy-dick, 9);
+
+    /* Schlacke deckt die erstarrte Naht ab, bis sie abgeklopft wird */
+    if(bx > start+8 && putz < 1){
+      var bis = putz > 0 ? start + (bx-6-start)*(1-putz) : bx-6;
+      if(bis > start)
+        rect(g, start, cy-dick-13, bis-start, 6, C.lot, C.lotS, {sw:1});
+      if(putz > 0.05)
+        txt(g, start, cy-dick-24, "Schlacke abklopfen", {fill:C.lotS, size:11.5});
+    }
+    if(lauf < 1){
+      /* Elektrode mit Umhuellung, wird kuerzer */
+      var laenge = 96 - 40*lauf;
+      var ey = cy-dick-22-laenge;
+      rect(g, bx-8, ey, 16, laenge-12, "#94a3b8", "#334155", {sw:1.3});
+      rect(g, bx-4, ey+6, 8, laenge-12, C.eF, C.eS, {sw:1});
+      txt(g, bx+22, ey+16, "Umhüllung", {fill:"#334155", size:11.5});
+      txt(g, bx+22, ey+32, "Kernstab", {fill:C.eS, size:11.5});
+
+      /* Lichtbogen und Tropfen erst nach dem Zuenden */
+      if(lauf > 0){
+        pfad(g, "M"+(bx-7)+","+(cy-dick-22)+" L"+(bx+7)+","+(cy-dick-22)+
+                " L"+(bx+13)+","+(cy-dick-2)+" L"+(bx-13)+","+(cy-dick-2)+" Z",
+          C.glut, "none", {opacity:0.85});
+        txt(g, bx+20, cy-dick-14, "Lichtbogen", {fill:"#b45309", size:11.5});
+        var tp = (t*6) % 1;
+        g.appendChild(ns("circle", {cx:bx, cy:cy-dick-20+tp*18, r:4,
+          fill:C.glut, stroke:"#b45309", "stroke-width":1}));
+        g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:20, ry:9,
+          fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+      }else{
+        txt(g, bx+20, cy-dick-14, "ansetzen und zünden", {fill:"#b45309", size:11.5});
+      }
+    }
+    if(putz >= 1){
+      txt(g, lx+2, cy-dick-30, "Naht frei geklopft – erst jetzt bindet die nächste Lage",
+        {fill:"#16a34a", size:12});
+    }
+    txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
+  }
+});
+
+verfahren({
+  id:"mag", gruppe:"verfahren", name:"MAG-Schweißen",
+  nummer:"135", vollteile:["#dbeafe"],
+  art:"Schmelzschweißen", schutz:"aktives Schutzgas (CO₂ oder Mischgas)",
+  dicken:"0,8 bis 20 mm", werkstoffe:"un- und niedriglegierter Stahl",
+  leistung:"hoch", automat:"gut, auch für Roboter",
+  einsatz:"Serienfertigung, Fahrzeugbau, Stahlbau",
+  prinzip:"Eine Drahtelektrode wird laufend nachgeschoben und schmilzt im " +
+          wort("lichtbogen") + " ab. Ein " + wort("schutzgas") +
+          " strömt aus der Düse und hält die Luft fern – " + wort("schlacke") +
+          " entsteht keine.",
+  phasen:[
+    {ab:0,    text:"Das Schutzgas strömt vor, noch bevor der Lichtbogen zündet."},
+    {ab:0.25, text:"Der Draht läuft nach und zündet beim Berühren des Blechs."},
+    {ab:0.5,  text:"Tropfen um Tropfen geht Draht ins Bad über – ohne Unterbrechung, der Draht kommt von der Rolle."},
+    {ab:0.85, text:"Die Naht bleibt blank: kein Abklopfen nötig, die nächste Lage kann sofort folgen."}],
+  plus:["Hohe Abschmelzleistung, keine Elektrodenwechsel","Keine Schlacke – sofort weiterschweißen",
+        "Gut automatisierbar, Standard in der Serie"],
+  minus:["Windempfindlich, im Freien nur mit Schutzwand","Mehr Spritzer als WIG",
+         "Aufwendigere Ausrüstung mit Gas und Drahtvorschub"],
+  zeichnen:function(g, t){
+    var gas = stufe(t, 0, 0.25), lauf = stufe(t, 0.25, 0.9);
+    var cy = 180, dick = 26, lx = 70, rx = 580, start = lx+20, ende = rx-20;
+    var bx = start + lauf*(ende-start);
+
+    bleche(g, cy, dick, lx, rx, 0);
+    raupe(g, start, bx-6, cy-dick, 9);
+    txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
+
+    var px = lauf > 0 ? bx : start;
+    /* Gasduese mit Schutzgasglocke */
+    if(gas > 0.05){
+      pfad(g, "M"+(px-40)+","+(cy-dick-6)+" Q "+px+","+(cy-dick-52)+" "+(px+40)+","+(cy-dick-6)+" Z",
+        "#bae6fd", "none", {opacity:0.45*gas});
+      txt(g, px+46, cy-dick-34, "Schutzgas", {fill:"#0369a1", size:11.5, opacity:gas});
+    }
+    pfad(g, "M"+(px-22)+","+(cy-dick-96)+" L"+(px+22)+","+(cy-dick-96)+
+            " L"+(px+15)+","+(cy-dick-40)+" L"+(px-15)+","+(cy-dick-40)+" Z",
+      "#94a3b8", "#334155", {sw:1.4});
+    txt(g, px-28, cy-dick-92, "Gasdüse", {anchor:"end", fill:"#334155", size:11.5});
+
+    /* Draht laeuft durch die Duese ins Bad */
+    linie(g, px, cy-dick-100, px, cy-dick-(lauf > 0 ? 14 : 30), C.eS, 3.4);
+    kraftpfeil(g, px, cy-dick-128, px, cy-dick-104, "#1d4ed8", 2.4);
+    txt(g, px+8, cy-dick-118, "Draht läuft nach", {fill:C.eS, size:11.5});
+
+    if(lauf > 0 && lauf < 1){
+      pfad(g, "M"+(bx-6)+","+(cy-dick-14)+" L"+(bx+6)+","+(cy-dick-14)+
+              " L"+(bx+12)+","+(cy-dick-2)+" L"+(bx-12)+","+(cy-dick-2)+" Z",
+        C.glut, "none", {opacity:0.85});
+      g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:20, ry:9,
+        fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+      txt(g, bx+26, cy-dick+22, "Schmelzbad", {fill:"#b45309", size:11.5});
+    }
+    if(lauf >= 1){
+      txt(g, lx+2, cy-dick-30, "Naht ohne Schlacke – keine Nacharbeit",
+        {fill:"#16a34a", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"wig", gruppe:"verfahren", name:"WIG-Schweißen",
+  nummer:"141", vollteile:["#dbeafe"],
+  art:"Schmelzschweißen", schutz:"inertes Schutzgas (Argon)",
+  dicken:"0,3 bis 8 mm", werkstoffe:"Edelstahl, Aluminium, Titan, Kupfer",
+  leistung:"gering", automat:"möglich, meist von Hand",
+  einsatz:"Wurzellagen, Rohrleitungen, Apparate- und Behälterbau",
+  prinzip:"Der " + wort("lichtbogen") + " brennt zwischen einer Wolframelektrode, " +
+          "die nicht abschmilzt, und dem Werkstück. Der " + wort("zusatzwerkstoff") +
+          " wird getrennt zugeführt – deshalb sind Wärme und Zusatz unabhängig regelbar.",
+  phasen:[
+    {ab:0,    text:"Argon strömt vor und verdrängt die Luft aus der Fuge."},
+    {ab:0.22, text:"Der Lichtbogen zündet berührungslos. Die Wolframelektrode schmilzt nicht ab."},
+    {ab:0.48, text:"Der Stab wird von Hand nachgesetzt – dosiert, Tropfen für Tropfen."},
+    {ab:0.85, text:"Nach dem Erlöschen strömt Gas nach, bis die Naht kalt genug ist. Ergebnis: sehr saubere Naht."}],
+  plus:["Höchste Nahtgüte, nahezu spritzerfrei","Wärme und Zusatzwerkstoff getrennt regelbar",
+        "Auch für Aluminium, Titan und dünnste Bleche"],
+  minus:["Langsam, geringe Abschmelzleistung","Sehr windempfindlich",
+         "Verlangt viel Übung – beide Hände arbeiten verschieden"],
+  zeichnen:function(g, t){
+    var gas = stufe(t, 0, 0.22), lauf = stufe(t, 0.22, 0.85), nach = stufe(t, 0.85, 1);
+    var cy = 180, dick = 26, lx = 70, rx = 580, start = lx+20, ende = rx-20;
+    var bx = lauf > 0 ? start + lauf*(ende-start) : start;
+
+    bleche(g, cy, dick, lx, rx, 0);
+    raupe(g, start, bx-6, cy-dick, 8);
+    txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
+
+    var schirm = Math.max(gas, nach);
+    if(schirm > 0.05){
+      pfad(g, "M"+(bx-42)+","+(cy-dick-6)+" Q "+bx+","+(cy-dick-54)+" "+(bx+42)+","+(cy-dick-6)+" Z",
+        "#bae6fd", "none", {opacity:0.45*schirm});
+      txt(g, bx+48, cy-dick-34, nach > 0.05 ? "Gas strömt nach" : "Argon strömt vor",
+        {fill:"#0369a1", size:11.5});
+    }
+    pfad(g, "M"+(bx-22)+","+(cy-dick-96)+" L"+(bx+22)+","+(cy-dick-96)+
+            " L"+(bx+15)+","+(cy-dick-42)+" L"+(bx-15)+","+(cy-dick-42)+" Z",
+      "#94a3b8", "#334155", {sw:1.4});
+    /* Wolframelektrode: bleibt immer gleich lang */
+    pfad(g, "M"+(bx-4)+","+(cy-dick-96)+" L"+(bx+4)+","+(cy-dick-96)+
+            " L"+(bx+4)+","+(cy-dick-26)+" L"+bx+","+(cy-dick-18)+
+            " L"+(bx-4)+","+(cy-dick-26)+" Z", "#cbd5e1", "#334155", {sw:1.3});
+    txt(g, bx-28, cy-dick-92, "Wolfram,", {anchor:"end", fill:"#334155", size:11.5});
+    txt(g, bx-28, cy-dick-78, "schmilzt nicht ab", {anchor:"end", fill:"#334155", size:11.5});
+
+    if(lauf > 0 && lauf < 1){
+      pfad(g, "M"+(bx-5)+","+(cy-dick-18)+" L"+(bx+5)+","+(cy-dick-18)+
+              " L"+(bx+11)+","+(cy-dick-2)+" L"+(bx-11)+","+(cy-dick-2)+" Z",
+        C.glut, "none", {opacity:0.8});
+      var sx = bx + 64 - 22*((t*3) % 1);
+      linie(g, sx+58, cy-dick-92, sx, cy-dick-12, C.eS, 5);
+      txt(g, sx+64, cy-dick-96, "Zusatzstab, von Hand", {fill:C.eS, size:11.5});
+      g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:17, ry:8,
+        fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+    }
+    if(nach >= 1){
+      txt(g, lx+2, cy-dick-30, "Sehr saubere Naht – kaum Spritzer, kein Abklopfen",
+        {fill:"#16a34a", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"up", gruppe:"verfahren", name:"Unterpulverschweißen",
+  nummer:"121", vollteile:["#dbeafe"],
+  art:"Schmelzschweißen", schutz:"Pulver und Schlacke",
+  dicken:"ab 5 mm, sehr dicke Bleche in wenigen Lagen", werkstoffe:"un- und niedriglegierter Stahl",
+  leistung:"sehr hoch", automat:"vollmechanisch, nur Wannenlage",
+  einsatz:"Behälter- und Schiffbau, Träger, Rohrlängsnähte",
+  prinzip:"Der " + wort("lichtbogen") + " brennt unsichtbar unter einer Schüttung aus " +
+          "Pulver. Das Pulver schmilzt teilweise auf, deckt das Bad ab und erstarrt " +
+          "darüber als " + wort("schlacke") + ".",
+  phasen:[
+    {ab:0,    text:"Pulver wird vor dem Draht auf die Fuge geschüttet."},
+    {ab:0.28, text:"Der Draht taucht ins Pulver und zündet – man sieht keinen Lichtbogen."},
+    {ab:0.55, text:"Der Kopf fährt weiter. Unter dem Pulver entsteht eine sehr tiefe, gleichmäßige Naht."},
+    {ab:0.85, text:"Darüber liegt die Schlackenkruste, ungeschmolzenes Pulver wird abgesaugt und wiederverwendet."}],
+  plus:["Höchste Abschmelzleistung, dicke Bleche in wenigen Lagen","Tiefer Einbrand, gleichbleibende Qualität",
+        "Keine Blendung, kein Rauch am Arbeitsplatz"],
+  minus:["Nur Wannenlage – das Pulver muss liegen bleiben","Nur gerade oder runde Nähte, ortsfeste Anlage",
+         "Der Schweißer sieht das Bad nicht"],
+  zeichnen:function(g, t){
+    var lauf = stufe(t, 0.28, 0.88), saug = stufe(t, 0.88, 1);
+    var cy = 190, dick = 30, lx = 70, rx = 580, start = lx+20, ende = rx-30;
+    var bx = start + lauf*(ende-start);
+
+    bleche(g, cy, dick, lx, rx, 0);
+    txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
+    /* tiefer Einbrand: die Naht reicht weit ins Blech */
+    if(bx > start)
+      rect(g, start, cy-dick, (bx-6)-start, dick+8, "#cbd5e1",
+        zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
+
+    /* Pulverschuettung */
+    var pvBis = saug > 0 ? start + ((ende)-start)*saug : ende;
+    pfad(g, "M"+pvBis+","+(cy-dick)+" L"+(rx-10)+","+(cy-dick)+
+            " L"+(rx-10)+","+(cy-dick-26)+" L"+pvBis+","+(cy-dick-26)+" Z",
+      "#fde68a", "#b45309", {sw:1});
+    if(saug < 0.5) txt(g, pvBis+16, cy-dick-32, "Pulverschüttung", {fill:C.lotS, size:11.5});
+    /* erstarrte Schlackenkruste hinter dem Kopf */
+    if(bx > start)
+      rect(g, start, cy-dick-12, (bx-10)-start, 12, C.lot, C.lotS, {sw:1});
+    if(saug > 0.1){
+      kraftpfeil(g, pvBis+20, cy-dick-64, pvBis+20, cy-dick-34, "#0f766e", 2.4);
+      txt(g, pvBis+28, cy-dick-56, "Pulver absaugen und wiederverwenden",
+        {fill:"#0f766e", size:11.5});
+    }
+    if(lauf < 1){
+      rect(g, bx-10, cy-dick-130, 20, 100, "#94a3b8", "#334155", {sw:1.4});
+      linie(g, bx, cy-dick-34, bx, cy-dick-10, C.eS, 3.4);
+      txt(g, bx-18, cy-dick-126, "Drahtvorschub", {anchor:"end", fill:"#334155", size:11.5});
+      txt(g, bx+16, cy-dick-18, "Lichtbogen unsichtbar", {fill:"#b45309", size:11.5});
+    }
+    if(saug >= 1){
+      txt(g, lx+2, cy-dick-46, "Tiefer Einbrand in einer Lage – dafür nur in der Wanne",
+        {fill:"#c2410c", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"laser", gruppe:"verfahren", name:"Laserstrahlschweißen",
+  nummer:"52", vollteile:["#dbeafe"],
+  art:"Schmelzschweißen", schutz:"Schutzgas, je nach Werkstoff",
+  dicken:"0,1 bis 25 mm", werkstoffe:"Stahl, Edelstahl, Aluminium, auch Mischverbindungen",
+  leistung:"hoch bei sehr kleiner Wärmemenge", automat:"nur mechanisiert",
+  einsatz:"Karosseriebau, Feinwerktechnik, Getriebeteile",
+  prinzip:"Ein gebündelter Strahl bringt die Energie auf einen Punkt von Zehntelmillimetern. " +
+          "Das Metall verdampft örtlich und öffnet eine " + wort("dampfkapillare") +
+          ", durch die die Energie tief ins Bauteil gelangt.",
+  phasen:[
+    {ab:0,    text:"Der Strahl wird auf die Fuge fokussiert – der Brennfleck ist Zehntelmillimeter groß."},
+    {ab:0.25, text:"Das Metall verdampft, die Dampfkapillare öffnet sich."},
+    {ab:0.5,  text:"Der Strahl wandert. Die Kapillare wandert mit, dahinter fließt die Schmelze zusammen."},
+    {ab:0.85, text:"Zurück bleibt eine sehr schmale, tiefe Naht mit winziger Wärmeeinflusszone und kaum Verzug."}],
+  plus:["Sehr schmale Naht, minimaler Verzug","Hohe Geschwindigkeit, tiefe Einschweißung",
+        "Berührungslos, gut in Fertigungslinien einzubinden"],
+  minus:["Hohe Anschaffungskosten","Fügeteile müssen sehr genau passen – kaum Spaltüberbrückung",
+         "Umfangreicher Strahlenschutz nötig"],
+  zeichnen:function(g, t){
+    var auf = stufe(t, 0.25, 0.45), lauf = stufe(t, 0.45, 0.9);
+    var cy = 192, dick = 34, lx = 70, rx = 580, start = lx+30, ende = rx-30;
+    var bx = start + lauf*(ende-start);
+
+    bleche(g, cy, dick, lx, rx, 0);
+    txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
+    /* schmale, tiefe Naht */
+    if(bx > start)
+      rect(g, start, cy-dick, (bx-5)-start, 2*dick, "#cbd5e1",
+        zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
+
+    /* Strahlkegel */
+    pfad(g, "M"+(bx-26)+","+(cy-dick-112)+" L"+(bx+26)+","+(cy-dick-112)+
+            " L"+(bx+3)+","+(cy-dick)+" L"+(bx-3)+","+(cy-dick)+" Z",
+      "#fca5a5", "none", {opacity:0.55});
+    rect(g, bx-30, cy-dick-146, 60, 34, "#94a3b8", "#334155", {sw:1.4});
+    txt(g, bx-36, cy-dick-124, "Optik", {anchor:"end", fill:"#334155", size:11.5});
+
+    if(auf > 0.05){
+      /* Dampfkapillare */
+      var tief = (2*dick-6) * auf;
+      pfad(g, "M"+(bx-5)+","+(cy-dick)+" L"+(bx+5)+","+(cy-dick)+
+              " L"+(bx+2)+","+(cy-dick+tief)+" L"+(bx-2)+","+(cy-dick+tief)+" Z",
+        C.glut, "#b45309", {sw:1});
+      txt(g, bx+16, cy-dick+26, "Dampfkapillare", {fill:"#b45309", size:11.5});
+    }
+    if(lauf >= 1){
+      /* Vergleichsbild: was eine Lichtbogennaht hier braeuchte */
+      pfad(g, "M"+(320-44)+","+(cy-dick-14)+" Q 320,"+(cy-dick-40)+" "+(320+44)+","+(cy-dick-14),
+        "none", "#94a3b8", {sw:1.4, dash:"5 4"});
+      txt(g, 320+52, cy-dick-30, "so breit wäre eine Lichtbogennaht",
+        {fill:"#64748b", size:11.5, weight:400});
+      txt(g, lx+2, cy-dick-56, "Schmale Naht, winzige Wärmeeinflusszone, kaum Verzug",
+        {fill:"#16a34a", size:12});
+    }
+  }
+});
+
+/* ---------------------------------------------------------- PRESSSCHWEISSEN -- */
+
+verfahren({
+  id:"punkt", gruppe:"verfahren", name:"Widerstandspunktschweißen",
+  nummer:"21", vollteile:["#dbeafe"],
+  art:"Pressschweißen", schutz:"nicht nötig",
+  dicken:"0,5 bis 3 mm je Blech", werkstoffe:"Stahlbleche, verzinkt und unverzinkt",
+  leistung:"sehr hoch in der Serie", automat:"Standard für Roboter",
+  einsatz:"Karosseriebau, Weißblech, Gehäuse",
+  prinzip:"Zwei Elektroden pressen die Bleche zusammen und schicken einen sehr hohen " +
+          "Strom hindurch. Am Übergangswiderstand zwischen den Blechen entsteht die " +
+          "Wärme – dort bildet sich die " + wort("schweisslinse") + ".",
+  phasen:[
+    {ab:0,    text:"Die Elektroden fahren zu und drücken die Bleche aneinander."},
+    {ab:0.28, text:"Der Strom fließt. Der größte Widerstand liegt zwischen den Blechen – dort wird es am heißesten."},
+    {ab:0.55, text:"Die Schweißlinse wächst. Der Werkstoff schmilzt nur innen, außen bleibt das Blech fest."},
+    {ab:0.82, text:"Strom aus, Kraft bleibt: unter Druck erstarrt die Linse. Erst dann öffnen die Elektroden."}],
+  plus:["Sehr kurze Taktzeit, Sekundenbruchteile je Punkt","Kein Zusatzwerkstoff, kein Schutzgas",
+        "Sauber und gut reproduzierbar in der Serie"],
+  minus:["Nur an zugänglichen Überlappungen","Punkte statt durchgehender Naht – nicht dicht",
+         "Elektroden verschleißen, besonders bei verzinktem Blech"],
+  zeichnen:function(g, t){
+    var zu = stufe(t, 0, 0.28), strom = stufe(t, 0.28, 0.8);
+    var halten = stufe(t, 0.82, 1);
+    var cx = 320, cy = 150, dick = 16;
+    var weg = 26 * (1 - zu);
+
+    /* zwei ueberlappende Bleche */
+    rect(g, 110, cy-dick, 420, dick, C.aF, C.aS, {sw:1.8});
+    rect(g, 110, cy, 420, dick, C.bF, C.bS, {sw:1.8});
+    txt(g, 116, cy-dick-10, "Blech A", {fill:C.aS, size:12});
+    txt(g, 116, cy+dick+20, "Blech B", {fill:C.bS, size:12});
+
+    /* Elektroden */
+    pfad(g, "M"+(cx-22)+","+(cy-dick-86-weg)+" L"+(cx+22)+","+(cy-dick-86-weg)+
+            " L"+(cx+13)+","+(cy-dick-2-weg)+" L"+(cx-13)+","+(cy-dick-2-weg)+" Z",
+      C.eF, C.eS, {sw:1.6});
+    pfad(g, "M"+(cx-22)+","+(cy+dick+86+weg)+" L"+(cx+22)+","+(cy+dick+86+weg)+
+            " L"+(cx+13)+","+(cy+dick+2+weg)+" L"+(cx-13)+","+(cy+dick+2+weg)+" Z",
+      C.eF, C.eS, {sw:1.6});
+    txt(g, cx+30, cy-dick-60-weg, "Elektrode", {fill:C.eS, size:12});
+
+    if(zu > 0.1 || halten > 0.05){
+      kraftpfeil(g, cx-40, cy-dick-108-weg, cx-40, cy-dick-88-weg, "#dc2626", 3);
+      kraftpfeil(g, cx-40, cy+dick+108+weg, cx-40, cy+dick+88+weg, "#dc2626", 3);
+      txt(g, cx-48, cy-dick-98-weg, "Elektrodenkraft", {anchor:"end", fill:"#dc2626", size:11.5});
+    }
+    if(strom > 0.05){
+      /* Stromweg */
+      linie(g, cx, cy-dick-70, cx, cy+dick+70, "#f59e0b", 3, {dash:"7 5", opacity:0.8});
+      txt(g, cx+30, cy-dick+20, "Strom", {fill:"#b45309", size:11.5});
+      /* Linse waechst zwischen den Blechen */
+      var r = 4 + 16*strom;
+      g.appendChild(ns("ellipse", {cx:cx, cy:cy, rx:r, ry:r*0.55,
+        fill:halten > 0.5 ? "#cbd5e1" : C.glut,
+        stroke:halten > 0.5 ? "#64748b" : "#b45309", "stroke-width":1.4}));
+      txt(g, cx+r+16, cy+6, halten > 0.5 ? "Linse erstarrt" : "Schweißlinse wächst",
+        {fill:halten > 0.5 ? "#475569" : "#b45309", size:11.5});
+    }
+    if(halten >= 1){
+      txt(g, 116, cy+dick+44, "Nur innen geschmolzen – die Blechoberfläche bleibt weitgehend heil",
+        {fill:"#16a34a", size:12});
+    }
+  }
+});
+
+verfahren({
+  id:"reib", gruppe:"verfahren", name:"Reibschweißen",
+  nummer:"42", vollteile:["#dbeafe"],
+  art:"Pressschweißen", schutz:"nicht nötig",
+  dicken:"Vollquerschnitte bis etwa 100 mm Durchmesser", werkstoffe:"auch Mischverbindungen, z. B. Stahl mit Aluminium",
+  leistung:"hoch, Sekunden je Teil", automat:"vollmechanisch",
+  einsatz:"Antriebswellen, Ventile, Kolbenstangen",
+  prinzip:"Ein Teil dreht sich, das andere steht. Die Reibung an der Trennfläche erwärmt " +
+          "den Werkstoff bis in den teigigen Zustand. Dann wird gestaucht – der " +
+          "Werkstoff schmilzt dabei nie vollständig.",
+  phasen:[
+    {ab:0,    text:"Ein Teil wird eingespannt und in Drehung versetzt, das andere steht still."},
+    {ab:0.25, text:"Die Teile werden aneinandergepresst. Die Reibfläche wird heiß."},
+    {ab:0.55, text:"Der Werkstoff wird teigig und quillt seitlich heraus."},
+    {ab:0.8,  text:"Die Drehung wird gestoppt und kräftig gestaucht. Der Wulst wird später abgedreht."}],
+  plus:["Sehr gleichmäßige Qualität, gut prüfbar","Auch Werkstoffkombinationen, die sich nicht schmelzschweißen lassen",
+        "Kein Zusatzwerkstoff, kein Schutzgas, keine Blendung"],
+  minus:["Nur rotationssymmetrische Teile","Aufwendige, teure Maschine",
+         "Der Wulst muss nachträglich abgearbeitet werden"],
+  zeichnen:function(g, t){
+    var press = stufe(t, 0.25, 0.5), heiss = stufe(t, 0.5, 0.78), stauch = stufe(t, 0.8, 1);
+    var cy = 150, r = 40, cx = 320;
+    var luecke = 70 * (1 - press);          /* vor dem Anpressen stehen sie auseinander */
+    var kurz = 16 * stauch;                 /* beim Stauchen werden beide kuerzer */
+
+    var linksBis  = cx - luecke/2;
+    var rechtsAb  = cx + luecke/2;
+    rect(g, 90 + kurz, cy-r, linksBis-(90+kurz), 2*r, C.aF, C.aS, {sw:1.8});
+    rect(g, rechtsAb, cy-r, (550-kurz)-rechtsAb, 2*r, C.bF, C.bS, {sw:1.8});
+    txt(g, 96+kurz, cy-r-12, "steht still", {fill:C.aS, size:12});
+    txt(g, 544-kurz, cy+r+22, "dreht sich", {anchor:"end", fill:C.bS, size:12});
+
+    /* Drehsinn: ueber dem rechten Teil, damit er keine Beschriftung kreuzt */
+    pfad(g, "M536,64 a 20 20 0 1 1 -14,-6", "none", "#1d4ed8", {sw:2.4});
+    pfad(g, "M518,52 l 5,-7 l 8,5 z", "#1d4ed8", "none");
+
+    if(press > 0.05){
+      kraftpfeil(g, 58, cy, 84+kurz, cy, "#dc2626", 3);
+      kraftpfeil(g, 582, cy, 556-kurz, cy, "#dc2626", 3);
+      txt(g, 58, cy-14, "Anpresskraft", {fill:"#dc2626", size:11.5});
+    }
+    if(heiss > 0.05 && stauch < 1){
+      g.appendChild(ns("ellipse", {cx:cx, cy:cy, rx:10, ry:r,
+        fill:C.glut, stroke:"none", opacity:0.8*heiss}));
+      txt(g, cx+20, cy-r-14, "teigig, nicht flüssig", {fill:"#b45309", size:11.5});
+    }
+    if(stauch > 0.05){
+      /* Der verdraengte Werkstoff quillt am Stoss nach aussen. */
+      var w = 20*stauch, h = 13*stauch;
+      pfad(g, "M"+(cx-w)+","+(cy-r)+" Q "+cx+","+(cy-r-2*h)+" "+(cx+w)+","+(cy-r)+" Z",
+        C.bF, C.bS, {sw:1.4});
+      pfad(g, "M"+(cx-w)+","+(cy+r)+" Q "+cx+","+(cy+r+2*h)+" "+(cx+w)+","+(cy+r)+" Z",
+        C.bF, C.bS, {sw:1.4});
+      txt(g, cx-w-18, cy-r-2*h-4, "Wulst – wird später abgedreht",
+        {anchor:"end", fill:C.bS, size:11.5});
+      linie(g, cx-w-14, cy-r-2*h-8, cx-w+4, cy-r-h, C.bS, 1);
+    }
+    if(stauch >= 1){
+      linie(g, cx, cy-r, cx, cy+r, C.bS, 1.4, {dash:"5 4"});
+      txt(g, 96, cy+r+46, "Der Werkstoff war nie flüssig – deshalb auch Mischverbindungen möglich",
+        {fill:"#16a34a", size:12});
+    }
+  }
+});
+
+/* Reihenfolge im Abspieler: erst Schmelz-, dann Pressschweissen. */
+VERFAHREN.sort(function(a, b){
+  var r = {Schmelzschweißen:0, Pressschweißen:1};
+  return r[a.art] - r[b.art];
+});
+
+function ausGruppe(gruppe){
+  return VERFAHREN.filter(function(v){ return v.gruppe === gruppe; });
+}
+
+/* Reihenfolge im Abspieler: erst die Schmelz-, dann die Pressschweissverfahren. */
+var GRUPPEN = {verfahren:{name:"Schwei\u00dfverfahren", farbe:"#c2410c"}};
+
+function zeichneVerfahren(gruppe){
+  var z = gruppen[gruppe];
+  var v = z.aktiv;
+  var svg = el("svg-" + gruppe);
+  leeren(svg); spitzen(svg, FARBEN);
+  var g = ns("g", {}); svg.appendChild(g);
+  aktVollteile = v.nurAnsicht ? "alle" : (v.vollteile || null);
+  vollteilSchnitt = false;
+  v.zeichnen(g, z.t);
+  aktVollteile = null;
+  /* Mittellinien gehoeren zur Normdarstellung und liegen ueber den Flaechen.
+     "achse" darf eine Funktion sein: bei der Passfeder kommt der Querschnitt
+     erst in der Lastphase dazu, vorher waere dort eine Achse ohne Bauteil. */
+  if(zustand.norm && v.achse)
+    mittellinien(g, typeof v.achse === "function" ? v.achse(z.t) : v.achse);
+
+  /* Phasentext: die letzte Phase, deren Startwert erreicht ist */
+  var ph = v.phasen[0];
+  for(var i=0;i<v.phasen.length;i++){ if(z.t >= v.phasen[i].ab) ph = v.phasen[i]; }
+  var p = el("phase-" + gruppe);
+  p.className = (z.t >= v.phasen[v.phasen.length-1].ab) ? "gut" : "merke";
+  p.innerHTML = "<b>Schritt " + (v.phasen.indexOf(ph)+1) + " von " + v.phasen.length + ":</b> " +
+    ph.text;
+  begriffeZeichnen(p);
+}
+
+function infoSchreiben(gruppe){
+  var v = gruppen[gruppe].aktiv;
+  el("info-" + gruppe).innerHTML =
+    "<h3>Wie es wirkt</h3><p>" + v.prinzip + "</p>" +
+    (v.wirkt ? "<p class='fussnote'>Wirkprinzip: <b>" + v.wirkt + "</b></p>" : "") +
+    "<div class='paar'>" +
+      "<div class='plus'><h4>Vorteile</h4><ul>" +
+        v.plus.map(function(s){ return "<li>" + s + "</li>"; }).join("") + "</ul></div>" +
+      "<div class='minus'><h4>Grenzen</h4><ul>" +
+        v.minus.map(function(s){ return "<li>" + s + "</li>"; }).join("") + "</ul></div>" +
+    "</div>";
+  begriffeZeichnen(el("info-" + gruppe));
+}
+
+function verfahrenWaehlen(gruppe, id){
+  var z = gruppen[gruppe];
+  var liste = ausGruppe(gruppe);
+  z.aktiv = liste.filter(function(v){ return v.id === id; })[0] || liste[0];
+  z.t = 0;
+  el("reg-" + gruppe).value = 0;
+  if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
+  var kn = el("wahl-" + gruppe).querySelectorAll("button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].setAttribute("aria-pressed",
+      kn[i].getAttribute("data-id") === z.aktiv.id ? "true" : "false");
+  }
+  infoSchreiben(gruppe);
+  zeichneVerfahren(gruppe);
+}
+
+function abspielen(gruppe){
+  var z = gruppen[gruppe];
+  if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
+  var dauer = 4200, start = null;
+  var von = z.t >= 0.999 ? 0 : z.t;
+  function schritt(zeit){
+    if(start === null) start = zeit;
+    var p = Math.min(1, (zeit - start) / dauer);
+    z.t = von + (1 - von) * p;
+    el("reg-" + gruppe).value = Math.round(z.t * 100);
+    zeichneVerfahren(gruppe);
+    if(p < 1){ z.lauf = requestAnimationFrame(schritt); } else { z.lauf = null; }
+  }
+  z.lauf = requestAnimationFrame(schritt);
+}
+
+function gruppeAufbauen(gruppe){
+  gruppen[gruppe] = {aktiv:null, t:0, lauf:null};
+  var liste = ausGruppe(gruppe);
+  var wahl = el("wahl-" + gruppe);
+  liste.forEach(function(v){
+    var b = document.createElement("button");
+    b.textContent = v.name;
+    b.setAttribute("data-id", v.id);
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){ verfahrenWaehlen(gruppe, v.id); });
+    wahl.appendChild(b);
+  });
+  el("reg-" + gruppe).addEventListener("input", function(){
+    var z = gruppen[gruppe];
+    if(z.lauf){ cancelAnimationFrame(z.lauf); z.lauf = null; }
+    z.t = parseFloat(this.value) / 100;
+    zeichneVerfahren(gruppe);
+  });
+  document.querySelector('[data-play="' + gruppe + '"]')
+    .addEventListener("click", function(){ abspielen(gruppe); });
+
+  /* Vergleichstabelle der Verfahren */
+  var h = "<thead><tr><th>Verfahren</th><th class='mitte'>Nr.</th><th>Art</th><th>Schutz</th>" +
+          "<th>Blechdicke</th><th>Werkstoffe</th><th>Leistung</th><th>Automatisierung</th>" +
+          "<th>Typischer Einsatz</th></tr></thead><tbody>";
+  liste.forEach(function(v){
+    h += "<tr><td><b>" + v.name + "</b></td><td class='mitte'>" + v.nummer + "</td><td>" +
+         v.art + "</td><td>" + v.schutz + "</td><td>" + v.dicken + "</td><td>" +
+         v.werkstoffe + "</td><td>" + v.leistung + "</td><td>" + v.automat +
+         "</td><td>" + v.einsatz + "</td></tr>";
+  });
+  el("tab-" + gruppe).innerHTML = h + "</tbody>";
+  begriffeZeichnen(el("tab-" + gruppe));
+
+  verfahrenWaehlen(gruppe, liste[0].id);
+}
+/* ============================================================================
+   4  GRUNDLAGEN
+   ========================================================================== */
+
+/* --- Zonen der Schweissnaht ------------------------------------------------
+   Massgebend ist nicht die Temperatur im Augenblick, sondern die hoechste,
+   die eine Stelle waehrend des Schweissens erreicht hat. Daraus folgt das
+   Gefuege, das nach dem Abkuehlen dort steht. */
+var ZONEN = [
+  {bis:0.10, name:"Schweißgut",        temp:"über 1500 °C",
+   gefuege:"aufgeschmolzen und wieder erstarrt, grob und gerichtet",
+   satz:"Hier war alles flüssig. Das Gefüge erstarrt gerichtet von der Fugenwand her – " +
+        "grobe Körner, die in Richtung der Nahtmitte wachsen.", farbe:"#fca5a5"},
+  {bis:0.26, name:"Grobkornzone",      temp:"1100 bis 1500 °C",
+   gefuege:"stark vergröbert",
+   satz:"Knapp unter der Schmelze. Die Körner hatten Zeit zu wachsen und sind grob – " +
+        "diese Zone ist die zäheste Stelle nicht, sondern die spannungsempfindlichste. " +
+        "Hier reißen Schweißverbindungen am häufigsten.", farbe:"#fdba74"},
+  {bis:0.44, name:"Feinkornzone",      temp:"900 bis 1100 °C",
+   gefuege:"fein umgekörnt",
+   satz:"Vollständig umgekörnt, aber ohne Zeit zum Wachsen. Feines Korn – " +
+        "die mechanisch beste Zone der ganzen Naht.", farbe:"#fde68a"},
+  {bis:0.64, name:"Umkörnungszone",    temp:"723 bis 900 °C",
+   gefuege:"nur teilweise umgekörnt",
+   satz:"Nur ein Teil des Gefüges hat sich umgewandelt. Das Ergebnis ist ungleichmäßig: " +
+        "umgekörnte und unveränderte Bereiche nebeneinander.", farbe:"#d9f99d"},
+  {bis:0.82, name:"Anlasszone",        temp:"unter 723 °C",
+   gefuege:"angelassen, etwas weicher",
+   satz:"Zu kalt für eine Umwandlung, aber warm genug zum Anlassen. Bei vorher gehärteten " +
+        "Stählen wird das Gefüge hier weicher.", farbe:"#bbf7d0"},
+  {bis:1.00, name:"Grundwerkstoff",    temp:"nahezu unverändert",
+   gefuege:"unbeeinflusst",
+   satz:"Weit genug weg. Das Gefüge ist das des Ausgangsblechs.", farbe:"#e2e8f0"}
+];
+
+function zonenBild(anteil){
+  var svg = el("svgZonen");
+  leeren(svg); spitzen(svg, FARBEN);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var cx = 320, cy = 118, dick = 46, halb = 250;
+  /* Zonen als Baender links und rechts der Nahtmitte */
+  ZONEN.forEach(function(z, i){
+    var von = i === 0 ? 0 : ZONEN[i-1].bis;
+    [-1, 1].forEach(function(v){
+      var x1 = cx + v*von*halb, x2 = cx + v*z.bis*halb;
+      rect(g, Math.min(x1,x2), cy-dick, Math.abs(x2-x1), 2*dick,
+        zustand.norm ? "#ffffff" : z.farbe, "none");
+    });
+  });
+  /* Blechkontur und Trennlinien */
+  rect(g, cx-halb, cy-dick, 2*halb, 2*dick, "none",
+    zustand.norm ? NORM_KANTE : C.aS, {sw:zustand.norm ? NORM_BREIT : 1.8});
+  ZONEN.forEach(function(z, i){
+    if(i === ZONEN.length-1) return;
+    [-1, 1].forEach(function(v){
+      linie(g, cx + v*z.bis*halb, cy-dick, cx + v*z.bis*halb, cy+dick,
+        zustand.norm ? NORM_KANTE : "#94a3b8", zustand.norm ? NORM_SCHMAL : 1,
+        {dash:"4 3"});
+    });
+  });
+  /* Nahtueberhoehung */
+  pfad(g, "M"+(cx-ZONEN[0].bis*halb)+","+(cy-dick)+" q "+(ZONEN[0].bis*halb)+",-16 "+
+          (2*ZONEN[0].bis*halb)+",0 Z",
+    zustand.norm ? "#ffffff" : ZONEN[0].farbe,
+    zustand.norm ? NORM_KANTE : C.aS, {sw:zustand.norm ? NORM_BREIT : 1.6});
+
+  /* Marke an der gewaehlten Stelle */
+  var mx = cx + anteil*halb;
+  linie(g, mx, cy-dick-30, mx, cy+dick+18, "#1d4ed8", 2);
+  g.appendChild(ns("circle", {cx:mx, cy:cy+dick+18, r:6, fill:"#1d4ed8"}));
+
+  /* Temperaturverlauf darunter: Hoechsttemperatur ueber dem Abstand */
+  var ty = 300, th = 92;
+  linie(g, cx-halb, ty, cx+halb, ty, "#94a3b8", 1.2);
+  linie(g, cx, ty, cx, ty-th-8, "#94a3b8", 1.2);
+  txt(g, cx-halb, ty+18, "Abstand von der Nahtmitte", {fill:"#64748b", size:11.5, weight:400});
+  txt(g, cx+6, ty-th-12, "höchste erreichte Temperatur", {fill:"#64748b", size:11.5, weight:400});
+
+  var d = "", i;
+  for(i = 0; i <= 60; i++){
+    var a = i/60;
+    /* Glockenfoermiger Abfall - so verlaeuft die Spitzentemperatur wirklich */
+    var T = Math.exp(-Math.pow(a*2.55, 2));
+    var x = cx + a*halb, y = ty - T*th;
+    d += (i ? " L" : "M") + x.toFixed(1) + "," + y.toFixed(1);
+    if(i){ /* gespiegelt nach links */ }
+  }
+  pfad(g, d, "none", "#c2410c", {sw:2.2});
+  var dl = d.replace(/([ML])(\d+(?:\.\d+)?),/g, function(_, b, xs){
+    return b + (2*cx - parseFloat(xs)).toFixed(1) + ",";
+  });
+  pfad(g, dl, "none", "#c2410c", {sw:2.2});
+
+  /* Kennlinien der wichtigen Temperaturen */
+  [[1.0, "1500 °C  Schmelze"], [0.62, "1100 °C"], [0.40, "900 °C  AC3"], [0.24, "723 °C  AC1"]]
+    .forEach(function(k){
+      linie(g, cx-halb, ty-k[0]*th, cx+halb, ty-k[0]*th, "#cbd5e1", 1, {dash:"6 4"});
+      txt(g, cx+halb+4, ty-k[0]*th+4, k[1], {fill:"#64748b", size:10.5, weight:400});
+    });
+
+  var Tm = Math.exp(-Math.pow(anteil*2.55, 2));
+  g.appendChild(ns("circle", {cx:mx, cy:ty-Tm*th, r:5, fill:"#1d4ed8"}));
+  linie(g, mx, ty-Tm*th, mx, ty, "#1d4ed8", 1.4, {dash:"3 3"});
+}
+
+/* Legende: ohne sie muesste man den Regler abfahren, um die Baender zu
+   benennen - die Karte soll aber auch im Stehen lesbar sein. */
+function zonenLegende(){
+  var wrap = el("zonLegende");
+  if(wrap.childElementCount) return;
+  ZONEN.forEach(function(z){
+    var d = document.createElement("div");
+    d.className = "kachel";
+    d.style.cursor = "default";
+    d.innerHTML = '<span style="display:block;height:12px;border-radius:3px;background:' +
+      z.farbe + ';border:1px solid #cbd5e1"></span>' +
+      '<span class="name">' + z.name + '</span><span class="sub">' + z.temp + '</span>';
+    wrap.appendChild(d);
+  });
+}
+
+function zoneFinden(anteil){
+  for(var i=0;i<ZONEN.length;i++) if(anteil <= ZONEN[i].bis) return ZONEN[i];
+  return ZONEN[ZONEN.length-1];
+}
+
+function zonenNeu(){
+  var anteil = parseFloat(el("regZone").value) / 100;
+  var z = zoneFinden(anteil);
+  /* 25 mm entsprechen dem halben Bild - die Zonen sind stark ueberhoeht. */
+  el("zonAbl").textContent = (anteil*25).toFixed(1).replace(".", ",") + " mm";
+  zonenBild(anteil);
+  zonenLegende();
+  var kasten = anteil <= 0.26 ? "warnung" : (anteil <= 0.44 ? "gut" : "merke");
+  el("zonText").innerHTML =
+    '<div class="' + kasten + '"><b>' + z.name + '</b> &ndash; ' + z.temp +
+    ', Gef&uuml;ge ' + z.gefuege + '.<br>' + z.satz + '</div>';
+  begriffeZeichnen(el("zonText"));
+}
+
+/* --- Schweisseignung ------------------------------------------------------- */
+var STAEHLE = [
+  {n:"S235JR",     c:17,  mn:140, cr:0,   ni:0},
+  {n:"S355J2",     c:20,  mn:160, cr:0,   ni:0},
+  {n:"E295",       c:25,  mn:130, cr:0,   ni:0},
+  {n:"C45",        c:45,  mn:65,  cr:0,   ni:0},
+  {n:"25CrMo4",    c:25,  mn:70,  cr:115, ni:0},
+  {n:"42CrMo4",    c:42,  mn:75,  cr:110, ni:0},
+  {n:"X5CrNi18-10",c:5,   mn:200, cr:180, ni:900}
+];
+
+function cevWerte(){
+  return {
+    c:  parseFloat(el("cevC").value)  / 100,
+    mn: parseFloat(el("cevMn").value) / 100,
+    cr: parseFloat(el("cevCr").value) / 100,
+    ni: parseFloat(el("cevNi").value) / 100
+  };
+}
+
+function z2(x, n){ return x.toFixed(n === undefined ? 2 : n).replace(".", ","); }
+
+function cevNeu(){
+  var w = cevWerte();
+  var cev = w.c + w.mn/6 + w.cr/5 + w.ni/15;
+  el("cevCAbl").textContent  = z2(w.c);
+  el("cevMnAbl").textContent = z2(w.mn);
+  el("cevCrAbl").textContent = z2(w.cr);
+  el("cevNiAbl").textContent = z2(w.ni);
+
+  var stufe = cev <= 0.45 ? 0 : (cev <= 0.60 ? 1 : 2);
+  var klasse = ["gutwert", "warnwert", "badwert"][stufe];
+  var urteil = ["gut schweißgeeignet", "bedingt schweißgeeignet", "nur mit Sorgfalt"][stufe];
+  var vor    = ["nicht nötig", "meist nötig", "immer nötig"][stufe];
+
+  el("cevWerte").innerHTML =
+    '<div class="wert ' + klasse + '"><span class="l">Kohlenstoff&auml;quivalent CEV</span>' +
+      '<span class="z">' + z2(cev) + '</span></div>' +
+    '<div class="wert ' + klasse + '"><span class="l">Einstufung</span>' +
+      '<span class="z" style="font-size:1rem">' + urteil + '</span></div>' +
+    '<div class="wert"><span class="l">Vorw&auml;rmen</span>' +
+      '<span class="z" style="font-size:1rem">' + vor + '</span></div>';
+
+  var texte = [
+    '<div class="gut"><b>CEV bis 0,45:</b> Der Stahl l&auml;sst sich ohne besondere Ma&szlig;nahmen ' +
+    'schwei&szlig;en. Das ist der Bereich der Baust&auml;hle &ndash; genau deshalb steht im Stahlbau ' +
+    'S235 und S355 und nicht C45.</div>',
+    '<div class="merke"><b>CEV 0,45 bis 0,60:</b> Beim Abk&uuml;hlen droht ' +
+    wort("aufhaertung") + ' in der ' + wort("waermeeinfluss") + '. Gegenmittel: ' +
+    wort("vorwaermen") + ', langsam abk&uuml;hlen lassen, trockene Elektroden verwenden.</div>',
+    '<div class="warnung"><b>CEV &uuml;ber 0,60:</b> Ohne ' + wort("vorwaermen") +
+    ' und W&auml;rmenachbehandlung entstehen harte, rissanf&auml;llige Zonen. ' +
+    'Solche St&auml;hle werden geschwei&szlig;t, aber nach Schwei&szlig;anweisung &ndash; ' +
+    'nicht nach Gef&uuml;hl.</div>'
+  ];
+  /* Das CEV gilt nur fuer umwandlungsfaehige Staehle. Ein austenitischer
+     Stahl kommt auf eine hohe Zahl und ist trotzdem gut schweissgeeignet -
+     ohne diesen Hinweis waere die Anzeige schlicht falsch. */
+  var austenitisch = w.ni >= 6;
+  el("cevText").innerHTML = (austenitisch
+    ? '<div class="warnung"><b>Hier gilt das CEV nicht.</b> Austenitische St&auml;hle ' +
+      'wandeln beim Abk&uuml;hlen nicht um &ndash; sie h&auml;rten also gar nicht auf, ' +
+      'egal wie hoch die Zahl ist. Sie sind gut schwei&szlig;geeignet; die Fragen sind ' +
+      'dort andere: W&auml;rmeeinbringung begrenzen, Verzug beherrschen, ' +
+      'Chromkarbidausscheidung vermeiden.</div>'
+    : texte[stufe]) +
+    '<p class="fussnote">Die genaue Vorw&auml;rmtemperatur h&auml;ngt au&szlig;erdem an ' +
+    'Blechdicke, Wasserstoffgehalt und Einspannung; EN 1011-2 rechnet sie daraus aus. ' +
+    'Das CEV allein sagt nur, ob man &uuml;berhaupt darüber nachdenken muss.</p>';
+  begriffeZeichnen(el("cevText"));
+}
+
+function cevAufbauen(){
+  var sel = el("cevStahl");
+  STAEHLE.forEach(function(st, i){
+    var o = document.createElement("option");
+    o.value = i; o.textContent = st.n;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change", function(){
+    var st = STAEHLE[parseInt(this.value, 10)];
+    el("cevC").value = st.c; el("cevMn").value = st.mn;
+    el("cevCr").value = st.cr; el("cevNi").value = st.ni;
+    cevNeu();
+  });
+  ["cevC","cevMn","cevCr","cevNi"].forEach(function(id){
+    el(id).addEventListener("input", cevNeu);
+  });
+  cevNeu();
+}
+
+/* --- Verzug ---------------------------------------------------------------- */
+var VERZUG = [
+  {id:"quer", name:"Querschrumpfung",
+   satz:"Die Naht zieht sich quer zusammen. Die Bleche r&uuml;cken aufeinander zu &ndash; " +
+        "ein l&auml;ngeres Bauteil wird messbar schmaler.",
+   mittel:["Spalt mit Vorhaltema&szlig; gr&ouml;&szlig;er anrei&szlig;en",
+           "Heftstellen eng setzen","Von der Mitte nach au&szlig;en schwei&szlig;en"]},
+  {id:"laengs", name:"L&auml;ngsschrumpfung",
+   satz:"Auch in Nahtrichtung schrumpft das Schwei&szlig;gut. Ist die Naht au&szlig;ermittig, " +
+        "kr&uuml;mmt sich das ganze Bauteil.",
+   mittel:["N&auml;hte symmetrisch zur Schwerachse legen",
+           "Pilgerschritt statt durchgehender Raupe","Gegenschwei&szlig;en auf der anderen Seite"]},
+  {id:"winkel", name:"Winkelschrumpfung",
+   satz:"Oben ist mehr Schwei&szlig;gut als unten, also schrumpft es oben st&auml;rker. " +
+        "Die Bleche klappen zueinander &ndash; der klassische Dachwinkel.",
+   mittel:["Doppel-V-Naht statt V-Naht","Wechselnd von beiden Seiten schwei&szlig;en",
+           "Gegen den zu erwartenden Winkel vorspannen"]}
+];
+var verzugAktiv = "quer";
+
+function verzugBild(){
+  var svg = el("svgVerzug");
+  leeren(svg); spitzen(svg, FARBEN);
+  var g = ns("g", {}); svg.appendChild(g);
+  var cy = 120, dick = 22, cx = 320;
+
+  if(verzugAktiv === "quer"){
+    rect(g, 90, cy-dick, 200, 2*dick, C.aF, C.aS, {sw:1.8});
+    rect(g, 350, cy-dick, 200, 2*dick, C.bF, C.bS, {sw:1.8});
+    rect(g, 290, cy-dick, 60, 2*dick, "#cbd5e1", "#64748b", {sw:1.4});
+    kraftpfeil(g, 200, cy-dick-26, 268, cy-dick-26, "#dc2626", 3);
+    kraftpfeil(g, 440, cy-dick-26, 372, cy-dick-26, "#dc2626", 3);
+    txt(g, 320, cy-dick-36, "die Naht zieht die Bleche zusammen",
+      {anchor:"middle", fill:"#dc2626", size:12});
+    linie(g, 290, cy+dick+14, 350, cy+dick+14, "#1d4ed8", 2);
+    txt(g, 320, cy+dick+34, "hier fehlt hinterher Breite",
+      {anchor:"middle", fill:"#1d4ed8", size:11.5});
+  }else if(verzugAktiv === "laengs"){
+    /* gekruemmter Traeger */
+    var d = "", i;
+    for(i=0;i<=40;i++){
+      var x = 80 + i*12, f = Math.sin(Math.PI*i/40)*22;
+      d += (i ? " L" : "M") + x + "," + (cy - dick + f).toFixed(1);
+    }
+    for(i=40;i>=0;i--){
+      var x2 = 80 + i*12, f2 = Math.sin(Math.PI*i/40)*22;
+      d += " L" + x2 + "," + (cy + dick + f2).toFixed(1);
+    }
+    pfad(g, d + " Z", C.aF, C.aS, {sw:1.8});
+    var dn = "", j;
+    for(j=0;j<=40;j++){
+      var x3 = 80 + j*12, f3 = Math.sin(Math.PI*j/40)*22;
+      dn += (j ? " L" : "M") + x3 + "," + (cy - dick + 6 + f3).toFixed(1);
+    }
+    pfad(g, dn, "none", "#64748b", {sw:5});
+    linie(g, 80, cy-dick, 560, cy-dick, "#94a3b8", 1.4, {dash:"7 5"});
+    txt(g, 84, cy-dick-10, "so lag das Blech vorher", {fill:"#64748b", size:11.5, weight:400});
+    txt(g, 200, cy+dick+64, "außermittige Naht krümmt das ganze Bauteil",
+      {fill:"#dc2626", size:12});
+  }else{
+    /* Winkelschrumpfung: zwei Bleche klappen zueinander */
+    var w = 9;
+    pfad(g, "M100,"+(cy+40)+" L"+cx+","+(cy-6)+" L"+cx+","+(cy+18)+" L100,"+(cy+64)+" Z",
+      C.aF, C.aS, {sw:1.8});
+    pfad(g, "M540,"+(cy+40)+" L"+cx+","+(cy-6)+" L"+cx+","+(cy+18)+" L540,"+(cy+64)+" Z",
+      C.bF, C.bS, {sw:1.8});
+    pfad(g, "M"+(cx-30)+","+(cy-2)+" L"+(cx+30)+","+(cy-2)+" L"+(cx+24)+","+(cy-20)+
+            " L"+(cx-24)+","+(cy-20)+" Z", "#cbd5e1", "#64748b", {sw:1.4});
+    linie(g, 100, cy+52, 540, cy+52, "#94a3b8", 1.4, {dash:"7 5"});
+    txt(g, 104, cy+72, "ohne Verzug lägen die Bleche hier",
+      {fill:"#64748b", size:11.5, weight:400});
+    txt(g, cx+46, cy-24, "oben mehr Schweißgut – oben schrumpft es stärker",
+      {fill:"#dc2626", size:12});
+  }
+}
+
+function verzugNeu(){
+  var v = VERZUG.filter(function(x){ return x.id === verzugAktiv; })[0];
+  var kn = el("wahlVerzug").querySelectorAll("button");
+  for(var i=0;i<kn.length;i++)
+    kn[i].setAttribute("aria-pressed", kn[i].getAttribute("data-id") === verzugAktiv ? "true" : "false");
+  verzugBild();
+  el("verzugText").innerHTML =
+    '<p>' + v.satz + '</p><div class="gut"><b>Gegenma&szlig;nahmen:</b><ul>' +
+    v.mittel.map(function(m){ return "<li>" + m + "</li>"; }).join("") + '</ul></div>';
+  begriffeZeichnen(el("verzugText"));
+}
+
+function verzugAufbauen(){
+  var w = el("wahlVerzug");
+  VERZUG.forEach(function(v){
+    var b = document.createElement("button");
+    b.innerHTML = v.name;
+    b.setAttribute("data-id", v.id);
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){ verzugAktiv = v.id; verzugNeu(); });
+    w.appendChild(b);
+  });
+  verzugNeu();
+}
+
+/* ============================================================================
+   5  STÖSSE UND NÄHTE
+   ========================================================================== */
+var STOESSE = [
+  {id:"stumpf",  name:"Stumpfstoß",   naht:"I-, V-, X- oder U-Naht",
+   satz:"Die Bleche liegen in einer Ebene und stoßen mit den Kanten aneinander. " +
+        "Die Kraft geht geradlinig durch – der günstigste Stoß, wenn er zugänglich ist."},
+  {id:"t",       name:"T-Stoß",       naht:"Kehlnaht, bei hoher Last HV-Naht",
+   satz:"Ein Blech steht senkrecht auf dem anderen. Standardfall im Stahlbau; " +
+        "meist genügt beidseitig eine Kehlnaht."},
+  {id:"ueber",   name:"Überlappstoß", naht:"Kehlnaht, Punkt- oder Loch­naht",
+   satz:"Die Bleche liegen übereinander. Keine Nahtvorbereitung nötig, dafür " +
+        "versetzte Kraftlinien – das erzeugt zusätzliche Biegung."},
+  {id:"eck",     name:"Eckstoß",      naht:"Kehlnaht oder HV-Naht",
+   satz:"Zwei Bleche treffen sich in der Ecke. Innen und außen schweißbar; " +
+        "außen liegt die Naht sichtbar, innen ist sie schwer zugänglich."},
+  {id:"kreuz",   name:"Kreuzstoß",    naht:"vier Kehlnähte",
+   satz:"Zwei Bleche stoßen von beiden Seiten auf ein durchlaufendes. " +
+        "Achtung Terrassenbruch: Die Zugkraft wirkt quer zur Walzrichtung."},
+  {id:"schraeg", name:"Schrägstoß",   naht:"wie beim Stumpfstoß",
+   satz:"Wie ein Stumpfstoß, nur nicht rechtwinklig. Die Naht wird länger und " +
+        "die Spannung darin kleiner."}
+];
+var stossAktiv = "stumpf";
+
+function stossSkizze(svg, id){
+  leeren(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+  var A = "#99f6e4", B = "#5eead4", S = "#0f766e", n = "#c2410c";
+  function bl(x, y, w, h, f){ rect(g, x, y, w, h, f, S, {sw:1.4}); }
+  function naht(d){ pfad(g, d, n, n, {sw:1}); }
+  if(id === "stumpf"){
+    bl(10, 44, 72, 18, A); bl(88, 44, 72, 18, B);
+    naht("M82,44 L88,44 L88,62 L82,62 Z");
+  }else if(id === "t"){
+    bl(10, 62, 150, 18, A); bl(76, 12, 18, 50, B);
+    naht("M76,62 L62,62 L76,48 Z"); naht("M94,62 L108,62 L94,48 Z");
+  }else if(id === "ueber"){
+    bl(10, 40, 92, 18, A); bl(72, 58, 92, 18, B);
+    naht("M102,40 L102,58 L116,58 Z"); naht("M72,76 L58,76 L72,58 Z");
+  }else if(id === "eck"){
+    bl(10, 62, 90, 18, A); bl(82, 12, 18, 50, B);
+    naht("M82,62 L68,62 L82,48 Z"); naht("M100,62 L100,48 L114,62 Z");
+  }else if(id === "kreuz"){
+    bl(10, 44, 150, 18, A); bl(76, 4, 18, 40, B); bl(76, 62, 18, 40, B);
+    naht("M76,44 L64,44 L76,32 Z"); naht("M94,44 L106,44 L94,32 Z");
+    naht("M76,62 L64,62 L76,74 Z"); naht("M94,62 L106,62 L94,74 Z");
+  }else{
+    pfad(g, "M10,44 L74,44 L96,62 L10,62 Z", A, S, {sw:1.4});
+    pfad(g, "M84,44 L160,44 L160,62 L106,62 Z", B, S, {sw:1.4});
+    naht("M74,44 L84,44 L106,62 L96,62 Z");
+  }
+}
+
+function stossNeu(){
+  var st = STOESSE.filter(function(x){ return x.id === stossAktiv; })[0];
+  var kn = el("stoesse").querySelectorAll("button");
+  for(var i=0;i<kn.length;i++)
+    kn[i].setAttribute("aria-pressed", kn[i].getAttribute("data-id") === stossAktiv ? "true" : "false");
+  el("stossText").innerHTML =
+    '<div class="merke"><b>' + st.name + '</b> &ndash; ' + st.satz +
+    '<br><b>&Uuml;bliche Naht:</b> ' + st.naht + '</div>';
+  begriffeZeichnen(el("stossText"));
+}
+
+function stoesseAufbauen(){
+  var wrap = el("stoesse");
+  STOESSE.forEach(function(st){
+    var b = document.createElement("button");
+    b.className = "kachel";
+    b.setAttribute("data-id", st.id);
+    b.setAttribute("aria-pressed", "false");
+    var svg = ns("svg", {viewBox:"0 0 170 106", role:"img"});
+    svg.setAttribute("aria-label", st.name);
+    b.appendChild(svg);
+    var nm = document.createElement("span");
+    nm.className = "name"; nm.textContent = st.name;
+    var su = document.createElement("span");
+    su.className = "sub"; su.textContent = st.naht;
+    b.appendChild(nm); b.appendChild(su);
+    b.addEventListener("click", function(){ stossAktiv = st.id; stossNeu(); });
+    wrap.appendChild(b);
+    stossSkizze(svg, st.id);
+  });
+  stossNeu();
+}
+
+/* --- Nahtquerschnitt ------------------------------------------------------- */
+/* Jede Fugenform hat ihren ueblichen Oeffnungswinkel. Mit 60 Grad an einer
+   U-Naht kaeme Unsinn heraus - deshalb setzt der Wechsel die Regler mit. */
+var NAHT_VORGABE = {i:{a:0, c:0, b:2}, v:{a:60, c:2, b:2}, hv:{a:45, c:2, b:2},
+                    x:{a:60, c:2, b:2}, u:{a:16, c:3, b:2}, kehl:{a:0, c:0, b:0}};
+var NAHTFORMEN = [
+  {id:"i",  name:"I-Naht",        dicke:"bis 3 mm",    winkel:false, steg:false,
+   satz:"Ohne Kantenvorbereitung. Die Bleche werden mit Spalt zusammengelegt und durchgeschweißt."},
+  {id:"v",  name:"V-Naht",        dicke:"3 bis 12 mm", winkel:true,  steg:true,
+   satz:"Beide Kanten angefast. Von einer Seite zugänglich – der Standardfall, solange die Dicke es zulässt."},
+  {id:"hv", name:"HV-Naht (halbe V-Naht)", dicke:"3 bis 16 mm", winkel:true, steg:true,
+   satz:"Nur ein Blech wird angefast, das andere bleibt stumpf. Halbes Fasvolumen gegenüber " +
+        "der V-Naht – der Standard am T-Stoß, wenn eine Kehlnaht nicht mehr reicht."},
+  {id:"x",  name:"Doppel-V-Naht (X)", dicke:"ab 12 mm", winkel:true, steg:true,
+   satz:"Von beiden Seiten angefast. Rund halbes Nahtvolumen gegenüber der V-Naht und deutlich weniger Winkelverzug."},
+  {id:"u",  name:"U-Naht",        dicke:"ab 20 mm",    winkel:true,  steg:true,
+   satz:"Ausgerundete Flanken. Das kleinste Nahtvolumen bei dicken Blechen – dafür teure Vorbereitung."},
+  {id:"kehl", name:"Kehlnaht",    dicke:"jede Dicke",  winkel:false, steg:false,
+   satz:"Am T- oder Überlappstoß. Keine Kantenvorbereitung; bemessen wird über das a-Maß."}
+];
+var nahtAktiv = "v";
+
+function nahtForm(){ return NAHTFORMEN.filter(function(x){ return x.id === nahtAktiv; })[0]; }
+
+/* Flaeche des Fugenquerschnitts in mm2 - das Mass fuer Draht, Zeit und Verzug. */
+function nahtFlaeche(id, t, a, c, b){
+  var rad = a * Math.PI / 360;          /* halber Oeffnungswinkel */
+  if(id === "i")   return t * b;
+  if(id === "kehl")return 0.5 * t * t;  /* Schenkelmass = Blechdicke angenommen */
+  if(id === "v")
+    return (t-c)*(t-c)*Math.tan(rad) + t*b;
+  if(id === "hv")
+    /* Nur eine Flanke - der Winkel ist hier der Fasenwinkel des einen Blechs. */
+    return 0.5 * (t-c)*(t-c)*Math.tan(a*Math.PI/180) + t*b;
+  if(id === "x")
+    return 2 * ((t-c)/2)*((t-c)/2)*Math.tan(rad) + t*b;
+  if(id === "u"){
+    /* Ausgerundete Wurzel mit Radius r, darueber die schwach geneigten Flanken.
+       In ein duennes Blech passt kein 6-mm-Radius - deshalb mitwachsend. */
+    var r = Math.min(6, Math.max(0, (t - c) / 2)), h = Math.max(0, t - c - r);
+    return t*b + 2*r*h + Math.PI/2*r*r + h*h*Math.tan(rad);
+  }
+  return 0;
+}
+
+function nahtBild(t, a, c, b){
+  var svg = el("svgNaht");
+  leeren(svg); spitzen(svg, FARBEN);
+  var g = ns("g", {}); svg.appendChild(g);
+  var cx = 320, cy = 150, m = Math.min(7, 190 / Math.max(t, 6));  /* Massstab */
+  var T = t*m, B = b*m, Cc = c*m, halb = 210;
+  var rad = a * Math.PI / 360;
+  var f = zustand.norm ? "#ffffff" : C.aF, f2 = zustand.norm ? "#ffffff" : C.bF;
+
+  function seite(v, fuell, farbe){
+    var x0 = cx + v*B/2;                       /* Kante an der Wurzel */
+    var d;
+    if(nahtAktiv === "i"){
+      d = "M"+x0+","+(cy-T/2)+" L"+(cx+v*halb)+","+(cy-T/2)+
+          " L"+(cx+v*halb)+","+(cy+T/2)+" L"+x0+","+(cy+T/2)+" Z";
+    }else if(nahtAktiv === "x"){
+      var oben = x0 + v*((T-Cc)/2)*Math.tan(rad);
+      d = "M"+x0+","+(cy-Cc/2)+" L"+oben+","+(cy-T/2)+" L"+(cx+v*halb)+","+(cy-T/2)+
+          " L"+(cx+v*halb)+","+(cy+T/2)+" L"+oben+","+(cy+T/2)+" L"+x0+","+(cy+Cc/2)+" Z";
+    }else if(nahtAktiv === "u"){
+      var ob = x0 + v*(T-Cc)*Math.tan(rad)*0.55;
+      d = "M"+x0+","+(cy+T/2-Cc)+" C"+(x0+v*10)+","+(cy)+" "+(ob-v*6)+","+(cy-T/2+14)+
+          " "+ob+","+(cy-T/2)+" L"+(cx+v*halb)+","+(cy-T/2)+
+          " L"+(cx+v*halb)+","+(cy+T/2)+" L"+x0+","+(cy+T/2)+" Z";
+    }else if(nahtAktiv === "kehl"){
+      if(v < 0) d = "M"+(cx-halb)+","+(cy+T/2)+" L"+(cx+halb)+","+(cy+T/2)+
+                    " L"+(cx+halb)+","+(cy+T/2+T)+" L"+(cx-halb)+","+(cy+T/2+T)+" Z";
+      else      d = "M"+(cx-T/2)+","+(cy-T*1.5)+" L"+(cx+T/2)+","+(cy-T*1.5)+
+                    " L"+(cx+T/2)+","+(cy+T/2)+" L"+(cx-T/2)+","+(cy+T/2)+" Z";
+    }else if(nahtAktiv === "hv"){
+      if(v < 0){   /* linkes Blech bleibt stumpf */
+        d = "M"+x0+","+(cy-T/2)+" L"+(cx+v*halb)+","+(cy-T/2)+
+            " L"+(cx+v*halb)+","+(cy+T/2)+" L"+x0+","+(cy+T/2)+" Z";
+      }else{
+        var oh = x0 + (T-Cc)*Math.tan(a*Math.PI/180);
+        d = "M"+x0+","+(cy+T/2-Cc)+" L"+oh+","+(cy-T/2)+" L"+(cx+halb)+","+(cy-T/2)+
+            " L"+(cx+halb)+","+(cy+T/2)+" L"+x0+","+(cy+T/2)+" Z";
+      }
+    }else{  /* V-Naht */
+      var o = x0 + v*(T-Cc)*Math.tan(rad);
+      d = "M"+x0+","+(cy+T/2-Cc)+" L"+o+","+(cy-T/2)+" L"+(cx+v*halb)+","+(cy-T/2)+
+          " L"+(cx+v*halb)+","+(cy+T/2)+" L"+x0+","+(cy+T/2)+" Z";
+    }
+    pfad(g, d, fuell, farbe, {sw:zustand.norm ? NORM_BREIT : 1.8});
+  }
+  seite(-1, f, zustand.norm ? NORM_KANTE : C.aS);
+  seite(+1, f2, zustand.norm ? NORM_KANTE : C.bS);
+
+  /* Masse */
+  function mass(x1, y1, x2, y2, beschriftung, wo){
+    var farbe = zustand.norm ? NORM_KANTE : "#1d4ed8";
+    var laenge = Math.abs(x2-x1) + Math.abs(y2-y1);
+    linie(g, x1, y1, x2, y2, farbe, zustand.norm ? NORM_SCHMAL : 1.2);
+    /* Unter etwa 26 Einheiten ueberdecken sich die beiden Spitzen zu einem
+       Klecks - dann bleibt es bei der blossen Masslinie. */
+    if(laenge > 26){
+      kraftpfeil(g, x1 + (x2-x1)*0.25, y1 + (y2-y1)*0.25, x1, y1, farbe, 1.6);
+      kraftpfeil(g, x1 + (x2-x1)*0.75, y1 + (y2-y1)*0.75, x2, y2, farbe, 1.6);
+    }
+    txt(g, wo[0], wo[1], beschriftung,
+      {fill:zustand.norm ? NORM_KANTE : "#1d4ed8", size:11.5, anchor:"middle"});
+  }
+  mass(cx-halb-18, cy-T/2, cx-halb-18, cy+T/2, "t = " + t + " mm", [cx-halb-52, cy+4]);
+  if(nahtAktiv !== "kehl" && nahtAktiv !== "i")
+    mass(cx-B/2, cy+T/2+26, cx+B/2, cy+T/2+26, "b = " + b, [cx, cy+T/2+46]);
+  if(nahtForm().winkel && a > 0){
+    var r = Math.min(52, T*0.7);
+    pfad(g, "M"+(cx - r*Math.sin(rad))+","+(cy-T/2+r*Math.cos(rad))+
+            " A "+r+" "+r+" 0 0 1 "+(cx + r*Math.sin(rad))+","+(cy-T/2+r*Math.cos(rad)),
+      "none", zustand.norm ? NORM_KANTE : "#1d4ed8", {sw:zustand.norm ? NORM_SCHMAL : 1.2});
+    txt(g, cx, cy-T/2+r+18, "α = " + a + "°",
+      {anchor:"middle", fill:zustand.norm ? NORM_KANTE : "#1d4ed8", size:11.5});
+  }
+  txt(g, cx-halb, cy-T/2-16, nahtForm().name,
+    {fill:zustand.norm ? NORM_KANTE : C.aS, size:13});
+}
+
+function nahtNeu(){
+  var t = parseInt(el("nT").value, 10);
+  var a = parseInt(el("nA").value, 10);
+  var c = parseInt(el("nC").value, 10);
+  var b = parseInt(el("nB").value, 10);
+  var form = nahtForm();
+
+  el("nAblT").textContent = t + " mm";
+  el("nAblA").textContent = form.winkel ? a + "°" : "entfällt";
+  el("nAblC").textContent = form.steg ? c + " mm" : "entfällt";
+  el("nAblB").textContent = (nahtAktiv === "kehl" ? "entfällt" : b + " mm");
+  el("nA").disabled = !form.winkel;
+  el("nC").disabled = !form.steg;
+  el("nB").disabled = nahtAktiv === "kehl";
+
+  var kn = el("wahlNaht").querySelectorAll("button");
+  for(var i=0;i<kn.length;i++)
+    kn[i].setAttribute("aria-pressed", kn[i].getAttribute("data-id") === nahtAktiv ? "true" : "false");
+
+  nahtBild(t, a, c, b);
+
+  var flaeche = nahtFlaeche(nahtAktiv, t, a, c, b);
+  var vergleich = nahtFlaeche("v", t, 60, 2, 2);
+  var anteil = vergleich > 0 ? flaeche / vergleich : 1;
+  el("nahtWerte").innerHTML =
+    '<div class="wert"><span class="l">Fugenquerschnitt</span><span class="z">' +
+      z2(flaeche, 0) + ' mm&sup2;</span></div>' +
+    '<div class="wert"><span class="l">im Vergleich zur V-Naht 60&deg;</span><span class="z">' +
+      z2(anteil*100, 0) + ' %</span></div>' +
+    '<div class="wert"><span class="l">Empfohlen f&uuml;r</span>' +
+      '<span class="z" style="font-size:1rem">' + form.dicke + '</span></div>';
+
+  var passt = nahtPasst(nahtAktiv, t);
+  el("nahtText").innerHTML = '<p>' + form.satz + '</p>' +
+    (passt ? '<div class="gut"><b>Passt:</b> ' + form.name + ' ist bei ' + t +
+       '&nbsp;mm eine &uuml;bliche Wahl.</div>'
+           : '<div class="warnung"><b>Ungew&ouml;hnlich:</b> ' + form.name + ' wird bei ' + t +
+       '&nbsp;mm normalerweise nicht verwendet &ndash; ' + nahtVorschlag(t) + '</div>');
+  begriffeZeichnen(el("nahtText"));
+}
+
+function nahtPasst(id, t){
+  if(id === "kehl") return true;
+  if(id === "i")    return t <= 3;
+  if(id === "v")    return t >= 3 && t <= 12;
+  if(id === "hv")   return t >= 3 && t <= 16;
+  if(id === "x")    return t >= 12;
+  if(id === "u")    return t >= 20;
+  return true;
+}
+
+function nahtVorschlag(t){
+  if(t <= 3)  return "bei dieser Dicke gen&uuml;gt die I-Naht.";
+  if(t <= 12) return "bei dieser Dicke ist die V-Naht &uuml;blich.";
+  if(t < 20)  return "ab etwa 12 mm lohnt die Doppel-V-Naht.";
+  return "bei dieser Dicke sind Doppel-V- oder U-Naht &uuml;blich.";
+}
+
+function naehteAufbauen(){
+  var w = el("wahlNaht");
+  NAHTFORMEN.forEach(function(f){
+    var b = document.createElement("button");
+    b.textContent = f.name;
+    b.setAttribute("data-id", f.id);
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){
+      nahtAktiv = f.id;
+      var v = NAHT_VORGABE[f.id];
+      if(v){ el("nA").value = v.a; el("nC").value = v.c; el("nB").value = v.b; }
+      nahtNeu();
+    });
+    w.appendChild(b);
+  });
+  ["nT","nA","nC","nB"].forEach(function(id){
+    el(id).addEventListener("input", nahtNeu);
+  });
+
+  var h = "<thead><tr><th>Blechdicke</th><th>&Uuml;bliche Fugenform</th>" +
+          "<th>Zugang</th><th>Warum</th></tr></thead><tbody>";
+  [["bis 3 mm", "I-Naht", "eine Seite",
+    "Der Lichtbogen kommt ohne Fase bis zur Wurzel."],
+   ["3 bis 12 mm", "V-Naht", "eine Seite",
+    "Die Fase schafft Platz für den Brenner; das Volumen bleibt vertretbar."],
+   ["3 bis 16 mm", "HV-Naht", "eine Seite",
+    "Nur ein Blech angefast – halbes Fasvolumen, Standard am T-Stoß."],
+   ["ab 12 mm", "Doppel-V-Naht (X)", "beide Seiten",
+    "Halbes Volumen gegenüber V und symmetrischer Wärmeeintrag, also weniger Winkelverzug."],
+   ["ab 30 mm", "U- oder Doppel-U-Naht", "eine oder beide Seiten",
+    "Erst hier zahlt sich die teure Vorbereitung aus: die Flanken stehen fast senkrecht, " +
+    "das Volumen wächst kaum noch mit der Dicke."],
+   ["jede Dicke", "Kehlnaht", "von außen",
+    "Am T- und Überlappstoß ohne jede Kantenvorbereitung."]
+  ].forEach(function(r){
+    h += "<tr><td><b>" + r[0] + "</b></td><td>" + r[1] + "</td><td>" + r[2] +
+         "</td><td>" + r[3] + "</td></tr>";
+  });
+  el("tabNaht").innerHTML = h + "</tbody>";
+  begriffeZeichnen(el("tabNaht"));
+  nahtNeu();
+}
+
+/* ============================================================================
+   6  REITER UND START
+   ========================================================================== */
+function reiterSetzen(name){
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++)
+    kn[i].setAttribute("aria-selected", kn[i].getAttribute("data-tab") === name ? "true" : "false");
+  var panels = document.querySelectorAll(".panel");
+  for(var j=0;j<panels.length;j++) panels[j].hidden = panels[j].id !== "p-" + name;
+  if(name === "verfahren" && gruppen.verfahren) zeichneVerfahren("verfahren");
+  if(name === "grundlagen"){ zonenNeu(); verzugBild(); }
+  if(name === "naehte") nahtNeu();
+}
+
+function allesNeuZeichnen(){
+  if(gruppen.verfahren && gruppen.verfahren.aktiv) zeichneVerfahren("verfahren");
+  zonenNeu(); verzugNeu(); nahtNeu();
+  STOESSE.forEach(function(st, i){
+    var b = el("stoesse").querySelectorAll("button")[i];
+    if(b) stossSkizze(b.querySelector("svg"), st.id);
+  });
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swNorm").checked = zustand.norm;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("swNorm").addEventListener("change", function(){
+    zustand.norm = this.checked;
+    document.body.classList.toggle("zeigt-norm", zustand.norm);
+    allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert – Fachbegriffe " + (zustand.fach ? "an" : "aus") +
+                      ", Normdarstellung " + (zustand.norm ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig, function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
+function start(){
+  paramsLesen();
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++)
+    kn[i].addEventListener("click", function(){ reiterSetzen(this.getAttribute("data-tab")); });
+  gruppeAufbauen("verfahren");
+  el("regZone").addEventListener("input", zonenNeu);
+  cevAufbauen();
+  verzugAufbauen();
+  stoesseAufbauen();
+  naehteAufbauen();
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+  begriffeZeichnen();
+  allesNeuZeichnen();
+  reiterSetzen("grundlagen");
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+
+</script>
+</body>
+</html>
