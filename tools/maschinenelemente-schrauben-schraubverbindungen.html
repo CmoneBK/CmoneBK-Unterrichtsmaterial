@@ -738,6 +738,10 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
       Multipliziert man beide Zahlen und nimmt das Zehnfache, erh&auml;lt man die
       <span class="term" data-t="streckgrenze"></span>.
       Beispiel 8.8: R<sub>m</sub> = 800 N/mm&sup2;, R<sub>p0,2</sub> = 8 &middot; 8 &middot; 10 = 640 N/mm&sup2;.
+      <br><br>Bei <b>10.9 und 12.9</b> steht in der Tabelle etwas mehr, als die
+      Bezeichnung sagt: 940 statt 900 und 1100 statt 1080 N/mm&sup2;. Das sind die
+      Mindestwerte nach ISO 898-1, und mit ihnen rechnen auch die Tabellen der
+      Anziehdrehmomente. Bei 4.6, 5.6 und 8.8 stimmen beide Zahlen &uuml;berein.
     </div>
   </div>
 </section>
@@ -780,8 +784,10 @@ var KLASSEN = {
   "4.6":  {Rm:400,  Rp:240},
   "5.6":  {Rm:500,  Rp:300},
   "8.8":  {Rm:800,  Rp:640},   /* ueber M16: 830 / 660, siehe klasseWerte() */
-  "10.9": {Rm:1000, Rp:900},
-  "12.9": {Rm:1200, Rp:1080}
+  "10.9": {Rm:1040, Rp:940},   /* Mindestwerte nach ISO 898-1. Aus der       */
+  "12.9": {Rm:1220, Rp:1100}   /* Bezeichnung liest man 1000/900 bzw.        */
+                               /* 1200/1080 ab; die Norm fordert etwas mehr, */
+                               /* und mit ihren Werten rechnen die Tabellen. */
 };
 var KLASSENLISTE = ["4.6","5.6","8.8","10.9","12.9"];
 
@@ -1039,6 +1045,13 @@ function klasseWerte(klasse, d){
    Sie sind die einzige Quelle fuer Anziehdrehmoment UND Torsionsspannung -
    sonst passen Rechenweg und angezeigte Auslastung nicht zusammen. */
 function beiwertGewinde(m, myG){ return 0.16 * m.P + 0.58 * m.d2 * myG; }
+
+/* Beim Anziehen verdreht sich die Schraube - aber nicht dauerhaft im vollen
+   Umfang: Ein Teil der Verdrehung federt zurueck, sobald der Schluessel weg
+   ist. VDI 2230 setzt deshalb rund drei Viertel der Torsion an. Genau mit
+   diesem Faktor entstehen die Werte der Tabellen (auch im Tabellenbuch);
+   ohne ihn liegen alle Vorspannkraefte rund 7 % zu niedrig. */
+var K_TAU = 0.75;
 function beiwertKopf(m, myK){ return 0.5 * m.DKm * myK; }
 function polaresWiderstandsmoment(m){ return Math.PI * Math.pow(m.dS, 3) / 16; }
 
@@ -1046,10 +1059,10 @@ function polaresWiderstandsmoment(m){ return Math.PI * Math.pow(m.dS, 3) / 16; }
    Gesucht ist die Kraft, bei der die Vergleichsspannung nach von Mises
    genau den zugelassenen Anteil nu der Streckgrenze erreicht:
        sigma_red = sqrt(sigma_z^2 + 3*tau^2) = nu * Rp0,2
-   Mit sigma_z = F/As und tau = F*cG/Wp laesst sich F direkt ausrechnen. */
+   Mit sigma_z = F/As und tau = K_TAU*F*cG/Wp laesst sich F direkt ausrechnen. */
 function vorspannkraft(m, klasse, myG, nu){
   var w  = klasseWerte(klasse, m.d);
-  var cG = beiwertGewinde(m, myG);
+  var cG = K_TAU * beiwertGewinde(m, myG);
   var Wp = polaresWiderstandsmoment(m);
   return nu * w.Rp / Math.sqrt(1/(m.As*m.As) + 3*cG*cG/(Wp*Wp));   /* in N */
 }
@@ -1067,7 +1080,7 @@ function drehmomente(m, FM, myG, myK){
 function spannungen(m, FM, MG){
   var Wp = polaresWiderstandsmoment(m);
   var sz = FM / m.As;
-  var tau = MG / Wp;
+  var tau = K_TAU * MG / Wp;
   return {sz:sz, tau:tau, red:Math.sqrt(sz*sz + 3*tau*tau), Wp:Wp};
 }
 
@@ -2791,17 +2804,20 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
 
     "<div class='formel'><b>2. Wie groß darf die Vorspannkraft werden?</b></div>" +
     "<div class='formel'>Beim Anziehen wirken gleichzeitig Zug und Torsion:" +
-      "<span class='kom'>σ<sub>z</sub> = F / A<sub>S</sub> und τ = M<sub>G</sub> / W<sub>p</sub> " +
-      "mit M<sub>G</sub> = F · (0,16·P + 0,58·d₂·μ<sub>G</sub>) = F · " + z(cG,4) + " mm</span></div>" +
+      "<span class='kom'>σ<sub>z</sub> = F / A<sub>S</sub> und τ = 0,75 · M<sub>G</sub> / W<sub>p</sub> " +
+      "mit M<sub>G</sub> = F · (0,16·P + 0,58·d₂·μ<sub>G</sub>) = F · " + z(cG,4) + " mm. " +
+      "Die 0,75 stehen dafür, dass sich ein Teil der Verdrehung nach dem Anziehen " +
+      "zurückdreht – so rechnet VDI 2230, und so entstehen die Tabellenwerte.</span></div>" +
     "<div class='formel'>σ<sub>red</sub> = √(σ<sub>z</sub>² + 3·τ²) = ν · R<sub>p0,2</sub> = " +
       z(nu,2) + " · " + z(r.w.Rp,0) + " = <b>" + z(nu*r.w.Rp,0) + " N/mm²</b></div>" +
     "<div class='formel'>Nach F aufgelöst:  F<sub>M,zul</sub> = ν · R<sub>p0,2</sub> / " +
-      "√(1/A<sub>S</sub>² + 3·c<sub>G</sub>²/W<sub>p</sub>²) = <b>" + z(r.FM/1000,2) + " kN</b></div>" +
+      "√(1/A<sub>S</sub>² + 3·(0,75·c<sub>G</sub>)²/W<sub>p</sub>²) = <b>" +
+      z(r.FM/1000,2) + " kN</b></div>" +
 
     "<div class='formel'><b>3. Probe</b></div>" +
     "<div class='formel'>σ<sub>z</sub> = " + z(r.FM,0) + " / " + z(m.As,1) + " = <b>" +
-      z(r.S.sz,0) + " N/mm²</b>&nbsp;&nbsp;&nbsp;τ = " + z(r.M.gewindeAnteil,0) + " / " +
-      z(r.S.Wp,0) + " = <b>" + z(r.S.tau,0) + " N/mm²</b></div>" +
+      z(r.S.sz,0) + " N/mm²</b>&nbsp;&nbsp;&nbsp;τ = 0,75 · " + z(r.M.gewindeAnteil,0) +
+      " / " + z(r.S.Wp,0) + " = <b>" + z(r.S.tau,0) + " N/mm²</b></div>" +
     "<div class='formel'>σ<sub>red</sub> = √(" + z(r.S.sz,0) + "² + 3 · " + z(r.S.tau,0) +
       "²) = <b>" + z(r.S.red,0) + " N/mm²</b>" +
       "<span class='kom'>Das sind " + z(r.auslastung,0) + " % der Streckgrenze der Klasse " +
