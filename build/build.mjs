@@ -37,7 +37,8 @@ const ARTEN = ['simulation', 'lektion'];
 const BACK_NAV = 'assets/back-nav.js';
 /* Nur Lektionen: zuschneiden und mitnehmen. Reihenfolge zaehlt - lektion.js
    greift auf tbkQr und tbkPdf zu. */
-const LEKTION = ['assets/qr.js', 'assets/pdf.js', 'assets/lektion.js'];
+const LEKTION = ['assets/bildungsgang.js', 'assets/qr.js', 'assets/pdf.js',
+  'assets/lektion.js'];
 const THEMA = 'assets/thema.js';
 const THEMA_CSS = 'assets/thema-werkzeug.css';
 
@@ -167,7 +168,10 @@ ${zeile}`;
 
   return {
     datei: relative(TOOLS, datei).split('\\').join('/'),
-    titel, art, beschreibung: meta('description'), geaendert,
+    titel, art, beschreibung: meta('description'),
+    /* Bildungsgaenge, fuer die diese Seite nicht vorgesehen ist. Die
+       Uebersicht blendet sie dann aus. */
+    bgOhne: meta('bg-ohne'), geaendert,
   };
 }
 
@@ -198,7 +202,8 @@ function karten(eintraege) {
     const sub = e.beschreibung
       ? `\n            <span class="sub">${escHtml(e.beschreibung)}</span>`
       : '';
-    return `          <a class="card" href="tools/${escHtml(e.datei)}">\n`
+    const bg = e.bgOhne ? ` data-bg-ohne="${escHtml(e.bgOhne)}"` : '';
+    return `          <a class="card" href="tools/${escHtml(e.datei)}"${bg}>\n`
       + `            <span>${escHtml(e.name)}</span>${sub}\n          </a>`;
   }).join('\n');
 }

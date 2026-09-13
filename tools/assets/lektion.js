@@ -3,6 +3,7 @@
  * Eingebunden mit drei Zeilen vor dem schliessenden body-Tag; build/build.mjs
  * traegt sie in jeder Seite mit <meta name="art" content="lektion"> nach:
  *
+ *     <script src="assets/bildungsgang.js"></script>
  *     <script src="assets/qr.js"></script>
  *     <script src="assets/pdf.js"></script>
  *     <script src="assets/lektion.js"></script>
@@ -69,6 +70,20 @@
     return el ? el.textContent.replace(/\s+/g, ' ').trim() : '';
   }
 
+  /* Für die Kennung: der Wortlaut ohne die Fachbegriffe. Die .term-Spans
+     zeigen mal den Fachbegriff, mal die einfache Formulierung - hinge die
+     Kennung daran, zeigte ein weitergegebener Link je nach Einstellung
+     woanders hin. Der Schlüssel des Begriffs bleibt dagegen gleich. */
+  function stabilerName(el) {
+    if (!el) return '';
+    var k = el.cloneNode(true);
+    [].slice.call(k.querySelectorAll('.term')).forEach(function (t) {
+      t.parentNode.replaceChild(
+        document.createTextNode('{' + (t.getAttribute('data-t') || '') + '}'), t);
+    });
+    return k.textContent.replace(/\s+/g, ' ').trim();
+  }
+
 
   /* ---------- Aufbau der Seite lesen ---------- */
 
@@ -93,16 +108,23 @@
         var karten = [].slice.call(panel.querySelectorAll('.karte'))
           .filter(function (k) { return !!k.querySelector('h2'); })
           .map(function (k) {
-            var name = text(k.querySelector('h2'));
-            return { id: eindeutig(kennung(name)), name: name, knoten: k };
+            var h2 = k.querySelector('h2');
+            return {
+              id: eindeutig(kennung(stabilerName(h2))),
+              name: text(h2),
+              knoten: k,
+              /* Wo ein data-bg-ohne stehen darf. */
+              marker: [k, h2]
+            };
           });
 
         kapitel.push({
-          id: eindeutig(kennung(text(knopf))),
+          id: eindeutig(kennung(stabilerName(knopf))),
           name: text(knopf),
           knopf: knopf,
           panel: panel,
-          karten: karten
+          karten: karten,
+          marker: [knopf, panel]
         });
       });
 
@@ -145,11 +167,55 @@
     }
   }
 
-  function adresse(aus) {
+  /* ---------- Bildungsgang ---------- */
+
+  function bg() { return window.tbkBildungsgang || null; }
+
+  /* Was der Bildungsplan dieses Bildungsgangs nicht hergibt. */
+  function vorauswahl(kapitel, wahl) {
+    var aus = {};
+    var B = bg();
+    if (!B || !wahl) return aus;
+    kapitel.forEach(function (k) {
+      if (!B.giltEines(k.marker, wahl)) aus[k.id] = true;
+      k.karten.forEach(function (ka) {
+        if (!B.giltEines(ka.marker, wahl)) aus[ka.id] = true;
+      });
+    });
+    return aus;
+  }
+
+  /* Gehört die ganze Lektion nicht zum Bildungsgang, wird sie nicht versteckt -
+     sie bekommt oben eine Zeile, die das sagt. */
+  function seitenhinweis(wahl) {
+    var alt = document.getElementById('lk-bg-seite');
+    if (alt) alt.remove();
+    var B = bg();
+    if (!B || !wahl || B.seiteGilt(wahl)) return;
+
+    var haupt = haupt();
+    if (!haupt) return;
+    var e = B.eintrag(wahl);
+
+    var zeile = document.createElement('p');
+    zeile.id = 'lk-bg-seite';
+    zeile.setAttribute('data-druck', 'weg');
+    zeile.innerHTML = 'Diese Lektion ist im Bildungsplan von <b></b> nicht '
+      + 'vorgesehen. Sie steht trotzdem vollständig zur Verfügung.';
+    zeile.querySelector('b').textContent = e ? e.name : wahl;
+    haupt.insertBefore(zeile, haupt.firstChild);
+  }
+
+  function adresse(aus, wahl) {
     var u = new URL(location.href);
     var liste = Object.keys(aus).filter(function (k) { return aus[k]; });
     if (liste.length) u.searchParams.set(PARAM, liste.join('.'));
     else u.searchParams.delete(PARAM);
+    var B = bg();
+    if (B) {
+      if (wahl) u.searchParams.set(B.PARAM, wahl);
+      else u.searchParams.delete(B.PARAM);
+    }
     return u.href;
   }
 
@@ -884,6 +950,12 @@
     + '.lk-werkzeuge button{font:600 13px/1 inherit;cursor:pointer;padding:7px 12px;'
     + 'border-radius:999px;background:none;color:inherit;border:1px solid #cbd5e1}'
     + '.lk-werkzeuge button:hover{border-color:#1e3a8a;color:#1e3a8a}'
+    + '#lk-bildungsgang{margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid #e2e8f0}'
+    + '#lk-bg-seite{margin:0 0 18px;padding:11px 14px;border-radius:10px;'
+    + 'border:1px solid #cbd5e1;background:#f8fafc;color:#64748b;'
+    + 'font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}'
+    + '#lk-bg-seite b{color:#0f172a}'
+    + '@media print{#lk-bg-seite{display:none!important}}'
     + '#lk-teilen{border-top:1px solid #e2e8f0;margin-top:4px;padding-top:12px;flex:0 0 auto}'
     + '#lk-link{width:100%;font:12.5px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;'
     + 'padding:8px 10px;border-radius:8px;color:inherit;background:#f8fafc;'
@@ -942,7 +1014,7 @@
 
   /* ---------- Fenster "Lektion anpassen" ---------- */
 
-  function anpassenBauen(kapitel, aus, knopfBeschriften) {
+  function anpassenBauen(kapitel, aus, knopfBeschriften, zustand) {
     var tafel = document.createElement('div');
     tafel.id = 'lk-tafel';
     tafel.className = 'lk-tafel';
@@ -964,6 +1036,7 @@
     tafel.innerHTML =
       '<button type="button" class="lk-schliessen" aria-label="Schließen">&times;</button>'
       + '<h2>Lektion anpassen</h2>'
+      + '<div id="lk-bildungsgang"></div>'
       + '<p class="lk-hinweis">Häkchen entfernen, um Kapitel oder einzelne Karten '
       + 'wegzulassen. Die Auswahl wirkt sofort auf der Seite hinter diesem Fenster.</p>'
       + '<ul class="lk-liste">' + liste + '</ul>'
@@ -1005,17 +1078,46 @@
         });
       });
 
-      var href = adresse(aus);
+      var href = adresse(aus, zustand.wahl);
       tafel.querySelector('#lk-link').value = href;
       qrZeichnen(tafel.querySelector('#lk-qr'), href);
-      knopfBeschriften(Object.keys(aus).length);
+      knopfBeschriften(Object.keys(aus).length, zustand.wahl);
     }
 
     function aendern() {
       anwenden(kapitel, aus);
       /* Die Adresse mitziehen, damit ein Neuladen den Stand behält. */
-      try { history.replaceState(null, '', adresse(aus)); } catch (e) { /* file:// */ }
+      try { history.replaceState(null, '', adresse(aus, zustand.wahl)); } catch (e) { /* file:// */ }
       stand();
+    }
+
+    /* Die Wahl setzt die Häkchen neu - alles Handgemachte wird dabei
+       verworfen, das ist der Sinn einer Voreinstellung. */
+    var B = bg();
+    var feld = null;
+    if (B) {
+      function uebernehmen(neu) {
+        zustand.wahl = neu;
+        Object.keys(aus).forEach(function (k) { delete aus[k]; });
+        var vor = vorauswahl(kapitel, neu);
+        Object.keys(vor).forEach(function (k) { aus[k] = true; });
+        seitenhinweis(neu);
+        aendern();
+      }
+      var w = B.waehler(uebernehmen);
+      feld = w.feld;
+      tafel.querySelector('#lk-bildungsgang').appendChild(w.knoten);
+
+      var erklaerung = document.createElement('p');
+      erklaerung.className = 'bg-hinweis';
+      erklaerung.textContent = 'Setzt die Auswahl auf das, was der Bildungsplan '
+        + 'vorsieht. Danach lässt sich alles weiter verändern.';
+      tafel.querySelector('#lk-bildungsgang').appendChild(erklaerung);
+
+      B.beiFremderWahl(function (neu) {
+        feld.value = neu;
+        uebernehmen(neu);
+      });
     }
 
     kaestchen.forEach(function (k) {
@@ -1027,6 +1129,14 @@
 
     tafel.querySelector('#lk-alle').addEventListener('click', function () {
       Object.keys(aus).forEach(function (k) { delete aus[k]; });
+      /* Sonst stünde beim nächsten Laden wieder der Zuschnitt des
+         Bildungsgangs da - "alles" hieße dann nur "alles bis zum Neuladen". */
+      if (B && zustand.wahl) {
+        zustand.wahl = '';
+        B.schreiben('');
+        if (feld) feld.value = '';
+        seitenhinweis('');
+      }
       aendern();
     });
 
@@ -1113,8 +1223,18 @@
     stil.textContent = CSS;
     document.head.appendChild(stil);
 
-    var aus = ausLesen();
+    var B = bg();
+    var zustand = { wahl: B ? B.lesen() : '' };
+
+    /* Steht ein Zuschnitt in der Adresse, gilt der: Jemand hat genau diese
+       Zusammenstellung weitergegeben. Sonst entscheidet der Bildungsgang. */
+    var aus;
+    try {
+      aus = new URLSearchParams(location.search).has(PARAM)
+        ? ausLesen() : vorauswahl(kapitel, zustand.wahl);
+    } catch (e) { aus = vorauswahl(kapitel, zustand.wahl); }
     anwenden(kapitel, aus);
+    seitenhinweis(zustand.wahl);
 
     var knopf = document.createElement('button');
     knopf.type = 'button';
@@ -1134,13 +1254,14 @@
       + 'stroke-linejoin="round" aria-hidden="true">'
       + '<path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg><span>Herunterladen</span>';
 
-    function knopfBeschriften(weg) {
-      knopf.querySelector('span').textContent = weg
-        ? 'Lektion anpassen (' + weg + ' weniger)'
-        : 'Lektion anpassen';
+    function knopfBeschriften(weg, wahl) {
+      var e = B && wahl ? B.eintrag(wahl) : null;
+      knopf.querySelector('span').textContent = e
+        ? 'Lektion anpassen · ' + e.kurz
+        : (weg ? 'Lektion anpassen (' + weg + ' weniger)' : 'Lektion anpassen');
     }
 
-    var anpassen = anpassenBauen(kapitel, aus, knopfBeschriften);
+    var anpassen = anpassenBauen(kapitel, aus, knopfBeschriften, zustand);
     var holen = holenBauen(kapitel);
 
     var l = leiste();

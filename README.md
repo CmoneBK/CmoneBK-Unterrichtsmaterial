@@ -30,7 +30,9 @@ Das Skript braucht nur Node 18 und keine Abhängigkeiten. Es tut drei Dinge:
    auf der Seite.
 2. **Bausteine eintragen**, falls sie fehlen: `assets/thema-werkzeug.css` und
    `assets/thema.js` in den `head`, `assets/back-nav.js` vor `</body>`. Eine
-   Lektion bekommt zusätzlich `qr.js`, `pdf.js` und `lektion.js`.
+   Lektion bekommt zusätzlich `bildungsgang.js`, `qr.js`, `pdf.js` und
+   `lektion.js` — in dieser Reihenfolge, weil `lektion.js` die drei anderen
+   nutzt.
 3. **`index.html` neu schreiben** – die Übersicht mit beiden Reitern.
 
 `node build/build.mjs --check` prüft nur und endet mit Exit-Code 1, wenn etwas
@@ -137,6 +139,40 @@ Drei Kennzeichnungen steuern die Ausgabe:
 | `data-druck="weg"` | Das Element kommt nicht mit (Bedienleisten, Regler). |
 | `data-druck="text"` | Die Beschriftung einer Schaltfläche ist selbst der Inhalt. |
 | `data-druck="ankreuzen"` | Ein Auswahlfeld wird zu Kästchen zum Ankreuzen. |
+
+## 🎓 Zuschnitt nach Bildungsgang
+
+Oben im Fenster „Lektion anpassen“ und auf der Übersicht steht die Wahl des
+Bildungsgangs. Sie setzt die Häkchen auf das, was der Bildungsplan hergibt —
+mehr nicht: Danach lässt sich alles wieder ändern. Gemerkt wird sie im
+`localStorage` (`tbk-bildungsgang`) und gilt für die ganze Seite t-bk.de,
+Unterrichtsmaterial eingeschlossen; weitergeben lässt sie sich als `?bg=…`.
+
+Ein Kapitel oder eine Karte, die nicht überall hingehört, sagt das selbst — am
+Reiter oder an der Überschrift:
+
+```html
+<button role="tab" data-tab="berechnungen" data-bg-ohne="bfs-hs10 bfs-mr">…</button>
+<h2 data-bg-ohne="bfs-hs10">Verzug und Eigenspannungen</h2>
+```
+
+Eine ganze Seite nimmt sich im `head` aus und verschwindet dann aus der
+Übersicht:
+
+```html
+<meta name="bg-ohne" content="bfs-hs10 bfs-mr">
+```
+
+**Kein Attribut heißt: gehört überall dazu.** Neue Seiten erscheinen also erst
+einmal für alle.
+
+Die sieben Schlüssel sind `bfs-hs10`, `bfs-mr`, `hbfs-c2`, `fos-c3`, `im`, `zm`
+und `tech` (Berufsfachschule mit HS10 bzw. Mittlerer Reife, Höhere
+Berufsfachschule C2, Fachoberschule C3, Industriemechaniker,
+Zerspanungsmechaniker, Techniker). Welcher Inhalt zu welchem Bildungsgang
+gehört und warum, steht mitsamt den NRW-Bildungsplänen im Material-Repo unter
+`bildungsgaenge/` — dort und nicht hier, weil die Zuordnung beide Bereiche
+betrifft.
 
 ## ↩️ Rücklink zur Übersicht
 

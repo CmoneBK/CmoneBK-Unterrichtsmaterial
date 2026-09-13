@@ -55,6 +55,11 @@
   .tabs .anzahl{opacity:.65; font-weight:400; margin-left:6px}
   .was{color:var(--muted); font-size:14.5px; margin:14px 0 0}
 
+  .bg-zeile{
+    margin:16px 0 0; padding:12px 14px; border-radius:10px;
+    background:var(--card); border:1px solid var(--border);
+  }
+  .bg-zeile:empty{display:none}
   .suche{
     width:100%; margin:16px 0 0; padding:11px 14px; font:inherit; font-size:15px;
     color:var(--fg); background:var(--card);
@@ -93,6 +98,7 @@
   @media (prefers-reduced-motion:reduce){a.card{transition:none}a.card:hover{transform:none}}
 </style>
 <script src="tools/assets/thema.js"></script>
+<script src="tools/assets/bildungsgang.js"></script>
 </head>
 <body>
   <header class="wrap">
@@ -109,6 +115,7 @@
     </div>
     <p class="was" id="was"></p>
 
+    <div class="bg-zeile" id="bg-zeile"></div>
     <input class="suche" id="suche" type="search" placeholder="Suchen …" aria-label="Suchen">
 
     <section id="p-simulation">
@@ -246,10 +253,14 @@ function reiterSetzen(art){
 function suchen(){
   var q = el("suche").value.trim().toLowerCase();
   var bereich = el("p-" + aktuell);
+  var B = window.tbkBildungsgang;
+  var bg = B ? B.lesen() : "";
   var karten = bereich.querySelectorAll("a.card");
   var treffer = 0;
   for(var i = 0; i < karten.length; i++){
-    var passt = !q || karten[i].textContent.toLowerCase().indexOf(q) !== -1;
+    /* Was der Bildungsplan nicht hergibt, steht hier gar nicht erst. */
+    var passt = (!B || B.gilt(karten[i], bg))
+      && (!q || karten[i].textContent.toLowerCase().indexOf(q) !== -1);
     karten[i].hidden = !passt;
     if(passt) treffer++;
   }
@@ -282,6 +293,23 @@ for(var i = 0; i < knoepfe.length; i++){
   });
 }
 el("suche").addEventListener("input", suchen);
+
+/* Der Bildungsgang gilt für die ganze Seite t-bk.de - hier wird er gewählt,
+   in den Lektionen wirkt er weiter. */
+if(window.tbkBildungsgang){
+  var w = window.tbkBildungsgang.waehler(function(){ suchen(); });
+  el("bg-zeile").appendChild(w.knoten);
+  var bgHinweis = document.createElement("p");
+  bgHinweis.className = "bg-hinweis";
+  bgHinweis.textContent = "Zeigt nur, was im Bildungsplan vorgesehen ist – "
+    + "in den Lektionen wirkt die Wahl weiter und lässt sich dort ändern.";
+  el("bg-zeile").appendChild(bgHinweis);
+  window.tbkBildungsgang.beiFremderWahl(function(neu){
+    w.feld.value = neu;
+    suchen();
+  });
+}
+
 reiterSetzen("simulation");
 </script>
 </body>
