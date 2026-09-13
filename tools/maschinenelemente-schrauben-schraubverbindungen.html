@@ -86,6 +86,8 @@ select,input[type=number]{
 /* Bewusst kein Flex: sonst wird jedes <sub> im Beschriftungstext zu einem
    eigenen Flex-Element und die Beschriftung bricht mitten im Formelzeichen um. */
 .feld{display:block; font-size:.88rem; font-weight:600}
+/* display:block wuerde sonst das hidden-Attribut aushebeln. */
+.feld[hidden]{display:none}
 .feld > select, .feld > input{display:block; width:100%; margin-top:4px; font-weight:400}
 .felder{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:12px 0}
 
@@ -101,6 +103,8 @@ th,td{border:1px solid var(--border); padding:6px 9px; text-align:right; white-s
 th{background:#f1f5f9; font-weight:700; text-align:center}
 td:first-child,th:first-child{text-align:left}
 tbody tr:hover{background:#f8fafc}
+/* Die Zeile, die im Bereich Ermittlung gerade gesucht war. */
+tr.treffer{background:#eff6ff; font-weight:700}
 td.num{font-variant-numeric:tabular-nums}
 
 .merke{border-left:4px solid var(--accent); background:#fffbeb; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0}
@@ -192,6 +196,7 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
   <button role="tab" data-tab="zeichnung"      aria-selected="false">Zeichnung</button>
   <button role="tab" data-tab="funktion"       aria-selected="false">Funktion</button>
   <button role="tab" data-tab="fortgeschritten" aria-selected="false">Funktion (Fortgeschritten)</button>
+  <button role="tab" data-tab="ermittlung"     aria-selected="false">Ermittlung</button>
   <button role="tab" data-tab="berechnungen"   aria-selected="false">Berechnungen</button>
 </div>
 
@@ -649,6 +654,125 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
 </section>
 
 <!-- ========================================================== BERECHNUNGEN -->
+<!-- ============================================================ ERMITTLUNG -->
+<section class="panel" id="p-ermittlung" hidden>
+
+  <div class="karte">
+    <h2>Mit dem Tabellenbuch statt mit der Formel</h2>
+    <p class="sub">In der Werkstatt wird selten hergeleitet &ndash; es wird
+      nachgeschlagen. Dieser Bereich geht denselben Weg: Jede Zahl, die im
+      Tabellenbuch steht, wird von dort geholt. Gerechnet wird nur, was dort
+      nicht steht.</p>
+    <p class="hinweis">Die Werte stammen aus dem Abschnitt <b>Schrauben</b> des
+      Tabellenbuchs (Gewinde-Nennma&szlig;e, Festigkeitsklassen, Durchgangsl&ouml;cher,
+      Mindesteinschraubtiefen, vereinfachte Berechnung). Schlagt die Zeile
+      parallel im Buch nach &ndash; genau das ist hier die &Uuml;bung.</p>
+  </div>
+
+  <div class="karte">
+    <h2>1. Gewinde nachschlagen</h2>
+    <p class="sub">Alles, was in der Tabelle der metrischen ISO-Gewinde steht.</p>
+    <div class="felder">
+      <label class="feld">Gewinde
+        <select id="tbGewinde"></select></label>
+      <label class="feld">Reihe des Durchgangslochs
+        <select id="tbReihe">
+          <option value="0">fein (H12)</option>
+          <option value="1" selected>mittel (H13)</option>
+          <option value="2">grob (H14)</option>
+        </select></label>
+    </div>
+    <div class="tabellenrahmen"><table id="tbTabGewinde"></table></div>
+    <p class="hinweis" id="tbGewindeHinweis"></p>
+  </div>
+
+  <div class="karte">
+    <h2>2. Schraube ermitteln</h2>
+    <p class="sub">Der vereinfachte Weg des Tabellenbuchs: eine Formel, ein
+      Blick in die Tabelle der Erfahrungswerte, fertig.</p>
+    <div class="felder">
+      <label class="feld">Betriebskraft F<sub>B</sub> je Schraube in N
+        <input type="number" id="tbFB" min="1" max="200000" step="10" value="1600"></label>
+      <label class="feld">Richtung der Betriebskraft
+        <select id="tbLast">
+          <option value="quer" selected>quer zur Schraubenachse (Reibschluss)</option>
+          <option value="laengs">in Achsrichtung (Zug)</option>
+        </select></label>
+      <label class="feld" id="tbFeldPhi">Rutschsicherheit &phi;
+        <input type="number" id="tbPhi" min="1" max="4" step="0.1" value="2"></label>
+      <label class="feld" id="tbFeldMy">Reibungszahl &mu; in der Trennfuge
+        <input type="number" id="tbMy" min="0.05" max="0.5" step="0.01" value="0.2"></label>
+      <label class="feld" id="tbFeldNu" hidden>Sicherheitsfaktor &nu;
+        <input type="number" id="tbNu" min="1" max="5" step="0.1" value="2.5"></label>
+      <label class="feld" id="tbFeldKlasse" hidden>Festigkeitsklasse
+        <select id="tbKlasse"></select></label>
+    </div>
+
+    <div class="ergebnis">
+      <div class="ez"><span class="l" id="tbGesuchtLabel">erforderliche Vorspannkraft F<sub>verf</sub></span>
+        <span class="v" id="tbGesucht">&ndash;</span> <span class="e" id="tbGesuchtEinheit">N</span></div>
+      <div class="ez"><span class="l">gew&auml;hlt</span>
+        <span class="v" id="tbWahl">&ndash;</span> <span class="e" id="tbWahlEinheit"></span></div>
+      <div class="ez"><span class="l">Erfahrungswert dieser Schraube</span>
+        <span class="v" id="tbFv">&ndash;</span> <span class="e">N</span></div>
+    </div>
+
+    <div id="tbUrteil"></div>
+
+    <details open>
+      <summary>Rechenweg wie im Tabellenbuch</summary>
+      <div id="tbWeg"></div>
+    </details>
+
+    <h3>Erfahrungswerte der Vorspannkraft</h3>
+    <div class="tabellenrahmen"><table id="tbTabErfahrung"></table></div>
+    <p class="hinweis">Diese Werte gelten f&uuml;r Verbindungen, die <b>ohne
+      Drehmomentkontrolle</b> montiert werden &ndash; von Hand angezogen, mit
+      &uuml;blichem Schl&uuml;ssel. Wer mit dem Drehmomentschl&uuml;ssel arbeitet,
+      nimmt die Tabelle aus Abschnitt 3.</p>
+  </div>
+
+  <div class="karte">
+    <h2>3. Anziehen und Einschrauben</h2>
+    <p class="sub">Vorspannkraft und Anziehdrehmoment aus der Tabelle
+      &ndash; und wie tief die Schraube ins Grundloch muss.</p>
+    <div class="felder">
+      <label class="feld">Gewinde
+        <select id="tbAGewinde"></select></label>
+      <label class="feld">Festigkeitsklasse
+        <select id="tbAKlasse"></select></label>
+      <label class="feld">Reibungszahl &mu; (Spalte der Tabelle)
+        <select id="tbAMy">
+          <option value="0.08">0,08 &ndash; MoS&sub2;-geschmiert</option>
+          <option value="0.12" selected>0,12 &ndash; leicht ge&ouml;lt</option>
+          <option value="0.16">0,16 &ndash; mit Klebstoff gesichert</option>
+        </select></label>
+      <label class="feld">Werkstoff des Grundlochs
+        <select id="tbWerkstoff"></select></label>
+    </div>
+
+    <div class="ergebnis">
+      <div class="ez"><span class="l">Vorspannkraft F<sub>V</sub> (Tabelle)</span>
+        <span class="v" id="tbAFv">&ndash;</span> <span class="e">kN</span></div>
+      <div class="ez"><span class="l">Anziehdrehmoment M<sub>A</sub> (Tabelle)</span>
+        <span class="v" id="tbAMa">&ndash;</span> <span class="e">N&middot;m</span></div>
+      <div class="ez"><span class="l">Mindesteinschraubtiefe l<sub>e</sub></span>
+        <span class="v" id="tbLe">&ndash;</span> <span class="e">mm</span></div>
+      <div class="ez"><span class="l">Gewindeauslauf x &asymp; 3 &middot; P</span>
+        <span class="v" id="tbX">&ndash;</span> <span class="e">mm</span></div>
+      <div class="ez"><span class="l">Bohrtiefe mindestens</span>
+        <span class="v" id="tbTiefe">&ndash;</span> <span class="e">mm</span></div>
+    </div>
+    <p class="hinweis" id="tbAHinweis"></p>
+
+    <h3>Mindesteinschraubtiefen in Grundlochgewinde</h3>
+    <div class="tabellenrahmen"><table id="tbTabEinschraub"></table></div>
+    <p class="hinweis">Bei Feingewinde ist die Einschraubtiefe
+      <b>1,25-mal</b> so gro&szlig; wie beim Regelgewinde.</p>
+  </div>
+
+</section>
+
 <section class="panel" id="p-berechnungen" hidden>
   <div class="karte">
     <h2>Kraft in der Schraube und Drehmoment</h2>
@@ -738,10 +862,13 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
       Multipliziert man beide Zahlen und nimmt das Zehnfache, erh&auml;lt man die
       <span class="term" data-t="streckgrenze"></span>.
       Beispiel 8.8: R<sub>m</sub> = 800 N/mm&sup2;, R<sub>p0,2</sub> = 8 &middot; 8 &middot; 10 = 640 N/mm&sup2;.
-      <br><br>Bei <b>10.9 und 12.9</b> steht in der Tabelle etwas mehr, als die
-      Bezeichnung sagt: 940 statt 900 und 1100 statt 1080 N/mm&sup2;. Das sind die
-      Mindestwerte nach ISO 898-1, und mit ihnen rechnen auch die Tabellen der
-      Anziehdrehmomente. Bei 4.6, 5.6 und 8.8 stimmen beide Zahlen &uuml;berein.
+      <br><br>Bei <b>10.9 und 12.9</b> steht hier etwas mehr, als die Bezeichnung
+      sagt: 940 statt 900 und 1100 statt 1080 N/mm&sup2;. Die Rechnung oben liefert
+      den <b>Nennwert</b> &ndash; so steht er auch in der Festigkeitsklassen-Tabelle
+      des Tabellenbuchs. ISO 898-1 verlangt als <b>Mindestwert</b> die etwas
+      h&ouml;heren Zahlen, und mit ihnen sind die Tabellen der Anziehdrehmomente
+      gerechnet. Dieses Werkzeug nimmt sie deshalb auch. Bei 4.6, 5.6 und 8.8
+      stimmen Nenn- und Mindestwert &uuml;berein.
     </div>
   </div>
 </section>
@@ -1201,6 +1328,7 @@ function reiterZeichnen(name){
   if(name === "funktion"){ zeichneAbwickeln(); zeichneAufteilung();
                           zeichneVergleich(); zeichneStreuband(); }
   if(name === "fortgeschritten") zeichneVerspannung();
+  if(name === "ermittlung") ermittlungAlles();
   if(name === "berechnungen") rechne();
 }
 
@@ -2903,6 +3031,283 @@ function klassentabelle(){
 }
 
 /* ============================================================================
+   9b  ERMITTLUNG - mit dem Tabellenbuch statt mit der Formel
+
+   Alles hier stammt aus dem Abschnitt "Schrauben" des Tabellenbuchs. Was sich
+   aus den Nennprofilen ausrechnen laesst (d2, d3, D1, Spannungsquerschnitt),
+   wird gerechnet - die Ergebnisse stimmen mit den gedruckten Zeilen ueberein.
+   Hinterlegt ist nur, was man nicht herleiten kann: Kernlochbohrer,
+   Durchgangsloecher, Erfahrungswerte, Einschraubtiefen.
+   ========================================================================== */
+
+/* Kernlochbohrer (DIN 336) und die drei Reihen der Durchgangsloecher
+   (DIN EN 20273: fein / mittel / grob). */
+var TB_GEWINDE = {
+  M4:  {bohrer:3.3,  dh:[4.3,  4.5,  4.8]},
+  M5:  {bohrer:4.2,  dh:[5.3,  5.5,  5.8]},
+  M6:  {bohrer:5.0,  dh:[6.4,  6.6,  7.0]},
+  M8:  {bohrer:6.8,  dh:[8.4,  9.0,  10.0]},
+  M10: {bohrer:8.5,  dh:[10.5, 11.0, 12.0]},
+  M12: {bohrer:10.2, dh:[13.0, 13.5, 14.5]},
+  M16: {bohrer:14.0, dh:[17.0, 17.5, 18.5]},
+  M20: {bohrer:17.5, dh:[21.0, 22.0, 24.0]},
+  M24: {bohrer:21.0, dh:[25.0, 26.0, 28.0]}
+};
+var REIHENNAMEN = ["fein", "mittel", "grob"];
+
+/* Erfahrungswerte der Vorspannkraft fuer Verbindungen, die ohne Kontrolle des
+   Anziehdrehmoments montiert werden. sv ist die zugehoerige Vorspannung. */
+var TB_ERFAHRUNG = [
+  {g:"M4",  Fv:3000,  sv:350},
+  {g:"M6",  Fv:7000,  sv:350},
+  {g:"M8",  Fv:10000, sv:280},
+  {g:"M10", Fv:16000, sv:280},
+  {g:"M12", Fv:23000, sv:280},
+  {g:"M16", Fv:28000, sv:180},
+  {g:"M20", Fv:44000, sv:180}
+];
+
+/* Mindesteinschraubtiefen le als Vielfaches von d, je Werkstoff und
+   Festigkeitsklasse. null heisst: Die Tabelle nennt dafuer keinen Wert -
+   diese Paarung ist nicht vorgesehen. */
+var EINSCHRAUB_SPALTEN = ["3.6 / 4.6", "4.8 … 6.8", "8.8", "10.9"];
+var TB_EINSCHRAUB = [
+  {name:"Baustahl, R<sub>m</sub> < 400 N/mm²",       f:[0.8, 1.2, null, null]},
+  {name:"Baustahl, R<sub>m</sub> = 400 … 600 N/mm²", f:[0.8, 1.2, 1.2, null]},
+  {name:"Baustahl, R<sub>m</sub> > 600 … 800 N/mm²", f:[0.8, 1.2, 1.2, 1.2]},
+  {name:"Baustahl, R<sub>m</sub> > 800 N/mm²",       f:[0.8, 1.0, 1.0, 1.0]},
+  {name:"Gusseisenwerkstoffe",                       f:[1.3, 1.5, 1.5, null]},
+  {name:"Kupferlegierungen",                         f:[1.3, 1.3, null, null]},
+  {name:"Aluminium-Gusslegierungen",                 f:[1.6, 2.2, null, null]},
+  {name:"Al-Legierungen, ausgehärtet",               f:[1.2, 1.6, 1.6, null]},
+  {name:"Al-Legierungen, nicht ausgehärtet",         f:[1.2, 1.6, null, null]},
+  {name:"Kunststoffe",                               f:[2.5, null, null, null]}
+];
+
+/* Welche Spalte der Einschraubtabelle gehoert zu welcher Festigkeitsklasse? */
+function einschraubSpalte(klasse){
+  if(klasse === "4.6") return 0;
+  if(klasse === "5.6") return 1;
+  if(klasse === "8.8") return 2;
+  return 3;                       /* 10.9 und 12.9 - fuer 12.9 siehe Hinweis */
+}
+
+/* ---------- 1. Gewinde nachschlagen ---------- */
+
+function ermittlungGewinde(){
+  var g = el("tbGewinde").value;
+  var reihe = parseInt(el("tbReihe").value, 10);
+  var m = gewindeMasse(g);
+  var tb = TB_GEWINDE[g];
+  var D1 = m.d - 1.0825 * m.P;              /* Kern-Ø des Innengewindes */
+  var zeilen = [
+    ["Steigung P", z(m.P, 2), "mm"],
+    ["Flanken-Ø d<sub>2</sub> = d − 0,6495 · P", z(m.d2, 2), "mm"],
+    ["Kern-Ø Außengewinde d<sub>3</sub> = d − 1,2269 · P", z(m.d3, 2), "mm"],
+    ["Kern-Ø Innengewinde D<sub>1</sub> = d − 1,0825 · P", z(D1, 2), "mm"],
+    ["Gewindetiefe h<sub>3</sub> = 0,6134 · P", z(0.6134 * m.P, 2), "mm"],
+    ["Gewindetiefe H<sub>1</sub> = 0,5413 · P", z(0.5413 * m.P, 2), "mm"],
+    ["Spannungsquerschnitt S", asText(m.As), "mm²"],
+    ["Bohrer-Ø für das Kernloch", z(tb.bohrer, 1), "mm"],
+    ["Durchgangsloch d<sub>h</sub>, Reihe " + REIHENNAMEN[reihe], z(tb.dh[reihe], 1), "mm"],
+    ["Schlüsselweite", z(SCHRAUBEN[g].s, 0), "mm"]
+  ];
+  var h = "<tbody>";
+  for(var i = 0; i < zeilen.length; i++){
+    h += "<tr><td style='text-align:left'>" + zeilen[i][0] + "</td>" +
+         "<td class='num'><b>" + zeilen[i][1] + "</b></td>" +
+         "<td style='text-align:left'>" + zeilen[i][2] + "</td></tr>";
+  }
+  el("tbTabGewinde").innerHTML = h + "</tbody>";
+
+  el("tbGewindeHinweis").innerHTML =
+    "Der Bohrer für das Kernloch ist rund <b>" + z(tb.bohrer, 1) + " mm</b> – " +
+    "also etwa d − P (" + z(m.d, 0) + " − " + z(m.P, 2) + " = " + z(m.d - m.P, 2) +
+    " mm). Das Durchgangsloch der Reihe " + REIHENNAMEN[reihe] + " ist mit <b>" +
+    z(tb.dh[reihe], 1) + " mm</b> dagegen <i>größer</i> als das Gewinde: " +
+    "Die Schraube soll dort nicht tragen, sondern klemmen.";
+}
+
+/* ---------- 2. Schraube ermitteln ---------- */
+
+/* Der Spannungsquerschnitt steht im Tabellenbuch ab 100 mm2 ohne Nachkomma. */
+function asText(As){ return As >= 100 ? z(As, 0) : z(As, 1); }
+
+function erfahrungZu(g){
+  for(var i = 0; i < TB_ERFAHRUNG.length; i++){
+    if(TB_ERFAHRUNG[i].g === g) return TB_ERFAHRUNG[i];
+  }
+  return null;
+}
+
+function ermittlungSchraube(){
+  var quer = el("tbLast").value === "quer";
+  el("tbFeldPhi").hidden = !quer;
+  el("tbFeldMy").hidden = !quer;
+  el("tbFeldNu").hidden = quer;
+  el("tbFeldKlasse").hidden = quer;
+
+  var FB = parseFloat(el("tbFB").value) || 0;
+  var weg = "", urteil = "", wahl = null, gesucht = 0;
+
+  if(quer){
+    var phi = parseFloat(el("tbPhi").value) || 1;
+    var my  = parseFloat(el("tbMy").value) || 0.1;
+    gesucht = phi * FB / my;
+    el("tbGesuchtLabel").innerHTML = "erforderliche Vorspannkraft F<sub>verf</sub>";
+    el("tbGesuchtEinheit").textContent = "N";
+    el("tbGesucht").textContent = z(gesucht, 0);
+
+    for(var i = 0; i < TB_ERFAHRUNG.length; i++){
+      if(TB_ERFAHRUNG[i].Fv >= gesucht){ wahl = TB_ERFAHRUNG[i]; break; }
+    }
+    weg = "<div class='formel'>Die Querkraft wird über Reibung gehalten. " +
+      "Erforderliche Vorspannkraft:</div>" +
+      "<div class='formel'>F<sub>verf</sub> = φ · F<sub>B</sub> / μ = " +
+      z(phi, 2) + " · " + z(FB, 0) + " N / " + z(my, 2) +
+      " = <b>" + z(gesucht, 0) + " N</b></div>" +
+      "<div class='formel'>Gesucht ist nun in der Tabelle der Erfahrungswerte " +
+      "die <b>kleinste</b> Schraube, deren Vorspannkraft das trägt.</div>";
+  } else {
+    var nu = parseFloat(el("tbNu").value) || 1;
+    var kl = el("tbKlasse").value;
+    var Re = KLASSEN[kl].Rp;
+    var szul = Re / nu;
+    gesucht = FB / szul;
+    el("tbGesuchtLabel").innerHTML = "erforderlicher Spannungsquerschnitt S";
+    el("tbGesuchtEinheit").textContent = "mm²";
+    el("tbGesucht").textContent = z(gesucht, 2);
+
+    for(var j = 0; j < TB_ERFAHRUNG.length; j++){
+      if(gewindeMasse(TB_ERFAHRUNG[j].g).As >= gesucht){ wahl = TB_ERFAHRUNG[j]; break; }
+    }
+    weg = "<div class='formel'>Die Kraft zieht in Achsrichtung. Zulässige Spannung:</div>" +
+      "<div class='formel'>σ<sub>zul</sub> = R<sub>e</sub> / ν = " + z(Re, 0) +
+      " N/mm² / " + z(nu, 2) + " = <b>" + z(szul, 0) + " N/mm²</b></div>" +
+      "<div class='formel'>S = F<sub>B</sub> / σ<sub>zul</sub> = " + z(FB, 0) +
+      " N / " + z(szul, 0) + " N/mm² = <b>" + z(gesucht, 2) + " mm²</b></div>" +
+      "<div class='formel'>Gesucht ist die kleinste Schraube mit mindestens " +
+      "diesem Spannungsquerschnitt.</div>";
+  }
+
+  if(wahl){
+    var mw = gewindeMasse(wahl.g);
+    el("tbWahl").textContent = wahl.g;
+    el("tbWahlEinheit").textContent = "S = " + asText(mw.As) + " mm²";
+    el("tbFv").textContent = z(wahl.Fv, 0);
+    if(quer){
+      weg += "<div class='formel'><b>" + wahl.g + "</b> bringt " + z(wahl.Fv, 0) +
+        " N auf – das reicht für die nötigen " + z(gesucht, 0) + " N.</div>";
+      urteil = "<div class='merke'><b>Gewählt: " + wahl.g + ".</b> " +
+        "Bei Handmontage ohne Drehmomentkontrolle ist das die kleinste Schraube, " +
+        "die die Querkraft über Reibung hält.</div>";
+    } else {
+      var Rerf = 1.5 * wahl.sv;
+      var klasse = el("tbKlasse").value;
+      var reicht = KLASSEN[klasse].Rp >= Rerf;
+      weg += "<div class='formel'><b>" + wahl.g + "</b> hat S = " + z(mw.As, 1) +
+        " mm² – genug für die nötigen " + z(gesucht, 2) + " mm².</div>" +
+        "<div class='formel'>Gegenprobe der Mindest-Streckgrenze: " +
+        "R<sub>erf</sub> ≥ 1,5 · σ<sub>v</sub> = 1,5 · " + z(wahl.sv, 0) +
+        " = <b>" + z(Rerf, 0) + " N/mm²</b>; die Klasse " + klasse +
+        " hat R<sub>e</sub> = " + z(KLASSEN[klasse].Rp, 0) + " N/mm².</div>";
+      urteil = "<div class='merke'><b>Gewählt: " + wahl.g + " in " + klasse + ".</b> " +
+        (reicht
+          ? "Die Streckgrenze liegt über dem geforderten Mindestwert – passt."
+          : "Achtung: Die Streckgrenze liegt <b>unter</b> " + z(Rerf, 0) +
+            " N/mm². Hier ist eine höhere Festigkeitsklasse nötig.") + "</div>";
+    }
+  } else {
+    el("tbWahl").textContent = "–";
+    el("tbWahlEinheit").textContent = "";
+    el("tbFv").textContent = "–";
+    urteil = "<div class='merke'>Keine Schraube der Tabelle reicht aus. " +
+      "Für so große Kräfte gilt der vereinfachte Weg nicht mehr – dann wird " +
+      "nach VDI 2230 gerechnet (Bereich <b>Berechnungen</b>).</div>";
+  }
+  el("tbWeg").innerHTML = weg;
+  el("tbUrteil").innerHTML = urteil;
+
+  /* Die Tabelle der Erfahrungswerte, die gewaehlte Zeile hervorgehoben. */
+  var h = "<thead><tr><th>Gewinde</th><th>F<sub>v</sub> in N</th>" +
+          "<th>σ<sub>v</sub> in N/mm²</th><th>S in mm²</th></tr></thead><tbody>";
+  for(var k = 0; k < TB_ERFAHRUNG.length; k++){
+    var e = TB_ERFAHRUNG[k];
+    var treffer = wahl && e.g === wahl.g;
+    h += "<tr" + (treffer ? " class='treffer'" : "") + "><td><b>" + e.g + "</b></td>" +
+         "<td class='num'>" + z(e.Fv, 0) + "</td><td class='num'>" + z(e.sv, 0) +
+         "</td><td class='num'>" + asText(gewindeMasse(e.g).As) + "</td></tr>";
+  }
+  el("tbTabErfahrung").innerHTML = h + "</tbody>";
+}
+
+/* ---------- 3. Anziehen und Einschrauben ---------- */
+
+function ermittlungAnziehen(){
+  var g  = el("tbAGewinde").value;
+  var kl = el("tbAKlasse").value;
+  var my = parseFloat(el("tbAMy").value);
+  var w  = parseInt(el("tbWerkstoff").value, 10);
+  var m  = gewindeMasse(g);
+  var r  = rechneAlles(g, kl, my, my, 0.9);
+
+  el("tbAFv").textContent = z(r.FM / 1000, 1);
+  el("tbAMa").textContent = z(r.M.gesamt / 1000, r.M.gesamt / 1000 < 100 ? 1 : 0);
+
+  var spalte = einschraubSpalte(kl);
+  var faktor = TB_EINSCHRAUB[w].f[spalte];
+  var x = 3 * m.P;
+  el("tbX").textContent = z(x, 1);
+  if(faktor){
+    var le = faktor * m.d;
+    el("tbLe").textContent = z(le, 1);
+    el("tbTiefe").textContent = z(le + x, 1);
+    el("tbAHinweis").innerHTML =
+      "l<sub>e</sub> = " + z(faktor, 1) + " · d = " + z(faktor, 1) + " · " +
+      z(m.d, 0) + " mm = <b>" + z(le, 1) + " mm</b>. Dazu kommt der " +
+      "Gewindeauslauf x ≈ 3 · P; das Kernloch muss also mindestens <b>" +
+      z(le + x, 1) + " mm</b> tief gebohrt werden – mit dem Bohrer " +
+      z(TB_GEWINDE[g].bohrer, 1) + " mm aus Abschnitt 1." +
+      (kl === "12.9"
+        ? " <b>12.9</b> führt die Tabelle nicht; nimm mindestens den Wert von 10.9."
+        : "");
+  } else {
+    el("tbLe").textContent = "–";
+    el("tbTiefe").textContent = "–";
+    el("tbAHinweis").innerHTML =
+      "Für <b>" + TB_EINSCHRAUB[w].name + "</b> nennt die Tabelle zur Klasse " +
+      kl + " keinen Wert: Diese Paarung ist nicht vorgesehen. Eine so feste " +
+      "Schraube in einem so weichen Werkstoff reißt das Gewinde aus, bevor sie " +
+      "ihre Vorspannkraft erreicht. Nimm eine niedrigere Festigkeitsklasse " +
+      "oder ein Gewindeeinsatzstück.";
+  }
+
+  /* Die ganze Tabelle, gewaehlte Zelle hervorgehoben. */
+  var h = "<thead><tr><th style='text-align:left'>Werkstoff</th>";
+  for(var c = 0; c < EINSCHRAUB_SPALTEN.length; c++){
+    h += "<th>" + EINSCHRAUB_SPALTEN[c] + "</th>";
+  }
+  h += "</tr></thead><tbody>";
+  for(var i = 0; i < TB_EINSCHRAUB.length; i++){
+    h += "<tr" + (i === w ? " class='treffer'" : "") +
+         "><td style='text-align:left'>" + TB_EINSCHRAUB[i].name + "</td>";
+    for(var j = 0; j < 4; j++){
+      var f = TB_EINSCHRAUB[i].f[j];
+      var hier = (i === w && j === spalte);
+      h += "<td class='num'>" + (f ? (hier ? "<b>" + z(f, 1) + " · d</b>" : z(f, 1) + " · d") : "–") + "</td>";
+    }
+    h += "</tr>";
+  }
+  el("tbTabEinschraub").innerHTML = h + "</tbody>";
+}
+
+function ermittlungAlles(){
+  ermittlungGewinde();
+  ermittlungSchraube();
+  ermittlungAnziehen();
+}
+
+/* ============================================================================
    10  START
    ========================================================================== */
 
@@ -2970,6 +3375,30 @@ function start(){
   auswahlFuellen(el("bGewinde"), GROESSEN, "M10");
   auswahlFuellen(el("zGewinde"), GROESSEN, "M10");
   auswahlFuellen(el("bKlasse"), KLASSENLISTE, "8.8");
+
+  /* Bereich Ermittlung */
+  var ERM_GROESSEN = ["M4","M5","M6","M8","M10","M12","M16","M20","M24"];
+  auswahlFuellen(el("tbGewinde"), ERM_GROESSEN, "M10");
+  auswahlFuellen(el("tbAGewinde"), ERM_GROESSEN, "M10");
+  auswahlFuellen(el("tbKlasse"), KLASSENLISTE, "8.8");
+  auswahlFuellen(el("tbAKlasse"), KLASSENLISTE, "8.8");
+  for(var wi = 0; wi < TB_EINSCHRAUB.length; wi++){
+    var ow = document.createElement("option");
+    ow.value = wi;
+    ow.innerHTML = TB_EINSCHRAUB[wi].name.replace(/<[^>]+>/g, "");
+    el("tbWerkstoff").appendChild(ow);
+  }
+  el("tbWerkstoff").value = "2";          /* Baustahl 600 ... 800 N/mm2 */
+  ["tbGewinde","tbReihe"].forEach(function(id){
+    el(id).addEventListener("change", ermittlungGewinde);
+  });
+  ["tbFB","tbLast","tbPhi","tbMy","tbNu","tbKlasse"].forEach(function(id){
+    el(id).addEventListener("input", ermittlungSchraube);
+    el(id).addEventListener("change", ermittlungSchraube);
+  });
+  ["tbAGewinde","tbAKlasse","tbAMy","tbWerkstoff"].forEach(function(id){
+    el(id).addEventListener("change", ermittlungAnziehen);
+  });
   for(var kf in KOPFFORMEN){
     if(!KOPFFORMEN.hasOwnProperty(kf)) continue;
     var o = document.createElement("option");
