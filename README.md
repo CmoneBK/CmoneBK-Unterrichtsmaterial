@@ -148,12 +148,19 @@ mehr nicht: Danach lässt sich alles wieder ändern. Gemerkt wird sie im
 `localStorage` (`tbk-bildungsgang`) und gilt für die ganze Seite t-bk.de,
 Unterrichtsmaterial eingeschlossen; weitergeben lässt sie sich als `?bg=…`.
 
-Ein Kapitel oder eine Karte, die nicht überall hingehört, sagt das selbst — am
-Reiter oder an der Überschrift:
+Gewählt wird über drei Stufen: das **Kapitel** (der Reiter), die **Karte**
+darin und — wo es sie gibt — der **Abschnitt** unter einer `h3`. Die dritte
+Stufe gibt es, weil eine Karte dreierlei zugleich tragen kann: eine
+anschauliche Gegenüberstellung, eine Rechnung und eine Tabelle zum
+Nachschlagen. Zum Abschnitt gehört alles, was der `h3` bis zur nächsten folgt.
+
+Was nicht überall hingehört, sagt das selbst — am Reiter, an der Karte oder an
+der Abschnittsüberschrift:
 
 ```html
 <button role="tab" data-tab="berechnungen" data-bg-ohne="bfs-hs10 bfs-for">…</button>
 <h2 data-bg-ohne="bfs-hs10">Verzug und Eigenspannungen</h2>
+<h3 data-bg-ohne="bfs-hs10">Wohin geht das Drehmoment?</h3>
 ```
 
 Eine ganze Seite nimmt sich im `head` aus und verschwindet dann aus der

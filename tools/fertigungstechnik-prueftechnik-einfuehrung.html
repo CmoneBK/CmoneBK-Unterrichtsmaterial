@@ -780,7 +780,7 @@ function reiterSetzen(name){
   var panels = document.querySelectorAll(".panel");
   for(var j=0;j<panels.length;j++){
     /* Kapitel, die ueber "Lektion anpassen" abgewaehlt wurden, bleiben zu. */
-    if(panels[j].classList.contains("lk-weg")) continue;
+    if(panels[j].hasAttribute("data-lk-weg")) continue;
     panels[j].hidden = panels[j].id !== "p-" + name;
   }
 }

@@ -34,6 +34,12 @@
  *
  *     <div class="tabs" role="tablist"><button data-tab="x">Name</button>…</div>
  *     <main><section class="panel" id="p-x"><div class="karte"><h2>…</h2>…
+ *
+ * Drei Stufen sind waehlbar: das Kapitel (der Reiter), die Karte darin und -
+ * wo es sie gibt - der Abschnitt unter einer h3. Die dritte Stufe braucht es,
+ * weil eine Karte dreierlei zugleich tragen kann: eine anschauliche
+ * Gegenueberstellung, eine Rechnung und eine Tabelle zum Nachschlagen. Fuer
+ * die Berufsfachschule faellt dann die Rechnung weg und der Rest bleibt.
  */
 (function () {
   'use strict';
@@ -87,8 +93,31 @@
 
   /* ---------- Aufbau der Seite lesen ---------- */
 
+  /* Die Abschnitte einer Karte: jede h3 samt allem, was ihr bis zur nächsten
+     h3 folgt. Was vor der ersten h3 steht, gehört der Karte selbst und geht
+     mit ihr. */
+  function abschnitteLesen(karte, eindeutig) {
+    var aus = [];
+    [].slice.call(karte.children).forEach(function (kind) {
+      if (kind.tagName !== 'H3') return;
+      var knoten = [kind];
+      var n = kind.nextElementSibling;
+      while (n && n.tagName !== 'H3') {
+        knoten.push(n);
+        n = n.nextElementSibling;
+      }
+      aus.push({
+        id: eindeutig(kennung(stabilerName(kind))),
+        name: text(kind),
+        knoten: knoten,
+        marker: [kind]
+      });
+    });
+    return aus;
+  }
+
   /* Ein Kapitel ist ein Reiter samt seinem Abschnitt. Darin ist jede Karte mit
-     eigener Überschrift einzeln abwählbar. */
+     eigener Überschrift einzeln abwählbar - und in der Karte jeder Abschnitt. */
   function kapitelLesen() {
     var kapitel = [];
     var vergeben = {};
@@ -113,6 +142,7 @@
               id: eindeutig(kennung(stabilerName(h2))),
               name: text(h2),
               knoten: k,
+              abschnitte: abschnitteLesen(k, eindeutig),
               /* Wo ein data-bg-ohne stehen darf. */
               marker: [k, h2]
             };
@@ -147,13 +177,33 @@
      ihre Reiter selbst über hidden um. Würde hier dasselbe Mittel benutzt,
      brächte der nächste Reiterwechsel das abgewählte Kapitel zurück. Die
      Klasse überlebt das, weil sie per !important ausblendet. */
+  /* Gekennzeichnet wird mit einem Attribut, nicht mit einer Klasse: Die
+     Lektionen setzen className ihrer Statuszeilen beim Neuzeichnen neu
+     ("gut", "warnung", "merke") und wuerden eine Klasse von uns mitloeschen.
+     Ein Attribut fasst niemand an. */
+  function weg(el, an) {
+    if (an) el.setAttribute('data-lk-weg', '');
+    else el.removeAttribute('data-lk-weg');
+  }
+
+  function istWeg(el) {
+    return !!(el && el.hasAttribute && el.hasAttribute('data-lk-weg'));
+  }
+
   function anwenden(kapitel, aus) {
     kapitel.forEach(function (k) {
-      var weg = !!aus[k.id];
-      k.panel.classList.toggle('lk-weg', weg);
-      k.knopf.hidden = weg;
+      var wegKapitel = !!aus[k.id];
+      weg(k.panel, wegKapitel);
+      k.knopf.hidden = wegKapitel;
       k.karten.forEach(function (ka) {
-        ka.knoten.classList.toggle('lk-weg', weg || !!aus[ka.id]);
+        var wegKarte = wegKapitel || !!aus[ka.id];
+        weg(ka.knoten, wegKarte);
+        ka.abschnitte.forEach(function (ab) {
+          /* Der Abschnitt hat keinen eigenen Rahmen - jedes seiner Elemente
+             muss die Kennzeichnung selbst tragen. */
+          var wegAb = wegKarte || !!aus[ab.id];
+          ab.knoten.forEach(function (n) { weg(n, wegAb); });
+        });
       });
     });
 
@@ -180,6 +230,9 @@
       if (!B.giltEines(k.marker, wahl)) aus[k.id] = true;
       k.karten.forEach(function (ka) {
         if (!B.giltEines(ka.marker, wahl)) aus[ka.id] = true;
+        ka.abschnitte.forEach(function (ab) {
+          if (!B.giltEines(ab.marker, wahl)) aus[ab.id] = true;
+        });
       });
     });
     return aus;
@@ -224,7 +277,7 @@
 
   function versteckt(el) {
     for (var n = el; n && n !== document.body; n = n.parentElement) {
-      if (n.hidden || (n.classList && n.classList.contains('lk-weg'))) return true;
+      if (n.hidden || istWeg(n)) return true;
     }
     return false;
   }
@@ -330,7 +383,7 @@
     var zurueck = [];
 
     kapitel.forEach(function (k, i) {
-      if (k.panel.classList.contains('lk-weg')) return;
+      if (istWeg(k.panel)) return;
       if (umfang === 'offen' && k.panel.hidden) return;
 
       var vorher = k.panel.hidden;
@@ -347,7 +400,13 @@
       zurueck.push(function () { h2.remove(); });
 
       k.karten.forEach(function (ka) {
-        if (ka.knoten.classList.contains('lk-weg')) return;
+        if (istWeg(ka.knoten)) return;
+        /* Erst die Abschnitte, dann die Karte - sonst wuerde die frisch zur
+           h3 gewordene Kartenueberschrift gleich mitgezaehlt. */
+        ka.abschnitte.forEach(function (ab) {
+          if (istWeg(ab.knoten[0])) return;
+          zurueck.push(tagWechsel(ab.knoten[0], 'h4'));
+        });
         var kopf = ka.knoten.querySelector('h2');
         if (kopf) zurueck.push(tagWechsel(kopf, 'h3'));
       });
@@ -486,7 +545,7 @@
   /* Alles herausnehmen, was auf Papier nichts verloren hat: die Bedienung der
      Seite und was ausdrücklich abgewählt wurde. */
   function saeubern(wurzel) {
-    ['script', '.tabs', '.schalter', '.steuerung', '.wahl', '.lk-weg',
+    ['script', '.tabs', '.schalter', '.steuerung', '.wahl', '[data-lk-weg]',
       '#tbk-leiste', '#lk-tafel', '#lk-holen']
       .forEach(function (wahl) {
         [].slice.call(wurzel.querySelectorAll(wahl)).forEach(function (e) { e.remove(); });
@@ -899,7 +958,7 @@
   var CSS = ''
     /* Abgewähltes ist weg - mit !important, weil die Lektionen ihre Reiter
        selbst über hidden steuern und sonst dagegen arbeiten würden. */
-    + '.lk-weg{display:none!important}'
+    + '[data-lk-weg]{display:none!important}'
 
     + '#tbk-leiste{position:fixed;right:16px;bottom:16px;z-index:2147483646;'
     + 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}'
@@ -944,6 +1003,9 @@
     + '.lk-liste label:hover{background:#f1f5f9}'
     + '.lk-liste input{margin:3px 0 0;flex:0 0 auto;accent-color:#1e3a8a}'
     + '.lk-kapitelzeile > label{font-weight:700}'
+    + '.lk-kapitelzeile > ul > li > label{font-weight:600}'
+    + '.lk-liste ul ul{padding-left:22px}'
+    + '.lk-liste ul ul li > label{font-weight:400}'
     + '.lk-liste li.lk-ab > label{opacity:.5;text-decoration:line-through}'
 
     + '.lk-werkzeuge{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 14px;flex:0 0 auto}'
@@ -1024,8 +1086,14 @@
 
     var liste = kapitel.map(function (k) {
       var kinder = k.karten.map(function (ka) {
+        var enkel = ka.abschnitte.map(function (ab) {
+          return '<li data-id="' + ab.id + '"><label>'
+            + '<input type="checkbox" data-id="' + ab.id + '"><span></span></label></li>';
+        }).join('');
         return '<li data-id="' + ka.id + '"><label>'
-          + '<input type="checkbox" data-id="' + ka.id + '"><span></span></label></li>';
+          + '<input type="checkbox" data-id="' + ka.id + '"><span></span></label>'
+          + (enkel ? '<ul>' + enkel + '</ul>' : '')
+          + '</li>';
       }).join('');
       return '<li class="lk-kapitelzeile" data-id="' + k.id + '"><label>'
         + '<input type="checkbox" data-id="' + k.id + '"><span></span></label>'
@@ -1037,8 +1105,9 @@
       '<button type="button" class="lk-schliessen" aria-label="Schließen">&times;</button>'
       + '<h2>Lektion anpassen</h2>'
       + '<div id="lk-bildungsgang"></div>'
-      + '<p class="lk-hinweis">Häkchen entfernen, um Kapitel oder einzelne Karten '
-      + 'wegzulassen. Die Auswahl wirkt sofort auf der Seite hinter diesem Fenster.</p>'
+      + '<p class="lk-hinweis">Häkchen entfernen, um Kapitel, einzelne Karten oder '
+      + 'Abschnitte darin wegzulassen. Die Auswahl wirkt sofort auf der Seite hinter '
+      + 'diesem Fenster.</p>'
       + '<ul class="lk-liste">' + liste + '</ul>'
       + '<div class="lk-werkzeuge">'
       + '<button type="button" id="lk-alle">Alles wieder einblenden</button>'
@@ -1057,10 +1126,14 @@
 
     /* Beschriftungen als Text setzen, nicht über innerHTML - die Überschriften
        können alles Mögliche enthalten. */
+    function beschriften(id, name) {
+      tafel.querySelector('li[data-id="' + id + '"] > label > span').textContent = name;
+    }
     kapitel.forEach(function (k) {
-      tafel.querySelector('li[data-id="' + k.id + '"] > label > span').textContent = k.name;
+      beschriften(k.id, k.name);
       k.karten.forEach(function (ka) {
-        tafel.querySelector('li[data-id="' + ka.id + '"] > label > span').textContent = ka.name;
+        beschriften(ka.id, ka.name);
+        ka.abschnitte.forEach(function (ab) { beschriften(ab.id, ab.name); });
       });
     });
 
@@ -1071,10 +1144,14 @@
         k.checked = !aus[k.dataset.id];
         k.closest('li').classList.toggle('lk-ab', !!aus[k.dataset.id]);
       });
-      /* Karten eines abgewählten Kapitels sind ohnehin weg. */
+      /* Was in einem abgewählten Teil steckt, ist ohnehin weg. */
       kapitel.forEach(function (k) {
         k.karten.forEach(function (ka) {
           tafel.querySelector('input[data-id="' + ka.id + '"]').disabled = !!aus[k.id];
+          ka.abschnitte.forEach(function (ab) {
+            tafel.querySelector('input[data-id="' + ab.id + '"]').disabled =
+              !!aus[k.id] || !!aus[ka.id];
+          });
         });
       });
 
