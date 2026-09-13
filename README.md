@@ -152,7 +152,7 @@ Ein Kapitel oder eine Karte, die nicht überall hingehört, sagt das selbst — 
 Reiter oder an der Überschrift:
 
 ```html
-<button role="tab" data-tab="berechnungen" data-bg-ohne="bfs-hs10 bfs-mr">…</button>
+<button role="tab" data-tab="berechnungen" data-bg-ohne="bfs-hs10 bfs-for">…</button>
 <h2 data-bg-ohne="bfs-hs10">Verzug und Eigenspannungen</h2>
 ```
 
@@ -160,14 +160,14 @@ Eine ganze Seite nimmt sich im `head` aus und verschwindet dann aus der
 Übersicht:
 
 ```html
-<meta name="bg-ohne" content="bfs-hs10 bfs-mr">
+<meta name="bg-ohne" content="bfs-hs10 bfs-for">
 ```
 
 **Kein Attribut heißt: gehört überall dazu.** Neue Seiten erscheinen also erst
 einmal für alle.
 
-Die sieben Schlüssel sind `bfs-hs10`, `bfs-mr`, `hbfs-c2`, `fos-c3`, `im`, `zm`
-und `tech` (Berufsfachschule mit HS10 bzw. Mittlerer Reife, Höhere
+Die sieben Schlüssel sind `bfs-hs10`, `bfs-for`, `hbfs-c2`, `fos-c3`, `im`, `zm`
+und `tech` (Berufsfachschule mit HS10 bzw. FOR, Höhere
 Berufsfachschule C2, Fachoberschule C3, Industriemechaniker,
 Zerspanungsmechaniker, Techniker). Welcher Inhalt zu welchem Bildungsgang
 gehört und warum, steht mitsamt den NRW-Bildungsplänen im Material-Repo unter
