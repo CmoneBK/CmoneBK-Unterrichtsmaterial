@@ -1,0 +1,68 @@
+/* Dunkelmodus für die Werkzeuge.
+ *
+ * Ausgangslage: Die Werkzeuge sind einzeln entstanden, jedes mit eigenem
+ * Design, eigenen Variablennamen und vielen fest eingetragenen Farben. Keines
+ * hatte einen Umschalter. Sie alle von Hand umzufärben hieße, über zwanzig
+ * Designs anzufassen - und bei jeder Zeichnung neu zu prüfen, ob die Farbe
+ * dort etwas bedeutet.
+ *
+ * Deshalb dieser Weg: Die Seite wird als Ganzes umgekehrt und der Farbton
+ * zurückgedreht. Aus Schwarz auf Weiß wird Weiß auf Schwarz, ein Rot bleibt
+ * rot, ein Grün bleibt grün. Für technische Zeichnungen ist das genau das
+ * Richtige - eine schwarze Linie auf weißem Grund soll im dunklen Modus eine
+ * weiße Linie auf dunklem Grund sein.
+ *
+ * Welche Richtung gedreht wird, sagt das Attribut data-thema-effektiv, das
+ * assets/thema.js setzt (immer "hell" oder "dunkel", nie "system").
+ *
+ * Zwei Werkzeuge sind von Haus aus dunkel gebaut. Sie tragen im html-Tag
+ *
+ *     data-basis="dunkel"
+ *
+ * und werden dann umgekehrt behandelt: Sie bleiben im dunklen Modus, wie sie
+ * sind, und werden umgekehrt, wenn jemand hell will.
+ *
+ * Ausgenommen und zurückgedreht wird:
+ *   - Fotos und Videos: Sie sollen aussehen, wie sie sind.
+ *   - Der Umschalter und der Rücklink; beide bringen ihre Farben selbst mit.
+ *   - Alles mit class="thema-echt" - für Stellen, an denen die Farbe die
+ *     Aussage trägt und nicht gedreht werden darf (Farbmuster, Ampel).
+ *
+ * Bekommt ein Werkzeug später einen handgemachten Dunkelmodus, wird diese
+ * Datei dort einfach nicht mehr eingebunden.
+ */
+
+/* Hell gebautes Werkzeug, dunkel gewünscht. */
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]),
+/* Dunkel gebautes Werkzeug, hell gewünscht. */
+:root[data-thema-effektiv="hell"][data-basis="dunkel"]{
+  /* Der Hintergrund muss die Ausgangsfarbe tragen, damit die Umkehrung auch
+     den Rand außerhalb des Inhalts erwischt. */
+  background: #fff;
+  filter: invert(1) hue-rotate(180deg);
+}
+:root[data-thema-effektiv="hell"][data-basis="dunkel"]{ background: #111; }
+
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]){ color-scheme: dark; }
+
+/* Zurückgedreht, damit es wieder richtig herum steht. */
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]) img,
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]) video,
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]) .thema-echt,
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]) #tbk-thema,
+:root[data-thema-effektiv="dunkel"]:not([data-basis="dunkel"]) #tbk-back,
+:root[data-thema-effektiv="hell"][data-basis="dunkel"] img,
+:root[data-thema-effektiv="hell"][data-basis="dunkel"] video,
+:root[data-thema-effektiv="hell"][data-basis="dunkel"] .thema-echt,
+:root[data-thema-effektiv="hell"][data-basis="dunkel"] #tbk-thema,
+:root[data-thema-effektiv="hell"][data-basis="dunkel"] #tbk-back{
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Gedruckt wird immer hell - ein umgekehrtes Blatt kostet nur Toner. */
+@media print{
+  :root[data-thema-effektiv]{ filter: none !important; background: #fff !important; }
+  :root[data-thema-effektiv] img,
+  :root[data-thema-effektiv] video,
+  :root[data-thema-effektiv] .thema-echt{ filter: none !important; }
+}
