@@ -192,7 +192,16 @@ Jede Seite bekommt oben links eine schwebende Schaltfläche **„← Übersicht�
 
 Eingebunden wird sie als `<script src="assets/back-nav.js" data-ziel="../"></script>`
 direkt vor `</body>`; der Build trägt die Zeile nach, wenn sie fehlt. Aussehen
-und Ziel ändert man ausschliesslich in `tools/assets/back-nav.js`. Der Block
+und Ziel ändert man ausschliesslich in `tools/assets/back-nav.js`.
+
+Die Übersicht trägt denselben Knopf, nur mit anderer Beschriftung und Ziel:
+`data-ziel="/" data-text="Startseite"`. Ein `/` zeigt auf die Wurzel der
+Domain — die gibt es nur auf t-bk.de, deshalb erscheint der Rücklink auf
+GitHub Pages und beim lokalen Doppelklick dort gar nicht.
+
+**Platz lassen:** Der Knopf schwebt oben links. Liegt die Überschrift darunter,
+deckt er ihren ersten Buchstaben zu — die Lektionen geben ihm oben 56 px Luft,
+die Übersicht 62 px. Der Block
 verwendet eine eigene ID (`#tbk-back`) und `!important`, damit ihn die sehr
 unterschiedlichen Designs (helle wie dunkle) nicht überschreiben.
 
