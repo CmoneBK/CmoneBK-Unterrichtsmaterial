@@ -868,7 +868,8 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
       <span class="term" data-t="zugfestigkeit"></span> in N/mm&sup2;.
       Multipliziert man beide Zahlen und nimmt das Zehnfache, erh&auml;lt man die
       <span class="term" data-t="streckgrenze"></span>.
-      Beispiel 8.8: R<sub>m</sub> = 800 N/mm&sup2;, R<sub>p0,2</sub> = 8 &middot; 8 &middot; 10 = 640 N/mm&sup2;.
+      Beispiel 8.8: R<sub>m</sub> = 8 &middot; 100 N/mm&sup2; = 800 N/mm&sup2;,
+      R<sub>p0,2</sub> = 8 &middot; 8 &middot; 10 N/mm&sup2; = 640 N/mm&sup2;.
       <br><br>Bei <b>10.9 und 12.9</b> steht hier etwas mehr, als die Bezeichnung
       sagt: 940 statt 900 und 1100 statt 1080 N/mm&sup2;. Die Rechnung oben liefert
       den <b>Nennwert</b> &ndash; so steht er auch in der Festigkeitsklassen-Tabelle
@@ -2961,9 +2962,10 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
     "<div class='formel'>d₂ = d − 0,6495 · P = " + z(m.d,0) + " − 0,6495 · " +
       z(m.P,2) + " = <b>" + z(m.d2,3) + " mm</b></div>" +
     "<div class='formel'>d₃ = d − 1,2269 · P = <b>" + z(m.d3,3) + " mm</b></div>" +
-    "<div class='formel'>A<sub>S</sub> = π/4 · ((d₂ + d₃)/2)² = π/4 · " +
-      z(m.dS,3) + "² = <b>" + z(m.As,1) + " mm²</b>" +
-      "<span class='kom'>W<sub>p</sub> = π · d<sub>S</sub>³ / 16 = " + z(r.S.Wp,0) + " mm³</span></div>" +
+    "<div class='formel'>A<sub>S</sub> = π/4 · ((d₂ + d₃)/2)² = π/4 · (" +
+      z(m.dS,3) + " mm)² = <b>" + z(m.As,1) + " mm²</b>" +
+      "<span class='kom'>W<sub>p</sub> = π · d<sub>S</sub>³ / 16 = π · (" +
+      z(m.dS,3) + " mm)³ / 16 = " + z(r.S.Wp,0) + " mm³</span></div>" +
 
     nachschlagen("d<sub>2</sub>, d<sub>3</sub> und der Spannungsquerschnitt stehen " +
       "in der Tabelle <i>Metrisches ISO-Gewinde, Nennmaße Reihe 1</i> – für <b>" + g +
@@ -2979,7 +2981,7 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
       "Die 0,75 stehen dafür, dass sich ein Teil der Verdrehung nach dem Anziehen " +
       "zurückdreht – so rechnet VDI 2230, und so entstehen die Tabellenwerte.</span></div>" +
     "<div class='formel'>σ<sub>red</sub> = √(σ<sub>z</sub>² + 3·τ²) = ν · R<sub>p0,2</sub> = " +
-      z(nu,2) + " · " + z(r.w.Rp,0) + " = <b>" + z(nu*r.w.Rp,0) + " N/mm²</b></div>" +
+      z(nu,2) + " · " + z(r.w.Rp,0) + " N/mm² = <b>" + z(nu*r.w.Rp,0) + " N/mm²</b></div>" +
 
     nachschlagen("R<sub>p0,2</sub> = " + z(r.w.Rp,0) + " N/mm² steht in der Tabelle " +
       "der <i>Festigkeitsklassen</i>" +
@@ -3009,10 +3011,11 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
     "<div class='formel'>M<sub>A</sub> = F<sub>M</sub> · (0,16·P + 0,58·d₂·μ<sub>G</sub> " +
       "+ 0,5·D<sub>Km</sub>·μ<sub>K</sub>)" +
       "<span class='kom'>D<sub>Km</sub> = (d<sub>w</sub> + D<sub>h</sub>)/2 = (" + z(m.dw,1) + " + " +
-      z(m.Dh,1) + ")/2 = " + z(m.DKm,2) + " mm &nbsp;·&nbsp; " +
-      "d<sub>w</sub> = Kopfauflage, D<sub>h</sub> = Durchgangsloch</span></div>" +
-    "<div class='formel'>= " + z(r.FM,0) + " N · (" + z(0.16*m.P,3) + " + " +
-      z(0.58*m.d2*myG,3) + " + " + z(cK,3) + ") mm = <b>" + z(r.M.gesamt/1000,1) + " N·m</b></div>" +
+      z(m.Dh,1) + ")/2 = " + z(m.DKm,2) + " mm; dabei ist " +
+      "d<sub>w</sub> = Kopfauflage und D<sub>h</sub> = Durchgangsloch</span></div>" +
+    "<div class='formel'>= " + z(r.FM/1000,3) + " kN · (" + z(0.16*m.P,3) + " + " +
+      z(0.58*m.d2*myG,3) + " + " + z(cK,3) + ") mm = <b>" + z(r.M.gesamt/1000,1) + " N·m</b>" +
+      "<span class='kom'>kN · mm ergibt N · m – die Tausender kürzen sich weg.</span></div>" +
 
     nachschlagen(trifft
       ? "Auch M<sub>A</sub> steht in derselben Tabellenzeile wie F<sub>M,zul</sub> " +
