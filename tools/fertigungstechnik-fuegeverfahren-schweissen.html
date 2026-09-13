@@ -205,7 +205,7 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
     zu welcher Blechdicke geh&ouml;rt.</p>
 </header>
 
-<div class="schalter">
+<div class="schalter" data-druck="weg">
   <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
   <label class="sw"><input type="checkbox" id="swNorm"><span class="track"></span>Zeichnung nach Norm</label>
   <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
@@ -214,13 +214,15 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
     <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.</span>
 </div>
 
-<div class="tabs" role="tablist">
+<div class="tabs" role="tablist" data-druck="weg">
   <button role="tab" data-tab="grundlagen" aria-selected="true">Grundlagen</button>
   <button role="tab" data-tab="verfahren"  aria-selected="false">Verfahren</button>
   <button role="tab" data-tab="naehte"     aria-selected="false">St&ouml;&szlig;e und N&auml;hte</button>
 </div>
 
 <!-- ============================================================ GRUNDLAGEN -->
+<main>
+
 <section class="panel" id="p-grundlagen">
 
   <div class="karte">
@@ -425,6 +427,8 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
   </div>
 </section>
 
+
+</main>
 </div>
 
 <script>
@@ -2193,5 +2197,8 @@ if(document.readyState === "loading"){
 
 </script>
 <script src="assets/back-nav.js" data-ziel="../"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
 </body>
 </html>

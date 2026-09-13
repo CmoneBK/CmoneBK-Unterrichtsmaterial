@@ -35,6 +35,9 @@ const NUR_PRUEFEN = process.argv.includes('--check');
 
 const ARTEN = ['simulation', 'lektion'];
 const BACK_NAV = 'assets/back-nav.js';
+/* Nur Lektionen: zuschneiden und mitnehmen. Reihenfolge zaehlt - lektion.js
+   greift auf tbkQr und tbkPdf zu. */
+const LEKTION = ['assets/qr.js', 'assets/pdf.js', 'assets/lektion.js'];
 const THEMA = 'assets/thema.js';
 const THEMA_CSS = 'assets/thema-werkzeug.css';
 
@@ -97,8 +100,41 @@ async function seiteLesen(datei) {
     warnen(rel, `${pfad} ergänzt`);
   }
 
-  /* 3. Rücklink ans Dateiende. data-ziel="../" führt aus tools/ heraus zur
-        Übersicht - auf GitHub Pages wie auf t-bk.de. */
+  /* 3. Welche Art Seite ist das? Danach richtet sich, was noch dazukommt. */
+  const metaAus = (quelle, name) => {
+    const t = quelle.match(
+      new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i'));
+    return t ? normWs(t[1]) : '';
+  };
+  let art = metaAus(text, 'art').toLowerCase();
+  if (!ARTEN.includes(art)) {
+    if (art) warnen(rel, `unbekannte Art "${art}" – als Simulation eingeordnet`);
+    else warnen(rel, 'ohne <meta name="art"> – als Simulation eingeordnet');
+    art = 'simulation';
+  }
+
+  /* 4. Eine Lektion bekommt "Lektion anpassen" und "Herunterladen" - das
+        Gegenstueck zu den Uebungen im Materialbereich. Eine Simulation nicht:
+        Sie hat keine Kapitel, die man weglassen koennte. */
+  const vorBody = (pfad) => {
+    if (text.includes(pfad)) return;
+    const zeile = `<script src="${pfad}"></script>
+`;
+    const schluss = text.match(/([ 	]*)<\/body>/i);
+    if (schluss) {
+      text = text.replace(/[ 	]*<\/body>/i, `${schluss[1]}${zeile}${schluss[1]}</body>`);
+    } else {
+      text += `
+${zeile}`;
+      warnen(rel, 'kein </body> – ' + pfad + ' ans Dateiende gehängt');
+    }
+    geaendert = true;
+    warnen(rel, `${pfad} ergänzt`);
+  };
+  if (art === 'lektion') LEKTION.forEach(vorBody);
+
+  /* 5. Rücklink ans Dateiende, als Letztes. data-ziel="../" führt aus tools/
+        heraus zur Übersicht - auf GitHub Pages wie auf t-bk.de. */
   if (!text.includes(BACK_NAV)) {
     const zeile = `<script src="${BACK_NAV}" data-ziel="../"></script>\n`;
     const schluss = text.match(/([ \t]*)<\/body>/i);
@@ -114,7 +150,7 @@ async function seiteLesen(datei) {
 
   if (geaendert && !NUR_PRUEFEN) await writeFile(datei, text, 'utf8');
 
-  /* 4. Auslesen, was die Übersicht braucht. */
+  /* 6. Auslesen, was die Übersicht braucht. */
   const m = text.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   let titel = m ? normWs(m[1]) : '';
   if (!titel) titel = fmTitel;
@@ -128,13 +164,6 @@ async function seiteLesen(datei) {
       new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']*)["']`, 'i'));
     return t ? normWs(t[1]) : '';
   };
-
-  let art = meta('art').toLowerCase();
-  if (!ARTEN.includes(art)) {
-    if (art) warnen(rel, `unbekannte Art "${art}" – als Simulation eingeordnet`);
-    else warnen(rel, 'ohne <meta name="art"> – als Simulation eingeordnet');
-    art = 'simulation';
-  }
 
   return {
     datei: relative(TOOLS, datei).split('\\').join('/'),

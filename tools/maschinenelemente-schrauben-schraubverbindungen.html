@@ -188,7 +188,7 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
   <p class="lead">Warum eine Schraube h&auml;lt, wie sie aufgebaut ist und wie man sie berechnet.</p>
 </header>
 
-<div class="schalter">
+<div class="schalter" data-druck="weg">
   <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
   <label class="sw"><input type="checkbox" id="swSym"><span class="track"></span>Formelzeichen</label>
   <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
@@ -197,7 +197,7 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
     <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.</span>
 </div>
 
-<div class="tabs" role="tablist">
+<div class="tabs" role="tablist" data-druck="weg">
   <button role="tab" data-tab="grundlagen"     aria-selected="true">Grundlagen</button>
   <button role="tab" data-tab="aufbau"         aria-selected="false">Aufbau</button>
   <button role="tab" data-tab="zeichnung"      aria-selected="false">Zeichnung</button>
@@ -208,6 +208,8 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
 </div>
 
 <!-- ============================================================ GRUNDLAGEN -->
+<main>
+
 <section class="panel" id="p-grundlagen">
 
   <div class="karte">
@@ -886,6 +888,8 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
   nach VDI 2230 und keine Herstellerangaben.
 </p>
 
+
+</main>
 </div><!-- /wrap -->
 
 <script>
@@ -3584,5 +3588,8 @@ if(document.readyState === "loading"){
 }else{ start(); }
 </script>
 <script src="assets/back-nav.js" data-ziel="../"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
 </body>
 </html>

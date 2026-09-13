@@ -167,7 +167,7 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
     Verfahren w&auml;hlt.</p>
 </header>
 
-<div class="schalter">
+<div class="schalter" data-druck="weg">
   <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
   <label class="sw"><input type="checkbox" id="swNorm"><span class="track"></span>Zeichnung nach Norm</label>
   <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
@@ -176,7 +176,7 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
     <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.</span>
 </div>
 
-<div class="tabs" role="tablist">
+<div class="tabs" role="tablist" data-druck="weg">
   <button role="tab" data-tab="ueberblick"  aria-selected="true">&Uuml;berblick</button>
   <button role="tab" data-tab="kraft"       aria-selected="false">Kraftschluss</button>
   <button role="tab" data-tab="form"        aria-selected="false">Formschluss</button>
@@ -185,6 +185,8 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
 </div>
 
 <!-- ============================================================= ÜBERBLICK -->
+<main>
+
 <section class="panel" id="p-ueberblick">
 
   <div class="karte">
@@ -437,6 +439,8 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
   Orientierungswerte und ersetzen keine Auslegung.
 </p>
 
+
+</main>
 </div><!-- /wrap -->
 
 <script>
@@ -2284,5 +2288,8 @@ if(document.readyState === "loading"){
 }else{ start(); }
 </script>
 <script src="assets/back-nav.js" data-ziel="../"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
 </body>
 </html>

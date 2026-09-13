@@ -29,7 +29,8 @@ Das Skript braucht nur Node 18 und keine Abhängigkeiten. Es tut drei Dinge:
    Dateianfang. Das stammt aus der Jekyll-Zeit; ohne Jekyll stünde es als Text
    auf der Seite.
 2. **Bausteine eintragen**, falls sie fehlen: `assets/thema-werkzeug.css` und
-   `assets/thema.js` in den `head`, `assets/back-nav.js` vor `</body>`.
+   `assets/thema.js` in den `head`, `assets/back-nav.js` vor `</body>`. Eine
+   Lektion bekommt zusätzlich `qr.js`, `pdf.js` und `lektion.js`.
 3. **`index.html` neu schreiben** – die Übersicht mit beiden Reitern.
 
 `node build/build.mjs --check` prüft nur und endet mit Exit-Code 1, wenn etwas
@@ -45,7 +46,8 @@ offen ist. Praktisch vor dem Commit.
 ## 📂 Ordnerstruktur
 
 * `/tools/` – Alle exportierten HTML-Dateien aus CodePen.
-* `/tools/assets/` – Die gemeinsamen Bausteine (Rücklink, Umschalter hell/dunkel).
+* `/tools/assets/` – Die gemeinsamen Bausteine (Rücklink, Umschalter hell/dunkel,
+  für Lektionen zusätzlich Anpassen und Herunterladen).
 * `index.html` – Die Übersicht. **Erzeugt** – nicht von Hand bearbeiten.
 * `build/build.mjs` – Erzeugt sie.
 * `build/uebersicht-vorlage.html` – Das Gerüst dafür (Design, Reiter, Suche).
@@ -108,6 +110,34 @@ Was dort **nicht** steht, wird alphabetisch hinten angehängt – eine neue Seit
 erscheint also auch ohne Pflege der CSV, nur eben nicht an der gewünschten
 Position. Kommata sind in den Werten nicht erlaubt.
 
+## ✂️ Lektion anpassen und herunterladen
+
+Jede Lektion trägt unten rechts dieselbe Leiste wie die Übungen im
+Materialbereich &ndash; `tools/assets/lektion.js` baut sie auf:
+
+* **Lektion anpassen** &ndash; Kapitel (die Reiter) und einzelne Karten
+  abwählen. Daraus entsteht ein Link samt QR-Code, der die Lektion genau so
+  öffnet; die Datei bleibt unverändert. Der Zuschnitt steckt als `?ohne=…` in
+  der Adresse, die Kennungen darin sind Streuwerte über die Beschriftungen.
+  Wird eine Überschrift umformuliert, greift ein alter Link dort nicht mehr
+  &ndash; dann erscheint das Kapitel wieder, statt dass das falsche verschwindet.
+* **Herunterladen** &ndash; als PDF (über den Druckdialog oder als fertige Datei)
+  oder als Word-Dokument. Auf Papier gibt es keine Reiter: Aus jedem Kapitel
+  wird ein Abschnitt, jedes beginnt auf einer neuen Seite. Wahlweise die ganze
+  Lektion oder nur das offene Kapitel.
+
+Damit das greift, braucht die Seite drei Dinge, die alle Lektionen ohnehin
+haben: die Reiterleiste (`.tabs` mit `button[data-tab]`), je Reiter einen
+`<section class="panel" id="p-…">` und ein `<main>` um das Ganze.
+
+Drei Kennzeichnungen steuern die Ausgabe:
+
+| Attribut | Wirkung auf Papier |
+| --- | --- |
+| `data-druck="weg"` | Das Element kommt nicht mit (Bedienleisten, Regler). |
+| `data-druck="text"` | Die Beschriftung einer Schaltfläche ist selbst der Inhalt. |
+| `data-druck="ankreuzen"` | Ein Auswahlfeld wird zu Kästchen zum Ankreuzen. |
+
 ## ↩️ Rücklink zur Übersicht
 
 Jede Seite bekommt oben links eine schwebende Schaltfläche **„← Übersicht“** (auf schmalen Displays nur den Pfeil). Sie zeigt immer auf `../` und trifft damit ohne Fallunterscheidung die jeweils richtige Übersicht:
@@ -158,4 +188,6 @@ Die Mediathek ist erreichbar unter:
 - **Seite steht im falschen Reiter:** `<meta name="art" content="lektion">` im `head` ergänzen, dann neu bauen.
 - **Karte trägt den Dateinamen statt eines Namens:** Der Seite fehlt ein `<title>`.
 - **Karte hängt unter dem falschen Bereich:** Titel-Muster prüfen – ` - ` mit Leerzeichen.
+- **Eine Lektion zeigt die beiden Knöpfe nicht:** Es fehlt das `<main>`, die Reiterleiste oder `<meta name="art" content="lektion">`.
+- **Auf Papier steht Bedienung:** Das Element mit `data-druck="weg"` kennzeichnen.
 - **Datei wird nicht aktualisiert:** In Make.com prüfen, ob der "Spion" (HTTP GET) einen gültigen `sha`-Wert zurückgibt. Ohne diesen Wert verweigert GitHub das Überschreiben existierender Dateien.

@@ -1,574 +1,838 @@
 <!DOCTYPE html>
 <html lang="de">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="art" content="lektion">
-  <title>Fertigungstechnik: Prüftechnik Einführung</title>
-  <style>
-    :root {
-      --primary: #004a99;
-      --secondary: #f0f4f8;
-      --accent: #e67e22;
-      --text: #2c3e50;
-      --border: #bdc3c7;
-      --success: #27ae60;
-      --danger: #c0392b;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="lektion">
+<meta name="description" content="Warum, wann und wie viel geprüft wird – Messkette, Zehnerregel und die Wahl des Prüfumfangs.">
+<title>Fertigungstechnik: Prüftechnik Einführung</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:14px 18px 60px}
+@media (max-width:640px){ .wrap{padding-top:56px} }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #e9ecef;
-      color: var(--text);
-      margin: 0;
-      padding: 20px;
-      line-height: 1.7;
-    }
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
 
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-    }
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
 
-    h1 {
-      color: var(--primary);
-      text-align: center;
-      border-bottom: 3px solid var(--accent);
-      padding-bottom: 10px;
-      margin-bottom: 30px;
-    }
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .zwei{grid-template-columns:1fr} }
+.zwei > div{border:1px solid var(--border); border-radius:10px; padding:12px 15px; background:#fcfdfe}
+.zwei h4{margin:0 0 6px; font-size:.95rem; color:var(--primary)}
+.zwei ul{margin:6px 0 0; padding-left:18px}
+.zwei li{margin:2px 0}
 
-    h2 {
-      color: var(--primary);
-      border-left: 4px solid var(--accent);
-      padding-left: 10px;
-    }
+svg{display:block; max-width:100%; height:auto}
+.zeichnung{background:#fff; border:1px solid var(--border); border-radius:10px; margin:10px 0}
 
-    h3 {
-      color: #34495e;
-    }
+table{border-collapse:collapse; width:100%; font-size:.88rem}
+.tabellenrahmen{overflow-x:auto; -webkit-overflow-scrolling:touch}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:#f1f5f9; font-weight:700}
+td.mitte,th.mitte{text-align:center}
 
-    .accordion-item {
-      background: #fff;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-      overflow: hidden;
-    }
+.merke{border-left:4px solid var(--accent); background:#fffbeb; padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0}
+.merke b{color:#92400e}
+.warnung{border-left:4px solid var(--bad); background:#fef2f2; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.gut{border-left:4px solid var(--ok); background:#f0fdf4; padding:10px 14px; border-radius:0 8px 8px 0; margin:12px 0}
+.fussnote{font-size:.8rem; color:var(--muted); margin-top:10px}
 
-    .accordion-header {
-      padding: 20px 25px;
-      cursor: pointer;
-      background: #fff;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-left: 4px solid var(--accent);
-      transition: background-color 0.3s ease;
-    }
+button.link{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:8px; padding:6px 12px; font:600 .85rem/1 inherit; cursor:pointer;
+}
+button.link:hover{border-color:var(--primary); color:var(--primary)}
 
-    .accordion-header h2 {
-      margin: 0;
-      border-left: none;
-      padding-left: 0;
-      font-size: 1.5em;
-    }
+.steuerung{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:12px 0;
+}
+button.tat{
+  border:1px solid var(--primary); background:var(--primary); color:#fff;
+  border-radius:8px; padding:8px 15px; font:600 .88rem/1 inherit; cursor:pointer;
+}
+button.tat:hover{filter:brightness(1.1)}
+button.tat:disabled{opacity:.55; cursor:default; filter:none}
 
-    .accordion-header:hover {
-      background-color: #f9fbfd;
-    }
+/* --- Entscheidungssimulator --- */
+.wahlfeld{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:8px 0 14px}
+@media (max-width:700px){ .wahlfeld{grid-template-columns:1fr} }
+.wahlfeld label{display:block; font-weight:600; font-size:.9rem; margin-bottom:5px}
+.wahlfeld select{
+  width:100%; padding:9px 10px; font:inherit; font-size:.92rem; color:inherit;
+  background:#fff; border:1px solid var(--border-strong); border-radius:8px;
+}
+.wahlfeld select:focus-visible{outline:2px solid var(--primary); outline-offset:1px}
 
-    .accordion-icon {
-      font-size: 1.5em;
-      color: var(--primary);
-      transition: transform 0.3s ease;
-    }
+/* --- Fachbegriffe: gleiches Prinzip wie in den übrigen Lektionen --- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none;
+  font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
 
-    .accordion-item.active .accordion-icon {
-      transform: rotate(180deg);
-    }
-
-    .accordion-content {
-      display: grid;
-      grid-template-rows: 0fr;
-      transition: grid-template-rows 0.4s ease-out;
-    }
-
-    .accordion-content-inner {
-      overflow: hidden;
-      padding: 0 25px;
-      transition: padding 0.4s ease-out;
-    }
-
-    .accordion-item.active .accordion-content {
-      grid-template-rows: 1fr;
-    }
-
-    .accordion-item.active .accordion-content-inner {
-      padding: 10px 25px 25px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-    }
-
-    @media (max-width: 768px) {
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .info-box {
-      background-color: var(--secondary);
-      padding: 15px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-    }
-
-    .merke {
-      background-color: #e8f4fd;
-      border-left: 5px solid var(--primary);
-      padding: 15px;
-      margin: 15px 0;
-      font-weight: bold;
-      border-radius: 0 6px 6px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .merke::before {
-      content: "💡 MERKE:";
-      color: var(--primary);
-      font-size: 1.2em;
-    }
-
-    /* Messkette Styles */
-    .messkette {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      margin-top: 20px;
-      background: #fdfbf7;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px dashed #d4b245;
-    }
-
-    .mess-box {
-      background: #ffeeb0;
-      border: 2px solid #d4b245;
-      padding: 15px;
-      border-radius: 6px;
-      text-align: center;
-      font-weight: bold;
-      flex: 1;
-      margin: 5px;
-      box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
-    }
-
-    .mess-box.active {
-      background: var(--accent);
-      color: white;
-      transform: scale(1.1);
-      border-color: #d35400;
-    }
-
-    .arrow {
-      font-size: 24px;
-      color: #d4b245;
-    }
-
-    /* Korrigierte Zehnerregel Styles */
-    .chart-container {
-      display: flex;
-      align-items: stretch;
-      /* Wichtig für die korrekte Höhenberechnung */
-      height: 350px;
-      margin-top: 40px;
-      border-bottom: 2px solid var(--border);
-      border-left: 2px solid var(--border);
-      padding-bottom: 0;
-      padding-left: 10px;
-      gap: 15px;
-      position: relative;
-    }
-
-    .y-axis-label {
-      position: absolute;
-      left: -50px;
-      top: 50%;
-      transform: translateY(-50%) rotate(-90deg);
-      font-weight: bold;
-      color: #7f8c8d;
-      white-space: nowrap;
-    }
-
-    .x-axis-label {
-      position: absolute;
-      bottom: -40px;
-      right: 0;
-      font-weight: bold;
-      color: #7f8c8d;
-    }
-
-    .bar-wrapper {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      cursor: pointer;
-    }
-
-    .cost-display {
-      font-size: 16px;
-      font-weight: bold;
-      color: var(--danger);
-      text-align: center;
-      margin-bottom: 5px;
-      min-height: 24px;
-      /* Verhindert Layout-Sprünge */
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .bar-container {
-      flex: 1;
-      /* Füllt den vertikalen Raum aus */
-      display: flex;
-      align-items: flex-end;
-      /* Balken sitzt unten auf */
-      justify-content: center;
-    }
-
-    .bar {
-      width: 100%;
-      max-width: 60px;
-      background-color: var(--primary);
-      border-radius: 4px 4px 0 0;
-      transition: height 0.5s ease, background-color 0.3s ease;
-    }
-
-    .bar-wrapper:hover .bar {
-      background-color: var(--accent);
-    }
-
-    .bar-wrapper:hover .cost-display {
-      opacity: 1;
-    }
-
-    .bar-label {
-      margin-top: 10px;
-      font-size: 13px;
-      text-align: center;
-      font-weight: 500;
-      min-height: 40px;
-      /* Platz für zweizeiligen Text */
-    }
-
-    /* Simulator Styles */
-    .simulator {
-      background: #f8f9fa;
-      padding: 25px;
-      border-radius: 8px;
-      margin-top: 15px;
-      border: 1px solid #e9ecef;
-    }
-
-    select,
-    button {
-      padding: 12px;
-      font-size: 16px;
-      margin: 10px 0 20px 0;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      width: 100%;
-      max-width: 400px;
-      display: block;
-    }
-
-    button {
-      background-color: var(--primary);
-      color: white;
-      cursor: pointer;
-      border: none;
-      transition: background 0.3s, transform 0.1s;
-      font-weight: bold;
-    }
-
-    button:hover {
-      background-color: #003366;
-    }
-
-    button:active {
-      transform: scale(0.98);
-    }
-
-    #sim-result {
-      margin-top: 15px;
-      font-size: 1.1em;
-      padding: 15px;
-      border-radius: 6px;
-      border-left: 5px solid transparent;
-    }
-
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-      border-left-color: var(--success) !important;
-    }
-
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border-left-color: var(--danger) !important;
-    }
-  </style>
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergänzt - und fällt durch
+   die Farbe auf. So begegnet der Begriff dem Lernenden ab jetzt an jeder
+   Stelle wieder und prägt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+</style>
 <link rel="stylesheet" href="assets/thema-werkzeug.css">
 <script src="assets/thema.js"></script>
 </head>
-
 <body>
+<div class="wrap">
 
-  <div class="container">
-    <h1>Fertigungstechnik: Prüftechnik Einführung</h1>
+<header>
+  <h1>Prüftechnik &ndash; Einführung</h1>
+  <p class="lead">Warum geprüft wird, wann der richtige Zeitpunkt dafür ist und wie viel
+    Prüfung ein Bauteil verträgt.</p>
+</header>
 
-    <!-- Messsysteme & Prüfen von Bauteilen -->
-    <div class="accordion-item active">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <h2>Messsysteme und Prüfen von Bauteilen</h2>
-        <span class="accordion-icon">▼</span>
+<div class="schalter" data-druck="weg">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zurücksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne Wörter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann überall.</span>
+</div>
+
+<div class="tabs" role="tablist" data-druck="weg">
+  <button role="tab" data-tab="messen"    aria-selected="true">Messsysteme</button>
+  <button role="tab" data-tab="zeitpunkt" aria-selected="false">Zeitpunkt</button>
+  <button role="tab" data-tab="umfang"    aria-selected="false">Prüfumfang</button>
+</div>
+
+<main>
+
+<!-- ============================================================= MESSSYSTEME -->
+<section class="panel" id="p-messen">
+
+  <div class="karte">
+    <h2>Messsysteme und Prüfen von Bauteilen</h2>
+    <p class="sub">Vom Wareneingang bis zum Versand.</p>
+    <p>Auf dem langen Weg vom Wareneingang der einzelnen Bauteile bis zum Versand des
+    fertigen Produktes wird jeder Fertigungsschritt überwacht und festgehalten. Das
+    Messen physikalischer Größen spielt dabei die zentrale Rolle.</p>
+
+    <div class="zwei">
+      <div>
+        <h4>Wachsende Anforderungen</h4>
+        <p>Aus wachsenden technischen Anforderungen folgen enge
+        <span class="term" data-t="toleranzen"></span> nach ISO. Einfache
+        <span class="term" data-t="messgeraete"></span> &ndash; Strichmaßstab, Messschieber,
+        Messschraube &ndash; und <span class="term" data-t="lehren"></span> genügen der
+        geforderten Genauigkeit dann oft nicht mehr. Messen im
+        <strong>µm&#8209;Bereich</strong> ist deutlich anspruchsvoller.</p>
       </div>
-      <div class="accordion-content">
-        <div class="accordion-content-inner">
-          <p>Auf dem langen Weg vom Wareneingang der einzelnen Komponenten bis zum Versand des gefertigten Produktes wird jeder einzelne Fertigungsschritt sorgfältig überwacht und dokumentiert. Dabei spielt das Messen von physikalischen Größen eine zentrale Rolle.</p>
-
-          <div class="grid-2">
-            <div class="info-box">
-              <h3>Wachsende Anforderungen</h3>
-              <p>Die Einführung der ISO-Toleranzen ist eine Konsequenz aus wachsenden technischen Anforderungen. Einfache <strong>Messgeräte</strong> (wie Strichmaßstäbe, Messschieber und Messschrauben) sowie <strong>Lehren</strong> genügen den zunehmenden Anforderungen an die Genauigkeit oft nicht mehr. Das Messen im <strong>µm-Bereich</strong> ist wesentlich anspruchsvoller.</p>
-            </div>
-            <div class="info-box">
-              <h3>Die Rolle der Fachkraft</h3>
-              <p>Jede Fachkraft, die eine Messung durchführt, ist dafür verantwortlich, die vorgegebenen <strong>Messwerkzeuge</strong> effizient und fehlerfrei einzusetzen. Die Kernfragen der Prüftechnik lauten dabei stets:</p>
-              <ul>
-                <li><em>„Was muss gemessen werden?“</em></li>
-                <li><em>„Welches Prüfverfahren ist angemessen?“</em></li>
-              </ul>
-            </div>
-          </div>
-
-          <h3>Simulation: Der Weg zum Messwert</h3>
-          <p>Die Erfassung einer <strong>Messgröße</strong> soll möglichst direkt zur Anzeige des gesuchten <strong>Messwerts</strong> führen. Der Weg von der Messgröße zum angezeigten Wert wird dabei oft nicht weiter hinterfragt.</p>
-
-          <button onclick="simulateMeasurement()" style="max-width: 200px;">Messvorgang auslösen</button>
-
-          <div class="messkette">
-            <div style="text-align: center;"><strong>Messgröße</strong><br><small>(z.B. Länge, Druck)</small></div>
-            <div class="arrow">➡</div>
-            <div class="mess-box" id="step1">Umsetzung</div>
-            <div class="arrow">➡</div>
-            <div class="mess-box" id="step2">Verstärkung</div>
-            <div class="arrow">➡</div>
-            <div class="mess-box" id="step3">Anzeige</div>
-            <div class="arrow">➡</div>
-            <div id="finalValue" style="text-align: center; min-width: 100px;"><strong>Messwert</strong><br><small>(...)</small></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Zeitpunkt des Prüfens -->
-    <div class="accordion-item">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <h2>Zeitpunkt des Prüfens</h2>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content">
-        <div class="accordion-content-inner">
-          <p>Auf jeden Fertigungsschritt folgt meist ein Prüfvorgang. Jede Unterbrechung des Fertigungsablaufs erhöht jedoch die Fertigungskosten und sollte auf ein Minimum reduziert werden.</p>
-
-          <div class="grid-2">
-            <div class="info-box">
-              <h3>Serienfertigung vs. Einzelfertigung</h3>
-              <p>In der <strong>Serienfertigung</strong> erstellt die Arbeitsvorbereitung bzw. die Qualitätssicherung einen detaillierten <strong>Prüfplan</strong> unter Berücksichtigung der Kundenanforderungen. Bei der <strong>Einzelfertigung</strong> bestimmt hingegen häufig die Fachkraft direkt an der Maschine den Prüfzeitpunkt.</p>
-            </div>
-            <div class="info-box">
-              <h3>Warum Zwischenmessungen?</h3>
-              <p>Durch <strong>Zwischenmessungen</strong> wird vermieden, dass Fehler erst bei der Endkontrolle festgestellt werden. Fehlerhafte Teile würden sonst unnötigerweise weiterbearbeitet, was der angestrebten Kostenminimierung eines Betriebs widerspricht.</p>
-            </div>
-          </div>
-
-          <h3>Fehlervermeidung und die Zehnerregel</h3>
-          <p>Fehlervermeidungsstrategien müssen bereits in der Planungsphase ansetzen. Wird z.B. während der Planung ein „falscher“ Werkstoff gewählt, der bei der Fertigung zu Problemen führt, sind die Änderungskosten extrem hoch.</p>
-
-          <div class="merke">
-            Je früher festgestellt wird, dass ein Werkstück Ausschuss ist, desto geringer sind die Kosten für die Fehlerkorrektur.
-          </div>
-
-          <p><em>Interaktives Diagramm: Entwicklung der Kosten für die Korrektur eines Fehlers in Anlehnung an die „Zehnerregel“ nach Daimler AG. (Bewege die Maus über die Balken)</em></p>
-
-          <div class="chart-container">
-            <div class="y-axis-label">Kosten der Fehlerkorrektur</div>
-            <div class="x-axis-label">Zeit ➡</div>
-
-            <div class="bar-wrapper">
-              <div class="cost-display">0,10 €</div>
-              <div class="bar-container">
-                <div class="bar" style="height: 2%;"></div>
-              </div>
-              <div class="bar-label">Planung</div>
-            </div>
-            <div class="bar-wrapper">
-              <div class="cost-display">1 €</div>
-              <div class="bar-container">
-                <div class="bar" style="height: 5%;"></div>
-              </div>
-              <div class="bar-label">Entwicklung</div>
-            </div>
-            <div class="bar-wrapper">
-              <div class="cost-display">10 €</div>
-              <div class="bar-container">
-                <div class="bar" style="height: 15%;"></div>
-              </div>
-              <div class="bar-label">Arbeitsvorbereitung<br>& Fertigung</div>
-            </div>
-            <div class="bar-wrapper">
-              <div class="cost-display">100 €</div>
-              <div class="bar-container">
-                <div class="bar" style="height: 40%;"></div>
-              </div>
-              <div class="bar-label">Endkontrolle</div>
-            </div>
-            <div class="bar-wrapper">
-              <div class="cost-display">1000 €</div>
-              <div class="bar-container">
-                <div class="bar" style="height: 90%;"></div>
-              </div>
-              <div class="bar-label">Einsatz / Kunde</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Prüfumfang Simulator -->
-    <div class="accordion-item">
-      <div class="accordion-header" onclick="toggleAccordion(this)">
-        <h2>Prüfumfang – Eine Risikoabwägung</h2>
-        <span class="accordion-icon">▼</span>
-      </div>
-      <div class="accordion-content">
-        <div class="accordion-content-inner">
-          <p>Wie oft und wie genau geprüft wird, hängt stark vom Produkt ab. Grundsätzlich ist der Prüfumfang eine <strong>Kosten-Nutzen-Abschätzung oder Risikoabwägung</strong>, die jeder Produzent treffen muss. Bei <strong>Zulieferbetrieben</strong> gibt jedoch oft der Auftraggeber zwingend vor, wann und wo geprüft werden muss – der Betrieb ist an diese Kundenvorgaben gebunden.</p>
-
-          <div class="simulator">
-            <h3>Entscheidungssimulator: Wähle die passende Strategie</h3>
-
-            <label for="scenario"><strong>1. Art des Bauteils / Fertigungstyp:</strong></label>
-            <select id="scenario">
-              <option value="none">-- Bitte Bauteil wählen --</option>
-              <option value="mass">Massenteile (z.B. Schrauben, Stifte)</option>
-              <option value="safety">Sicherheitskritische Bauteile (z.B. Großgeräteschieber/Ventile)</option>
-              <option value="continuous">Endlosmaterial (z.B. Profile, Bänder)</option>
-            </select>
-
-            <label for="strategy"><strong>2. Geplanter Prüfumfang:</strong></label>
-            <select id="strategy">
-              <option value="none">-- Bitte Prüfumfang wählen --</option>
-              <option value="100">100%-Prüfung (Jedes einzelne Teil)</option>
-              <option value="stichprobe_random">Stichprobenhafte Prüfung</option>
-              <option value="stichprobe_interval">Intervall-Prüfung (z.B. alle 100 m)</option>
-            </select>
-
-            <button onclick="checkStrategy()">Strategie bewerten</button>
-
-            <div id="sim-result" style="display: none;"></div>
-          </div>
-        </div>
+      <div>
+        <h4>Die Rolle der Fachkraft</h4>
+        <p>Wer misst, ist dafür verantwortlich, das vorgegebene
+        <span class="term" data-t="messmittel"></span> richtig einzusetzen. Zwei Fragen
+        stehen dabei immer am Anfang:</p>
+        <ul>
+          <li><em>Was muss gemessen werden?</em></li>
+          <li><em>Welches <span class="term" data-t="pruefverfahren"></span> ist
+            angemessen?</em></li>
+        </ul>
       </div>
     </div>
   </div>
 
-  <script>
-    function simulateMeasurement() {
-      const steps = ['step1', 'step2', 'step3'];
-      const btn = document.querySelector('button[onclick="simulateMeasurement()"]');
-      btn.disabled = true;
-      btn.innerText = "Messe...";
-      // Reset
-      steps.forEach(id => document.getElementById(id).classList.remove('active'));
-      document.getElementById('finalValue').innerHTML = "<strong>Messwert</strong><br><small>(wird ermittelt)</small>";
-      document.getElementById('finalValue').style.color = "var(--text)";
-      // Animation
-      setTimeout(() => document.getElementById('step1').classList.add('active'), 600);
-      setTimeout(() => document.getElementById('step2').classList.add('active'), 1400);
-      setTimeout(() => document.getElementById('step3').classList.add('active'), 2200);
-      setTimeout(() => {
-        steps.forEach(id => document.getElementById(id).classList.remove('active'));
-        document.getElementById('finalValue').innerHTML = "<strong>Messwert</strong><br><span style='font-size: 1.2em;'>✅ 12.04 µm</span>";
-        document.getElementById('finalValue').style.color = "var(--success)";
-        btn.disabled = false;
-        btn.innerText = "Erneut messen";
-      }, 3200);
-    }
+  <div class="karte">
+    <h2>Der Weg zum Messwert</h2>
+    <p class="sub">Die Messkette &ndash; die Glieder zwischen Bauteil und Anzeige.</p>
+    <p>Am Anfang steht die <span class="term" data-t="messgroesse"></span>. Am Ende
+    der Kette steht der <span class="term" data-t="messwert"></span>. Was dazwischen
+    passiert, wird selten hinterfragt &ndash; dabei kann jedes Glied dieser
+    <span class="term" data-t="messkette"></span> etwas hinzufügen.</p>
 
-    function checkStrategy() {
-      const scenario = document.getElementById('scenario').value;
-      const strategy = document.getElementById('strategy').value;
-      const resultDiv = document.getElementById('sim-result');
-      if (scenario === 'none' || strategy === 'none') {
-        resultDiv.style.display = 'block';
-        resultDiv.className = 'error';
-        resultDiv.innerHTML = "⚠️ Bitte wähle sowohl ein Bauteil als auch einen Prüfumfang aus, um die Simulation zu starten.";
-        return;
-      }
-      resultDiv.style.display = 'block';
-      // Logik basierend auf den Texten
-      if (scenario === 'mass' && strategy === 'stichprobe_random') {
-        resultDiv.className = 'success';
-        resultDiv.innerHTML = "✅ <strong>Sinnvolle Entscheidung.</strong> Bei der Produktion von Massenteilen wie Schrauben oder Stiften genügt die stichprobenhafte Prüfung. Alles andere wäre unwirtschaftlich.";
-      } else if (scenario === 'mass' && (strategy === '100' || strategy === 'stichprobe_interval')) {
-        resultDiv.className = 'error';
-        resultDiv.innerHTML = "❌ <strong>Unwirtschaftlich / Falscher Ansatz.</strong> Eine 100%-Prüfung bei Massenware treibt die Kosten extrem in die Höhe. Eine einfache stichprobenhafte Prüfung ist hier das Mittel der Wahl.";
-      } else if (scenario === 'safety' && strategy === '100') {
-        resultDiv.className = 'success';
-        resultDiv.innerHTML = "✅ <strong>Absolut notwendig.</strong> Ein Ausfall im Kraftwerksbau oder in der Chemieindustrie birgt erhebliche Sicherheitsrisiken. In solchen Fällen wird zwingend auf eine 100%-Prüfung zurückgegriffen.";
-      } else if (scenario === 'safety' && (strategy === 'stichprobe_random' || strategy === 'stichprobe_interval')) {
-        resultDiv.className = 'error';
-        resultDiv.innerHTML = "❌ <strong>Hohes Sicherheitsrisiko!</strong> Ein defektes Großgeräteventil kann fatale Folgen haben. Stichproben genügen den Anforderungen der Risikoabwägung hier keinesfalls.";
-      } else if (scenario === 'continuous' && strategy === 'stichprobe_interval') {
-        resultDiv.className = 'success';
-        resultDiv.innerHTML = "✅ <strong>Effizient gelöst.</strong> Bei der Herstellung von Profilen oder Bändern genügt eine punktuelle Prüfung in festen Abständen, z.B. alle 100 Meter.";
-      } else if (scenario === 'continuous' && strategy === '100') {
-        resultDiv.className = 'error';
-        resultDiv.innerHTML = "❌ <strong>Praktisch nicht umsetzbar.</strong> Jeden Millimeter eines endlos produzierten Bandes zu prüfen ist unverhältnismäßig. Hier prüft man nach bestimmten Längenintervallen.";
-      } else if (scenario === 'continuous' && strategy === 'stichprobe_random') {
-        resultDiv.className = 'error';
-        resultDiv.innerHTML = "❌ <strong>Zu ungenau.</strong> Bei Endlosmaterialien verlässt man sich besser auf definierte Intervalle (z.B. alle 100m) statt auf rein zufällige Stichproben, um Schwankungen im Prozess rechtzeitig zu erkennen.";
-      }
-    }
-    // Akkordeon Logik
-    function toggleAccordion(headerElement) {
-      const currentItem = headerElement.parentElement;
-      const isAlreadyActive = currentItem.classList.contains('active');
-      // Alle anderen Items schließen
-      const allItems = document.querySelectorAll('.accordion-item');
-      allItems.forEach(item => {
-        item.classList.remove('active');
-      });
-      // Wenn das angeklickte nicht offen war, wird es nun geöffnet
-      if (!isAlreadyActive) {
-        currentItem.classList.add('active');
-      }
-    }
-  </script>
+    <div class="steuerung" data-druck="weg">
+      <button class="tat" id="btnMessen">Messvorgang auslösen</button>
+      <span class="hinweis" id="messStand">Die Kette wird Glied für Glied durchlaufen.</span>
+    </div>
 
+    <svg class="zeichnung" id="svgKette" viewBox="0 0 900 220" role="img"
+      aria-label="Messkette: Messgröße, Aufnehmer, Umformer, Anzeige, Messwert"></svg>
+
+    <div class="merke"><b>Merke:</b> Jedes Glied der Messkette kann das Ergebnis verfälschen.
+      Ein Messwert ist deshalb nie der wahre Wert, sondern immer ein Näherungswert.</div>
+  </div>
+
+</section>
+
+<!-- =============================================================== ZEITPUNKT -->
+<section class="panel" id="p-zeitpunkt" hidden>
+
+  <div class="karte">
+    <h2>Zeitpunkt des Prüfens</h2>
+    <p class="sub">Jede Unterbrechung kostet &ndash; jeder übersehene Fehler kostet mehr.</p>
+    <p>Auf einen Fertigungsschritt folgt meist ein Prüfvorgang. Jede Unterbrechung des
+    Ablaufs erhöht jedoch die Fertigungskosten und soll deshalb so selten wie möglich
+    stattfinden. Der richtige Zeitpunkt ist damit selbst eine Abwägung.</p>
+
+    <div class="zwei">
+      <div>
+        <h4>Serienfertigung und Einzelfertigung</h4>
+        <p>In der <span class="term" data-t="serienfertigung"></span> steht vorher fest,
+        was wann geprüft wird. Festgelegt hat das die
+        <span class="term" data-t="arbeitsvorbereitung"></span> oder die
+        <span class="term" data-t="qualitaetssicherung"></span>, abgestimmt auf das, was der
+        Kunde fordert. Das Ergebnis ist der
+        <span class="term" data-t="pruefplan"></span>. Anders in der
+        <span class="term" data-t="einzelfertigung"></span>: Dort entscheidet häufig die
+        Fachkraft an der Maschine selbst, wann sie prüft.</p>
+      </div>
+      <div>
+        <h4>Wozu Zwischenmessungen?</h4>
+        <p>Eine <span class="term" data-t="zwischenmessung"></span> verhindert, dass ein
+        Fehler erst bei der <span class="term" data-t="endkontrolle"></span> auffällt. Sonst
+        wird ein Teil weiterbearbeitet, das längst
+        <span class="term" data-t="ausschuss"></span> ist &ndash; und jeder weitere
+        Arbeitsgang macht den Fehler teurer.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Fehlervermeidung und die Zehnerregel</h2>
+    <p class="sub">Faustregel: Jede Stufe später kostet das Zehnfache.</p>
+    <p>Fehler vermeidet man nicht in der Fertigung, sondern schon in der Planung. Wird dort
+    ein Werkstoff gewählt, der sich später schlecht bearbeiten lässt, sind die Kosten einer
+    Änderung am Ende um ein Vielfaches höher als am Anfang.</p>
+
+    <div class="merke"><b>Merke:</b> Je früher auffällt, dass ein Werkstück Ausschuss ist,
+      desto geringer sind die Kosten der Fehlerkorrektur.</div>
+
+    <svg class="zeichnung" id="svgZehner" viewBox="0 0 900 380" role="img"
+      aria-label="Kosten der Fehlerkorrektur über die Phasen, logarithmisch aufgetragen"></svg>
+
+    <div class="tabellenrahmen">
+      <table>
+        <thead>
+          <tr><th>Phase</th><th class="mitte">Kosten je Fehler</th><th>Was dort zu tun wäre</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Planung</td><td class="mitte">0,10 €</td><td>Eine Angabe in der Zeichnung ändern.</td></tr>
+          <tr><td>Entwicklung</td><td class="mitte">1 €</td><td>Konstruktion anpassen, noch ohne Werkzeug.</td></tr>
+          <tr><td>Arbeitsvorbereitung und Fertigung</td><td class="mitte">10 €</td><td>Programm, Werkzeug und Spannmittel nacharbeiten.</td></tr>
+          <tr><td>Endkontrolle</td><td class="mitte">100 €</td><td>Fertige Teile aussortieren oder nacharbeiten.</td></tr>
+          <tr><td>Einsatz beim Kunden</td><td class="mitte">1000 €</td><td>Rückruf, Austausch, Stillstand beim Kunden.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="fussnote">Werte in Anlehnung an die „Zehnerregel“ der Fehlerkosten
+      (Daimler AG). Die Beträge sind Größenordnungen, keine Preise &ndash; entscheidend ist
+      der Faktor 10 von Stufe zu Stufe.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================== PRÜFUMFANG -->
+<section class="panel" id="p-umfang" hidden>
+
+  <div class="karte">
+    <h2>Prüfumfang &ndash; eine Risikoabwägung</h2>
+    <p class="sub">Wie oft und wie genau geprüft wird, entscheidet das Bauteil.</p>
+    <p>Wie viel geprüft wird, ist immer eine Abwägung zwischen Kosten und Risiko, die der
+    Hersteller treffen muss. Daraus ergibt sich der
+    <span class="term" data-t="pruefumfang"></span>. Oft gibt allerdings der Auftraggeber
+    zwingend vor, wann und woran geprüft wird &ndash; daran gebunden ist vor allem der
+    <span class="term" data-t="zulieferer"></span>.</p>
+
+    <div class="zwei">
+      <div>
+        <h4>100&#8239;%&#8209;Prüfung</h4>
+        <p>Jedes einzelne Teil wird geprüft. Teuer und aufwendig, aber unverzichtbar
+        überall dort, wo ein Ausfall Menschen gefährdet.</p>
+      </div>
+      <div>
+        <h4>Stichprobe und Intervall</h4>
+        <p>Eine <span class="term" data-t="stichprobe"></span> genügt, wenn ein einzelner
+        Fehler wenig anrichtet. Bei Endlosmaterial prüft man stattdessen in festen
+        Abständen, etwa alle 100&nbsp;m.</p>
+      </div>
+    </div>
+
+    <div class="merke"><b>Merke:</b> Nicht die erreichbare Genauigkeit entscheidet über den
+      Prüfumfang, sondern die Folgen eines übersehenen Fehlers.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Entscheidungssimulator</h2>
+    <p class="sub">Bauteil und Prüfumfang wählen &ndash; und die Begründung dazu lesen.</p>
+
+    <div class="wahlfeld">
+      <div>
+        <label for="bauteil">1. Art des Bauteils</label>
+        <select id="bauteil" data-druck="ankreuzen">
+          <option value="">&mdash; bitte wählen &mdash;</option>
+          <option value="masse">Massenteile (Schrauben, Stifte)</option>
+          <option value="sicher">Sicherheitskritische Bauteile (Ventile, Schieber)</option>
+          <option value="endlos">Endlosmaterial (Profile, Bänder)</option>
+        </select>
+      </div>
+      <div>
+        <label for="umfang">2. Geplanter Prüfumfang</label>
+        <select id="umfang" data-druck="ankreuzen">
+          <option value="">&mdash; bitte wählen &mdash;</option>
+          <option value="voll">100&#8239;%&#8209;Prüfung (jedes Teil)</option>
+          <option value="stich">Stichprobe</option>
+          <option value="intervall">Intervallprüfung (z.&nbsp;B. alle 100&nbsp;m)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="steuerung" data-druck="weg">
+      <button class="tat" id="btnBewerten">Strategie bewerten</button>
+    </div>
+
+    <div id="simErgebnis"></div>
+  </div>
+
+</section>
+
+</main>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================================
+   1  FACHBEGRIFFE
+   Fachbegriff und alltagssprachliche Fassung. Zwei Regeln, damit der Satz in
+   beiden Stufen grammatisch stimmt:
+   1. Gleiches Geschlecht wie der Fachbegriff - der Artikel steht im Satz und
+      wird nicht mitgetauscht.
+   2. Kein vorangestelltes Adjektiv, sonst muesste sich seine Endung mit dem
+      Fall aendern. Stattdessen ein nachgestellter Zusatz.
+   "kurz" ist die Kurzfassung fuer Zeichnungsbeschriftungen, wo der ganze
+   Ausdruck nicht hinpasst.
+   ========================================================================== */
+var TERME = {
+  messgroesse:        {a:"Größe, die gemessen wird",               f:"Messgröße",     kurz:"Was gemessen wird"},
+  messwert:           {a:"Wert, der herauskommt",                  f:"Messwert",      kurz:"Was angezeigt wird"},
+  messkette:          {a:"Reihe vom Bauteil bis zur Anzeige",      f:"Messkette",     kurz:"Kette"},
+  aufnehmer:          {a:"Teil, das die Größe abgreift",           f:"Aufnehmer",     kurz:"Abgreifen"},
+  umformer:           {a:"Teil, das das Signal verstärkt",         f:"Umformer",      kurz:"Verstärken"},
+  anzeige:            {a:"Teil, das den Wert sichtbar macht",      f:"Anzeige",       kurz:"Anzeigen"},
+  messabweichung:     {a:"Unterschied zum wahren Wert",            f:"Messabweichung", kurz:"Abweichung"},
+  messmittel:         {a:"Werkzeug zum Messen",                    f:"Messmittel"},
+  messgeraete:        {a:"Geräte mit Anzeige",                     f:"Messgeräte"},
+  lehren:             {a:"Prüfkörper ohne Anzeige",                f:"Lehren"},
+  toleranzen:         {a:"Maßabweichungen, die erlaubt sind",      f:"Toleranzen"},
+  pruefverfahren:     {a:"Vorgehen beim Prüfen",                   f:"Prüfverfahren"},
+  pruefplan:          {a:"Plan, was wann geprüft wird",            f:"Prüfplan"},
+  pruefumfang:        {a:"Anteil, der geprüft wird",               f:"Prüfumfang"},
+  serienfertigung:    {a:"Fertigung großer Stückzahlen",           f:"Serienfertigung"},
+  einzelfertigung:    {a:"Fertigung einzelner Stücke",             f:"Einzelfertigung"},
+  arbeitsvorbereitung:{a:"Abteilung, die die Fertigung plant",     f:"Arbeitsvorbereitung"},
+  qualitaetssicherung:{a:"Abteilung, die die Güte überwacht",      f:"Qualitätssicherung"},
+  zwischenmessung:    {a:"Messung mitten in der Fertigung",        f:"Zwischenmessung"},
+  endkontrolle:       {a:"Prüfung am Ende der Fertigung",          f:"Endkontrolle"},
+  ausschuss:          {a:"Schrott",                                f:"Ausschuss"},
+  stichprobe:         {a:"Auswahl einzelner Teile",                f:"Stichprobe"},
+  zulieferer:         {a:"Betrieb, der für einen anderen fertigt", f:"Zulieferer"}
+};
+
+/* ============================================================================
+   2  ZUSTAND
+   ========================================================================== */
+var zustand = { fach:false };
+var aufgedeckt = {};
+
+function el(id){ return document.getElementById(id); }
+
+function paramsLesen(){
+  try{
+    var p = new URLSearchParams(window.location.search);
+    if(p.has("fach")) zustand.fach = p.get("fach") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Welche Fassung wird gerade gezeigt? Ein einzeln aufgedeckter Begriff dreht
+   die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  var basis = wurzel || document;
+  if(!wurzel) document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+  var knoten = basis.querySelectorAll(".term");
+  for(var i=0;i<knoten.length;i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var t = TERME[schluessel];
+    if(!t) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? t.f : t.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff – klicken für die einfache Formulierung"
+              : "einfache Formulierung – klicken für den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung" : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();   /* damit Zeichnungsbeschriftungen mitziehen */
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zurücksetzen"
+    : anzahl + " aufgedeckte Wörter zurücksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Beschriftung in Zeichnungen: SVG-Text kann kein Markup tragen, deshalb wird
+   hier nur der reine Wortlaut geliefert. Ein einzeln aufgedeckter Begriff
+   schlaegt auch hier durch - sonst stuende in der Zeichnung noch die alte
+   Fassung, waehrend der Text daneben schon den Fachbegriff zeigt. */
+function zWort(schluessel){
+  var t = TERME[schluessel];
+  if(!t) return schluessel;
+  return zeigtFach(schluessel) ? t.f : (t.kurz || t.a);
+}
+
+/* ============================================================================
+   3  ZEICHNEN
+   ========================================================================== */
+var NS = "http://www.w3.org/2000/svg";
+
+function ns(name, attr){
+  var e = document.createElementNS(NS, name);
+  for(var k in attr){
+    if(attr[k] !== null && attr[k] !== undefined) e.setAttribute(k, attr[k]);
+  }
+  return e;
+}
+function leeren(svg){ while(svg.firstChild) svg.removeChild(svg.firstChild); }
+
+function rechteck(g, x, y, b, h, fuell, strich, o){
+  o = o || {};
+  g.appendChild(ns("rect", {x:x, y:y, width:b, height:h, rx:o.r || 0,
+    fill:fuell, stroke:strich || "none", "stroke-width":o.sw || 1.4,
+    opacity:o.opacity}));
+}
+function linie(g, x1, y1, x2, y2, farbe, sw, o){
+  o = o || {};
+  g.appendChild(ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe,
+    "stroke-width":sw || 1.4, "stroke-dasharray":o.dash, opacity:o.opacity,
+    "marker-end":o.pfeil ? "url(#spitze)" : null}));
+}
+function txt(g, x, y, text, o){
+  o = o || {};
+  var t = ns("text", {x:x, y:y, fill:o.fill || "#0f172a",
+    "font-size":o.size || 13, "font-weight":o.fett ? 700 : 400,
+    "text-anchor":o.anker || "middle",
+    "font-family":"Segoe UI, system-ui, sans-serif", opacity:o.opacity});
+  t.textContent = text;
+  g.appendChild(t);
+  return t;
+}
+function spitze(svg, farbe){
+  var defs = ns("defs", {});
+  var m = ns("marker", {id:"spitze", viewBox:"0 0 10 10", refX:9, refY:5,
+    markerWidth:6, markerHeight:6, orient:"auto-start-reverse"});
+  m.appendChild(ns("path", {d:"M0,0 L10,5 L0,10 z", fill:farbe}));
+  defs.appendChild(m);
+  svg.appendChild(defs);
+}
+
+var F = {
+  primaer:"#1e3a8a", akzent:"#e67e22", rand:"#cbd5e1", grau:"#64748b",
+  hell:"#eff6ff", ok:"#16a34a", bad:"#dc2626", text:"#0f172a"
+};
+
+/* ---------------------------------------------------------------- MESSKETTE */
+/* Welches Glied gerade arbeitet: -1 = keines, 3 = fertig. */
+var kettenSchritt = -1;
+
+var GLIEDER = [
+  {t:"aufnehmer", bsp:"Taster, Sensor"},
+  {t:"umformer",  bsp:"Verstärker, Getriebe"},
+  {t:"anzeige",   bsp:"Skala, Ziffern"}
+];
+
+function kette(){
+  var svg = el("svgKette");
+  leeren(svg);
+  spitze(svg, F.grau);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  /* Aussen stehen die Wendungen der Alltagsfassung - die brauchen mehr
+     Breite als die drei Glieder dazwischen. */
+  var links = 14, aussen = 152, breite = 140, hoehe = 74, y = 62, luecke = 38;
+
+  rechteck(g, links, y, aussen, hoehe, "#fff", F.rand, {r:10, sw:1.4});
+  txt(g, links + aussen/2, y + 31, zWort("messgroesse"), {fett:true, size:13});
+  txt(g, links + aussen/2, y + 51, "z. B. Länge", {fill:F.grau, size:11.5});
+
+  var x = links + aussen + luecke;
+  for(var i=0;i<GLIEDER.length;i++){
+    linie(g, x - luecke + 6, y + hoehe/2, x - 9, y + hoehe/2, F.grau, 1.8, {pfeil:true});
+
+    var aktiv = kettenSchritt === i;
+    var durch = kettenSchritt > i || kettenSchritt === 3;
+    rechteck(g, x, y, breite, hoehe,
+      aktiv ? F.akzent : (durch ? F.hell : "#fff"),
+      aktiv ? "#c2610c" : F.rand, {r:10, sw:aktiv ? 2 : 1.4});
+    txt(g, x + breite/2, y + 31, zWort(GLIEDER[i].t),
+      {fett:true, size:13, fill:aktiv ? "#fff" : F.text});
+    txt(g, x + breite/2, y + 51, GLIEDER[i].bsp,
+      {size:11.5, fill:aktiv ? "#fff" : F.grau});
+
+    /* Jedes Glied kann etwas verfaelschen - das ist die Aussage der Zeichnung. */
+    txt(g, x + breite/2, y + hoehe + 22, "Abweichung möglich",
+      {size:10.5, fill:F.bad, opacity:0.7});
+
+    x += breite + luecke;
+  }
+
+  linie(g, x - luecke + 6, y + hoehe/2, x - 9, y + hoehe/2, F.grau, 1.8, {pfeil:true});
+
+  var fertig = kettenSchritt === 3;
+  rechteck(g, x, y, aussen, hoehe, fertig ? "#f0fdf4" : "#fff",
+    fertig ? F.ok : F.rand, {r:10, sw:fertig ? 2 : 1.4});
+  txt(g, x + aussen/2, y + 30, zWort("messwert"), {fett:true, size:13});
+  txt(g, x + aussen/2, y + 53, fertig ? "12,04 µm" : "…",
+    {size:fertig ? 16 : 15, fett:fertig, fill:fertig ? F.ok : F.grau});
+
+  txt(g, 450, 26, "Von der Größe am Bauteil bis zur Zahl auf der Anzeige",
+    {size:12.5, fill:F.grau});
+  txt(g, 450, 200, "Alle Einflüsse zusammen ergeben die " + zWort("messabweichung") + ".",
+    {size:12, fill:F.grau});
+}
+
+/* -------------------------------------------------------------- ZEHNERREGEL */
+/* Aufgetragen wird logarithmisch. Die Zehnerregel sagt, dass jede Stufe das
+   Zehnfache kostet; auf einer linearen Achse waeren die ersten beiden Balken
+   unsichtbar, auf der logarithmischen wird aus dem Faktor 10 eine gleich hohe
+   Stufe. Genau das ist die Aussage. */
+var PHASEN = [
+  {kurz:"Planung",       kosten:0.1},
+  {kurz:"Entwicklung",   kosten:1},
+  {kurz:"AV / Fertigung", kosten:10},
+  {kurz:"Endkontrolle",  kosten:100},
+  {kurz:"Kunde",         kosten:1000}
+];
+
+function geld(w){
+  return (w < 1 ? w.toFixed(2).replace(".", ",") : String(w)) + " €";
+}
+
+function zehner(){
+  var svg = el("svgZehner");
+  leeren(svg);
+  spitze(svg, F.grau);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var links = 98, unten = 300, oben = 46, rechts = 858;
+  var hoehe = unten - oben, breite = rechts - links;
+
+  linie(g, links, unten, rechts + 10, unten, F.grau, 1.6, {pfeil:true});
+  linie(g, links, unten, links, oben - 12, F.grau, 1.6, {pfeil:true});
+  /* Unter die Phasennamen, sonst liegt sie auf der letzten Beschriftung. */
+  txt(g, (links + rechts)/2, unten + 48, "Zeit im Ablauf  →",
+    {size:12, fill:F.grau});
+
+  var yb = ns("text", {x:0, y:0, fill:F.grau, "font-size":12,
+    "text-anchor":"middle", "font-family":"Segoe UI, system-ui, sans-serif",
+    transform:"translate(28," + (oben + hoehe/2) + ") rotate(-90)"});
+  yb.textContent = "Kosten je Fehler (logarithmisch)";
+  g.appendChild(yb);
+
+  function yVon(k){
+    /* log10(0,1) = -1 bis log10(1000) = 3 */
+    var t = (Math.log(k) / Math.LN10 + 1) / 4;
+    return unten - 22 - t * (hoehe - 34);
+  }
+
+  [0.1, 1, 10, 100, 1000].forEach(function(s){
+    var y = yVon(s);
+    linie(g, links, y, rechts, y, F.rand, 1, {dash:"4 5"});
+    txt(g, links - 10, y + 4, geld(s), {anker:"end", size:11, fill:F.grau});
+  });
+
+  var feld = breite / PHASEN.length;
+  for(var i=0;i<PHASEN.length;i++){
+    var p = PHASEN[i];
+    var y = yVon(p.kosten);
+    var bb = Math.min(76, feld * 0.5);
+    var x = links + feld * i + (feld - bb) / 2;
+    var farbe = i < 2 ? F.primaer : (i < 4 ? F.akzent : F.bad);
+
+    rechteck(g, x, y, bb, unten - y, farbe, "none", {r:4});
+    txt(g, x + bb/2, y - 9, geld(p.kosten), {fett:true, size:12.5, fill:farbe});
+    txt(g, x + bb/2, unten + 22, p.kurz, {size:12});
+
+    /* Der Faktor zwischen zwei Stufen ist die eigentliche Aussage. */
+    if(i > 0){
+      txt(g, x - (feld - bb)/2, (y + yVon(PHASEN[i-1].kosten))/2 + 4, "× 10",
+        {size:11.5, fill:F.grau, fett:true});
+    }
+  }
+
+  txt(g, (links + rechts)/2, 24,
+    "Je später ein Fehler auffällt, desto teurer wird er – Stufe für Stufe um das Zehnfache",
+    {size:12.5, fill:F.grau});
+  txt(g, (links + rechts)/2, 372,
+    "Anhaltswerte nach der Zehnerregel; entscheidend ist der Faktor, nicht der Betrag",
+    {size:11, fill:F.grau});
+}
+
+function allesNeuZeichnen(){
+  kette();
+  zehner();
+}
+
+/* ============================================================================
+   4  MESSVORGANG
+   ========================================================================== */
+var messLaeuft = false;
+
+function messenStarten(){
+  if(messLaeuft) return;
+  messLaeuft = true;
+  var knopf = el("btnMessen");
+  knopf.disabled = true;
+
+  var texte = [
+    "Der Aufnehmer greift die Größe am Bauteil ab.",
+    "Der Umformer macht aus dem kleinen Signal ein auswertbares.",
+    "Die Anzeige stellt den Wert dar."
+  ];
+
+  kettenSchritt = -1;
+  kette();
+
+  var i = 0;
+  var takt = setInterval(function(){
+    kettenSchritt = i;
+    kette();
+    el("messStand").textContent = texte[i];
+    i++;
+    if(i < texte.length) return;
+    clearInterval(takt);
+    setTimeout(function(){
+      kettenSchritt = 3;
+      kette();
+      el("messStand").textContent = "Fertig – angezeigt werden 12,04 µm.";
+      knopf.disabled = false;
+      knopf.textContent = "Erneut messen";
+      messLaeuft = false;
+    }, 800);
+  }, 800);
+}
+
+/* ============================================================================
+   5  ENTSCHEIDUNGSSIMULATOR
+   Die Bewertung folgt dem, was die Lektion oben begruendet: Der Pruefumfang
+   richtet sich nach den Folgen eines uebersehenen Fehlers, nicht nach dem
+   Wunsch nach Genauigkeit.
+   ========================================================================== */
+var URTEILE = {
+  "masse|stich": {gut:true, text:"<b>Sinnvoll.</b> Bei Massenteilen wie Schrauben oder "
+    + "Stiften genügt die Stichprobe. Jedes Teil einzeln zu prüfen kostet mehr, als ein "
+    + "einzelnes fehlerhaftes Teil anrichtet."},
+  "masse|voll": {gut:false, text:"<b>Unwirtschaftlich.</b> Eine 100&#8239;%-Prüfung bei "
+    + "Massenware treibt die Kosten weit über den möglichen Schaden. Hier ist die "
+    + "Stichprobe das Mittel der Wahl."},
+  "masse|intervall": {gut:false, text:"<b>Passt nicht zum Bauteil.</b> Die Intervallprüfung "
+    + "ist für Endlosmaterial gedacht, bei dem man in Metern statt in Stück zählt. Bei "
+    + "Einzelteilen prüft man stichprobenhaft."},
+
+  "sicher|voll": {gut:true, text:"<b>Notwendig.</b> Wo ein Ausfall Menschen gefährdet oder "
+    + "eine Anlage stillsetzt, wird jedes Teil geprüft. Die Prüfkosten sind gegenüber den "
+    + "Folgen eines Ausfalls gering."},
+  "sicher|stich": {gut:false, text:"<b>Zu hohes Risiko.</b> Eine Stichprobe lässt zu, dass "
+    + "gerade das ungeprüfte Teil versagt. Bei sicherheitskritischen Bauteilen ist das "
+    + "nicht vertretbar."},
+  "sicher|intervall": {gut:false, text:"<b>Zu hohes Risiko.</b> Feste Abstände sagen nichts "
+    + "über die Teile dazwischen. Bei sicherheitskritischen Bauteilen muss jedes einzelne "
+    + "geprüft werden."},
+
+  "endlos|intervall": {gut:true, text:"<b>Richtig.</b> Bei Profilen und Bändern gibt es kein "
+    + "einzelnes Stück, das man zählen könnte. Man prüft deshalb in festen Abständen, "
+    + "z.&nbsp;B. alle 100&nbsp;m, und erkennt so, wie der Prozess wegdriftet."},
+  "endlos|voll": {gut:false, text:"<b>Nicht umsetzbar.</b> Ein endlos laufendes Band lässt "
+    + "sich nicht in jedem Millimeter prüfen. Man legt stattdessen Prüfabstände fest."},
+  "endlos|stich": {gut:false, text:"<b>Zu ungenau.</b> Rein zufällige Stichproben zeigen "
+    + "nicht, ob der Prozess langsam wegläuft. Feste Abstände tun das."}
+};
+
+function bewerten(){
+  var b = el("bauteil").value, u = el("umfang").value;
+  var ziel = el("simErgebnis");
+  if(!b || !u){
+    ziel.innerHTML = '<div class="warnung">Bitte erst ein Bauteil und einen Prüfumfang '
+      + 'wählen.</div>';
+    return;
+  }
+  var urteil = URTEILE[b + "|" + u];
+  if(!urteil){ ziel.innerHTML = ""; return; }
+  ziel.innerHTML = '<div class="' + (urteil.gut ? "gut" : "warnung") + '">'
+    + urteil.text + '</div>';
+}
+
+/* ============================================================================
+   6  REITER UND SCHALTER
+   ========================================================================== */
+function reiterSetzen(name){
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].setAttribute("aria-selected",
+      kn[i].getAttribute("data-tab") === name ? "true" : "false");
+  }
+  var panels = document.querySelectorAll(".panel");
+  for(var j=0;j<panels.length;j++){
+    /* Kapitel, die ueber "Lektion anpassen" abgewaehlt wurden, bleiben zu. */
+    if(panels[j].classList.contains("lk-weg")) continue;
+    panels[j].hidden = panels[j].id !== "p-" + name;
+  }
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert – Fachbegriffe " + (zustand.fach ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig, function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
+function start(){
+  paramsLesen();
+
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].addEventListener("click", function(){ reiterSetzen(this.getAttribute("data-tab")); });
+  }
+
+  el("btnMessen").addEventListener("click", messenStarten);
+  el("btnBewerten").addEventListener("click", bewerten);
+
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+  begriffeZeichnen();
+  allesNeuZeichnen();
+  reiterSetzen("messen");
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
 <script src="assets/back-nav.js" data-ziel="../"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
 </body>
-
 </html>
