@@ -1,6 +1,6 @@
 # 🎓 Interaktive Unterrichts-Mediathek
 
-Dieses Repository dient als automatisches Archiv und Hosting-Plattform für interaktive Unterrichtswerkzeuge, die in **[CodePen](https://codepen.io)** erstellt wurden. Dank einer **[Make.com](https://www.make.com)**-Automation werden Pens mit nur einem Klick direkt hierher übertragen, automatisch kategorisiert und veröffentlicht.
+Dieses Repository dient als automatisches Archiv und Hosting-Plattform für interaktive Unterrichtsseiten, die in **[CodePen](https://codepen.io)** erstellt wurden. Dank einer **[Make.com](https://www.make.com)**-Automation werden Pens mit nur einem Klick direkt hierher übertragen, automatisch kategorisiert und veröffentlicht.
 
 ## ⚡ Schnellstart & Anleitungen
 Möchten Sie dieses System für Ihren eigenen Unterricht nachbauen? Hier sind die fertigen Vorlagen und Schritt-für-Schritt-Anleitungen:
@@ -11,39 +11,82 @@ Möchten Sie dieses System für Ihren eigenen Unterricht nachbauen? Hier sind di
 
 ## 🚀 Der Workflow
 
-Der Prozess ist vollständig automatisiert und besteht aus vier Komponenten:
-
-1. **[CodePen](https://codepen.io) (Quelle):** Hier werden die HTML/CSS-Tools entwickelt.
+1. **[CodePen](https://codepen.io) (Quelle):** Hier werden die HTML/CSS-Seiten entwickelt.
 2. **Bookmarklet (Trigger):** Ein spezielles Browser-Lesezeichen extrahiert den Code und Titel und sendet ein JSON-Paket an Make.com.
-3. **[Make.com](https://www.make.com) (Brücke):** - Empfängt die Daten über einen Webhook.
+3. **[Make.com](https://www.make.com) (Brücke):**
+   - Empfängt die Daten über einen Webhook.
    - Prüft via GitHub-API (GET), ob die Datei bereits existiert.
    - Falls ja, wird der `sha`-Wert ausgelesen, um die Datei zu überschreiben.
    - Speichert die Datei (PUT) im Unterordner `/tools/`.
-4. **GitHub Pages (Ziel):** Die `index.html` nutzt Jekyll-Logik, um automatisch eine Übersichtskarte aller Tools im Web zu generieren.
+4. **Build (Nachbereitung):** `node build/build.mjs` bringt die neue Datei in Ordnung und
+   schreibt die Übersicht neu. Ohne diesen Schritt fehlt die Seite in der Übersicht.
+
+### Nach jedem Upload: `node build/build.mjs`
+
+Das Skript braucht nur Node 18 und keine Abhängigkeiten. Es tut drei Dinge:
+
+1. **Front Matter entfernen.** Das Bookmarklet setzt `--- title: "…" ---` an den
+   Dateianfang. Das stammt aus der Jekyll-Zeit; ohne Jekyll stünde es als Text
+   auf der Seite.
+2. **Bausteine eintragen**, falls sie fehlen: `assets/thema-werkzeug.css` und
+   `assets/thema.js` in den `head`, `assets/back-nav.js` vor `</body>`.
+3. **`index.html` neu schreiben** – die Übersicht mit beiden Reitern.
+
+`node build/build.mjs --check` prüft nur und endet mit Exit-Code 1, wenn etwas
+offen ist. Praktisch vor dem Commit.
+
+> **Warum kein Jekyll mehr?** Die Seiten sind vollständige HTML-Dokumente, keine
+> Fragmente. Jekyll hat nur ein Layout darübergelegt, das den Rücklink einfügt –
+> und das auch nur auf GitHub Pages; auf t-bk.de tat dasselbe das `deploy.sh` ein
+> zweites Mal. Zwei Wege für dieselbe Zeile, und lokal per Doppelklick
+> funktionierte keiner davon. Jetzt steht alles in den Dateien selbst: GitHub
+> Pages, t-bk.de und der lokale Doppelklick zeigen dieselbe Seite.
 
 ## 📂 Ordnerstruktur
 
-* `/tools/` – Enthält alle exportierten HTML-Dateien aus CodePen.
-* `index.html` – Die dynamische Startseite (Jekyll), die Tools nach Fachbereichen gruppiert.
-* `_includes/back-nav.html` – Der Rücklink „← Übersicht“, der in jedes Tool eingefügt wird.
-* `_layouts/tool.html` – Fügt diesen Rücklink beim GitHub-Pages-Build in jedes Tool ein.
-* `_config.yml` – Weist allen Dateien unter `/tools/` automatisch das Layout `tool` zu.
-* `_data/kategorien.csv` – Legt die Reihenfolge der Bereiche und Unterkategorien fest.
-* `Make.com-Anleitung.md` – Setup-Anleitung für die Make.com-Schnittstelle.
-* `Lesezeichen Erstellen.md` – Setup-Anleitung für das Browser-Bookmarklet.
-* `README.md` – Diese Dokumentation.
+* `/tools/` – Alle exportierten HTML-Dateien aus CodePen.
+* `/tools/assets/` – Die gemeinsamen Bausteine (Rücklink, Umschalter hell/dunkel).
+* `index.html` – Die Übersicht. **Erzeugt** – nicht von Hand bearbeiten.
+* `build/build.mjs` – Erzeugt sie.
+* `build/uebersicht-vorlage.html` – Das Gerüst dafür (Design, Reiter, Suche).
+* `daten/kategorien.csv` – Legt die Reihenfolge der Bereiche und Unterkategorien fest.
+* `.nojekyll` – Sagt GitHub Pages, dass es die Dateien unverändert ausliefern soll.
+* `Make.com-Anleitung.md`, `Lesezeichen Erstellen.md` – Setup-Anleitungen.
 
-## 🛠 Automatisierung & Konventionen
+## 🛠 Konventionen
+
+### Zwei Arten von Seiten
+
+Die Übersicht trennt sie in zwei Haupt-Reiter, weil einen bei ihnen etwas ganz
+Unterschiedliches erwartet:
+
+| Art | Was es ist | `<meta name="art" content="…">` |
+| --- | --- | --- |
+| **Simulation** | Etwas einstellen, ablesen, ausprobieren – rechnet und zeichnet mit | `simulation` |
+| **Lektion** | Ein Thema von vorn bis hinten, in Kapiteln – zum Lesen und Vorführen | `lektion` |
+
+Das Merkmal steht als `<meta>` im `head` der Seite:
+
+```html
+<meta name="art" content="lektion">
+```
+
+Fehlt es, gilt die Seite als Simulation und der Build sagt es beim Durchlauf.
+Frisch aus CodePen hochgeladene Seiten sind damit von allein richtig
+einsortiert; nur bei einer Lektion trägt man die Zeile nach.
+
+Optional ist `<meta name="description" content="…">`: Der Text erscheint als
+zweite Zeile auf der Karte.
 
 ### Namensgebung: Bereich, Unterkategorie, Name
 
-Beide Übersichten – GitHub Pages und t-bk.de – gruppieren allein anhand des Titels. Er folgt diesem Muster:
+Gruppiert wird allein anhand des Titels. Er folgt diesem Muster:
 
-`Bereich: Unterkategorie - Name des Tools`
+`Bereich: Unterkategorie - Name der Seite`
 
 **Beispiele:**
 - `Fertigungstechnik: Messmittel - Messuhr` → Bereich „Fertigungstechnik“, Kategorie „Messmittel“, Karte „Messuhr“
-- `Maschinenelemente: Schrauben - Gewindearten` → Bereich „Maschinenelemente“, Kategorie „Schrauben“
+- `Maschinenelemente: Schrauben - Schraubverbindungen` → Bereich „Maschinenelemente“, Kategorie „Schrauben“
 - `Fertigungstechnik: ISO-Toleranzen und Passungen` → ohne Unterkategorie, steht direkt unter dem Bereich
 
 **Zwei Regeln, die man kennen muss:**
@@ -53,7 +96,7 @@ Beide Übersichten – GitHub Pages und t-bk.de – gruppieren allein anhand des
 
 ### Reihenfolge der Kategorien
 
-`_data/kategorien.csv` bestimmt, in welcher Reihenfolge Bereiche und Unterkategorien erscheinen – nützlich überall dort, wo alphabetisch fachlich falsch wäre (z. B. Instandhaltung nach DIN 31051: Wartung, Inspektion, Instandsetzung, Verbesserung).
+`daten/kategorien.csv` bestimmt, in welcher Reihenfolge Bereiche und Unterkategorien erscheinen – nützlich überall dort, wo alphabetisch fachlich falsch wäre (z. B. Instandhaltung nach DIN 31051: Wartung, Inspektion, Instandsetzung, Verbesserung).
 
 ```csv
 bereich,unterkategorie
@@ -61,35 +104,58 @@ Fertigungstechnik,Messmittel
 Instandhaltung,Wartung
 ```
 
-Beide Generatoren lesen dieselbe Datei. Was dort **nicht** steht, wird alphabetisch hinten angehängt – ein neues Werkzeug erscheint also auch ohne Pflege der CSV, nur eben nicht an der gewünschten Position. Kommata sind in den Werten nicht erlaubt.
-
-### Bookmarklet-Logik
-Das verwendete JavaScript-Bookmarklet führt folgende Schritte aus:
-1. Es liest den `<title>` aus dem HTML-Gerüst.
-2. Es bereinigt den Titel für den Dateinamen (Kleinbuchstaben, keine Sonderzeichen).
-3. Es fügt ein YAML Front Matter (`--- title: "..." ---`) oben in den Code ein, damit GitHub Pages den Namen inklusive Doppelpunkt erkennt.
-4. Es sendet den Code per POST-Request an den Make-Webhook.
+Was dort **nicht** steht, wird alphabetisch hinten angehängt – eine neue Seite
+erscheint also auch ohne Pflege der CSV, nur eben nicht an der gewünschten
+Position. Kommata sind in den Werten nicht erlaubt.
 
 ## ↩️ Rücklink zur Übersicht
 
-Jedes Tool bekommt oben links eine schwebende Schaltfläche **„← Übersicht“** (auf schmalen Displays nur den Pfeil). Sie zeigt immer auf `../` und trifft damit ohne Fallunterscheidung die jeweils richtige Übersicht:
+Jede Seite bekommt oben links eine schwebende Schaltfläche **„← Übersicht“** (auf schmalen Displays nur den Pfeil). Sie zeigt immer auf `../` und trifft damit ohne Fallunterscheidung die jeweils richtige Übersicht:
 
-| Umgebung | Tool-URL | Ziel von `../` |
+| Umgebung | Seiten-URL | Ziel von `../` |
 | --- | --- | --- |
 | GitHub Pages | `…/CmoneBK-Unterrichtsmaterial/tools/x.html` | `…/CmoneBK-Unterrichtsmaterial/` |
 | t-bk.de | `t-bk.de/werkzeuge/tools/x.html` | `t-bk.de/werkzeuge/` |
 
-**Wichtig:** Die Dateien in `/tools/` werden *nicht* verändert – der Link wird erst beim Ausspielen direkt vor dem schliessenden `body`-Tag eingefügt. Ein automatischer CodePen-Upload kann ihn deshalb nicht überschreiben, und in CodePen selbst muss nichts mitgepflegt werden.
+Eingebunden wird sie als `<script src="assets/back-nav.js" data-ziel="../"></script>`
+direkt vor `</body>`; der Build trägt die Zeile nach, wenn sie fehlt. Aussehen
+und Ziel ändert man ausschliesslich in `tools/assets/back-nav.js`. Der Block
+verwendet eine eigene ID (`#tbk-back`) und `!important`, damit ihn die sehr
+unterschiedlichen Designs (helle wie dunkle) nicht überschreiben.
 
-* **GitHub Pages:** `_config.yml` weist `/tools/` das Layout `_layouts/tool.html` zu, das `_includes/back-nav.html` einfügt.
-* **t-bk.de:** `deploy.sh` (Repo `tbk-webseite`) liest **dieselbe** Datei `_includes/back-nav.html` aus diesem Repo und fügt sie beim Deploy ein.
+## 🌓 Hell oder dunkel
 
-Aussehen oder Ziel des Links ändert man also ausschliesslich in `_includes/back-nav.html` – beide Ausspielwege übernehmen die Änderung automatisch. Der Block verwendet eine eigene ID (`#tbk-back`) und `!important`, damit ihn die sehr unterschiedlichen Tool-Designs (helle wie dunkle) nicht überschreiben.
+Oben rechts sitzt ein Umschalter mit drei Zuständen: **System** (Vorgabe),
+**Hell**, **Dunkel**. Die Wahl liegt im `localStorage` unter `tbk-thema` und gilt
+für die ganze Seite t-bk.de – Startseite, Werkzeuge und Unterrichtsmaterial
+ziehen mit. Es wird nichts übertragen.
+
+Die Seiten in `/tools/` sind einzeln entstanden, jede mit eigenem Design und
+vielen fest eingetragenen Farben. Statt über zwanzig Designs von Hand umzufärben
+kehrt `tools/assets/thema-werkzeug.css` die Seite als Ganzes um und dreht den
+Farbton zurück: Aus Schwarz auf Weiß wird Weiß auf Schwarz, ein Rot bleibt rot.
+Für technische Zeichnungen ist das genau richtig.
+
+Zwei Sonderfälle, die man kennen muss:
+
+* **Von Haus aus dunkel gebaut** (Gesamtrundlauf Radial, Sinuslineal): Die Seite
+  trägt `<html data-basis="dunkel">` und wird umgekehrt behandelt.
+* **Farbe trägt die Aussage** (Farbmuster, Ampel): Ein `class="thema-echt"` am
+  Element schützt es vor der Umkehrung. Fotos und Videos sind ohnehin
+  ausgenommen.
+
+Die Übersicht (`index.html`) bindet dieses Stylesheet **nicht** ein – sie bringt
+eigene dunkle Farben mit.
 
 ## 🌐 Live-Ansicht
-Die Mediathek ist für Schüler und Kollegen erreichbar unter:
-👉 **[https://cmonebk.github.io/CmoneBK-Unterrichtsmaterial/](https://cmonebk.github.io/CmoneBK-Unterrichtsmaterial/)**
+Die Mediathek ist erreichbar unter:
+👉 **[https://t-bk.de/werkzeuge/](https://t-bk.de/werkzeuge/)**
+(Spiegel: [cmonebk.github.io/CmoneBK-Unterrichtsmaterial](https://cmonebk.github.io/CmoneBK-Unterrichtsmaterial/))
 
 ## 🔧 Fehlerbehebung
-- **Titel wird nicht korrekt angezeigt:** Prüfen Sie, ob das Tool im HTML-Code ganz oben die `---` Striche mit dem Titel-Eintrag enthält.
-- **Datei wird nicht aktualisiert:** Prüfen Sie in Make.com, ob der "Spion" (HTTP GET) einen gültigen `sha`-Wert zurückgibt. Ohne diesen Wert verweigert GitHub das Überschreiben existierender Dateien.
+- **Seite fehlt in der Übersicht:** `node build/build.mjs` laufen lassen und `index.html` mitcommitten.
+- **`--- title: … ---` steht als Text auf der Seite:** dasselbe – der Build entfernt es.
+- **Seite steht im falschen Reiter:** `<meta name="art" content="lektion">` im `head` ergänzen, dann neu bauen.
+- **Karte trägt den Dateinamen statt eines Namens:** Der Seite fehlt ein `<title>`.
+- **Karte hängt unter dem falschen Bereich:** Titel-Muster prüfen – ` - ` mit Leerzeichen.
+- **Datei wird nicht aktualisiert:** In Make.com prüfen, ob der "Spion" (HTTP GET) einen gültigen `sha`-Wert zurückgibt. Ohne diesen Wert verweigert GitHub das Überschreiben existierender Dateien.

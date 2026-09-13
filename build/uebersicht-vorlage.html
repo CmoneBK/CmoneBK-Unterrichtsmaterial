@@ -104,104 +104,18 @@
 
   <main class="wrap">
     <div class="tabs" role="tablist">
-      <button role="tab" data-art="simulation" aria-selected="true">Simulationen<span class="anzahl">19</span></button>
-      <button role="tab" data-art="lektion" aria-selected="false">Lektionen<span class="anzahl">4</span></button>
+      <button role="tab" data-art="simulation" aria-selected="true">Simulationen<span class="anzahl">{{ANZAHL_SIMULATION}}</span></button>
+      <button role="tab" data-art="lektion" aria-selected="false">Lektionen<span class="anzahl">{{ANZAHL_LEKTION}}</span></button>
     </div>
     <p class="was" id="was"></p>
 
     <input class="suche" id="suche" type="search" placeholder="Suchen …" aria-label="Suchen">
 
     <section id="p-simulation">
-      <h2 class="bereich">Fertigungstechnik</h2>
-      <div class="grid">
-          <a class="card" href="tools/fertigungstechnik-beurteilung-bedingungen-fuer-die-fertigung.html">
-            <span>Beurteilung Bedingungen für die Fertigung</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-hauptnutzungszeit-beim-drehen.html">
-            <span>Hauptnutzungszeit beim Drehen</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-iso-toleranzen-und-passungen.html">
-            <span>ISO-Toleranzen und Passungen</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-mini-wellen-cad-software.html">
-            <span>Mini Wellen-CAD-Software</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-vorschub-rautiefe-beim-schlichten.html">
-            <span>Vorschub &lt;-&gt; Rautiefe beim Schlichten</span>
-          </a>
-      </div>
-      <h3 class="cat">Messmittel</h3>
-      <div class="grid">
-          <a class="card" href="tools/fertigungstechnik-messmittel-auflichtverfahren-achsenabschnittverfahren.html">
-            <span>Auflichtverfahren (Achsenabschnittverfahren)</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-buegelmessschraube.html">
-            <span>Bügelmessschraube</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-induktiver-messtaster-lvdt.html">
-            <span>Induktiver Messtaster (LVDT)</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-kapazitiver-wegsensor.html">
-            <span>Kapazitiver Wegsensor</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-laser-triangulation.html">
-            <span>Laser Triangulation</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-messmikroskop-schattenbild.html">
-            <span>Messmikroskop (Schattenbild)</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-messschieber.html">
-            <span>Messschieber</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-messuhr.html">
-            <span>Messuhr</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-messmittel-sinuslineal.html">
-            <span>Sinuslineal</span>
-          </a>
-      </div>
-      <h3 class="cat">Form- und Lagetoleranzen</h3>
-      <div class="grid">
-          <a class="card" href="tools/fertigungstechnik-form-und-lagetoleranzen-gesamtrundlauf-radial.html">
-            <span>Gesamtrundlauf Radial</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-form-und-lagetoleranzen-koaxialitaet-vs-rundlauf.html">
-            <span>Koaxialität vs. Rundlauf</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-form-und-lagetoleranzen-konzentrizitaet.html">
-            <span>Konzentrizität</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-form-und-lagetoleranzen-rundheitsmessung.html">
-            <span>Rundheitsmessung</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-form-und-lagetoleranzen-rundlaufmessung.html">
-            <span>Rundlaufmessung</span>
-          </a>
-      </div>
+{{SIMULATIONEN}}
     </section>
     <section id="p-lektion" hidden>
-      <h2 class="bereich">Fertigungstechnik</h2>
-      <div class="grid">
-          <a class="card" href="tools/fertigungstechnik-prueftechnik-einfuehrung.html">
-            <span>Prüftechnik Einführung</span>
-          </a>
-      </div>
-      <h3 class="cat">Fügeverfahren</h3>
-      <div class="grid">
-          <a class="card" href="tools/fertigungstechnik-fuegeverfahren-schweissen.html">
-            <span>Schweißen</span>
-          </a>
-          <a class="card" href="tools/fertigungstechnik-fuegeverfahren-ueberblick.html">
-            <span>Überblick</span>
-          </a>
-      </div>
-      <h2 class="bereich">Maschinenelemente</h2>
-      <h3 class="cat">Schrauben</h3>
-      <div class="grid">
-          <a class="card" href="tools/maschinenelemente-schrauben-schraubverbindungen.html">
-            <span>Schraubverbindungen</span>
-          </a>
-      </div>
+{{LEKTIONEN}}
     </section>
     <p class="leer" id="leer" hidden>Nichts gefunden.</p>
   </main>
