@@ -122,6 +122,13 @@ details[open] summary{margin-bottom:8px}
   padding:8px 12px; margin:8px 0; overflow-x:auto;
 }
 .formel .kom{font-family:'Segoe UI',sans-serif; font-size:.82rem; color:var(--muted); display:block; margin-top:2px}
+/* Der Hinweis, dass dieser Schritt auch im Tabellenbuch steht. */
+.nachschlagen{
+  font-family:'Segoe UI',sans-serif; font-size:.85rem;
+  background:#f0fdf4; border:1px solid #bbf7d0; border-left:4px solid #16a34a;
+  border-radius:6px; padding:8px 12px; margin:8px 0 14px;
+}
+.nachschlagen b{font-weight:700}
 
 svg{display:block; max-width:100%; height:auto}
 .zeichnung{background:#fff; border:1px solid var(--border); border-radius:10px; margin:10px 0}
@@ -2917,10 +2924,33 @@ function rechne(){
   orientierungstabelle(myG, myK, nu);
 }
 
+/* Ein Hinweis, der sagt: Diesen Schritt kann man sich sparen. */
+function nachschlagen(text){
+  return "<div class='nachschlagen'><b>Nachschlagen statt rechnen:</b> " + text + "</div>";
+}
+
 function rechenwegSchreiben(r, myG, myK, nu, klasse){
   var m = r.m;
   var cG = beiwertGewinde(m, myG);
   var cK = beiwertKopf(m, myK);
+  var g  = el("bGewinde").value;
+  /* Die Drehmomenttabelle kennt nur diese Spalten - und nur eine Reibungszahl
+     fuer Gewinde und Kopf zugleich. */
+  var spalten = [0.08, 0.12, 0.16];
+  var trifft = (myG === myK) && spalten.indexOf(Math.round(myG * 100) / 100) !== -1;
+  var tabellenHinweis = trifft
+    ? "In der Tabelle <i>Maximale Vorspannkräfte und Anziehdrehmomente</i> " +
+      "die Zeile <b>" + g + "</b>, Festigkeitsklasse <b>" + klasse + "</b>, " +
+      "Spalte <b>μ = " + z(myG, 2) + "</b>: dort stehen <b>" + z(r.FM/1000, 1) +
+      " kN</b> und <b>" + z(r.M.gesamt/1000, r.M.gesamt/1000 < 10 ? 1 : 0) +
+      " N·m</b>. Die Rechnung hier zeigt, woher diese beiden Zahlen kommen."
+    : "Die Tabelle <i>Maximale Vorspannkräfte und Anziehdrehmomente</i> hat nur " +
+      "die Spalten μ = 0,08 / 0,12 / 0,16, und sie setzt μ<sub>G</sub> = " +
+      "μ<sub>K</sub> voraus. " +
+      (myG === myK
+        ? "Für μ = " + z(myG, 2) + " liegt der Wert zwischen zwei Spalten"
+        : "Hier sind Gewinde- und Kopfreibung verschieden") +
+      " – hier hilft nur die Rechnung.";
   el("rechenweg").innerHTML =
     "<div class='formel'><b>1. Gewindemaße</b></div>" +
     "<div class='formel'>d₂ = d − 0,6495 · P = " + z(m.d,0) + " − 0,6495 · " +
@@ -2930,6 +2960,13 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
       z(m.dS,3) + "² = <b>" + z(m.As,1) + " mm²</b>" +
       "<span class='kom'>W<sub>p</sub> = π · d<sub>S</sub>³ / 16 = " + z(r.S.Wp,0) + " mm³</span></div>" +
 
+    nachschlagen("d<sub>2</sub>, d<sub>3</sub> und der Spannungsquerschnitt stehen " +
+      "in der Tabelle <i>Metrisches ISO-Gewinde, Nennmaße Reihe 1</i> – für <b>" + g +
+      "</b>: d<sub>2</sub> = " + z(m.d2, 2) + " mm, d<sub>3</sub> = " + z(m.d3, 2) +
+      " mm, S = " + z(m.As, m.As < 100 ? 1 : 0) + " mm². Gerechnet wird nur, wenn " +
+      "die Zeile fehlt – bei Feingewinden oder Sondermaßen. W<sub>p</sub> steht " +
+      "dort allerdings nicht.") +
+
     "<div class='formel'><b>2. Wie groß darf die Vorspannkraft werden?</b></div>" +
     "<div class='formel'>Beim Anziehen wirken gleichzeitig Zug und Torsion:" +
       "<span class='kom'>σ<sub>z</sub> = F / A<sub>S</sub> und τ = 0,75 · M<sub>G</sub> / W<sub>p</sub> " +
@@ -2938,9 +2975,21 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
       "zurückdreht – so rechnet VDI 2230, und so entstehen die Tabellenwerte.</span></div>" +
     "<div class='formel'>σ<sub>red</sub> = √(σ<sub>z</sub>² + 3·τ²) = ν · R<sub>p0,2</sub> = " +
       z(nu,2) + " · " + z(r.w.Rp,0) + " = <b>" + z(nu*r.w.Rp,0) + " N/mm²</b></div>" +
+
+    nachschlagen("R<sub>p0,2</sub> = " + z(r.w.Rp,0) + " N/mm² steht in der Tabelle " +
+      "der <i>Festigkeitsklassen</i>" +
+      ((klasse === "10.9" || klasse === "12.9")
+        ? " – dort allerdings als Nennwert " + (klasse === "10.9" ? "900" : "1080") +
+          " N/mm². Hier steht der Mindestwert nach ISO 898-1, mit dem auch die " +
+          "Drehmomenttabelle gerechnet ist."
+        : ". Aus der Bezeichnung lässt er sich auch im Kopf ableiten: " +
+          klasse.split(".")[0] + " · " + klasse.split(".")[1] + " · 10 = " +
+          z(r.w.Rp,0) + " N/mm².")) +
     "<div class='formel'>Nach F aufgelöst:  F<sub>M,zul</sub> = ν · R<sub>p0,2</sub> / " +
       "√(1/A<sub>S</sub>² + 3·(0,75·c<sub>G</sub>)²/W<sub>p</sub>²) = <b>" +
       z(r.FM/1000,2) + " kN</b></div>" +
+
+    nachschlagen(tabellenHinweis) +
 
     "<div class='formel'><b>3. Probe</b></div>" +
     "<div class='formel'>σ<sub>z</sub> = " + z(r.FM,0) + " / " + z(m.As,1) + " = <b>" +
@@ -2958,7 +3007,15 @@ function rechenwegSchreiben(r, myG, myK, nu, klasse){
       z(m.Dh,1) + ")/2 = " + z(m.DKm,2) + " mm &nbsp;·&nbsp; " +
       "d<sub>w</sub> = Kopfauflage, D<sub>h</sub> = Durchgangsloch</span></div>" +
     "<div class='formel'>= " + z(r.FM,0) + " N · (" + z(0.16*m.P,3) + " + " +
-      z(0.58*m.d2*myG,3) + " + " + z(cK,3) + ") mm = <b>" + z(r.M.gesamt/1000,1) + " N·m</b></div>";
+      z(0.58*m.d2*myG,3) + " + " + z(cK,3) + ") mm = <b>" + z(r.M.gesamt/1000,1) + " N·m</b></div>" +
+
+    nachschlagen(trifft
+      ? "Auch M<sub>A</sub> steht in derselben Tabellenzeile wie F<sub>M,zul</sub> " +
+        "– in der rechten Hälfte, unter <i>Anziehdrehmoment</i>. Wer nur das " +
+        "Drehmoment für die Werkstatt braucht, ist nach einem Blick ins Buch fertig."
+      : "Für diese Reibungszahlen steht kein Drehmoment in der Tabelle. Wer " +
+        "einen Tabellenwert braucht, muss auf μ = 0,08 / 0,12 / 0,16 zurück – " +
+        "und dann auch dafür sorgen, dass die Schrauben so geschmiert sind.");
 }
 
 function orientierungstabelle(myG, myK, nu){
