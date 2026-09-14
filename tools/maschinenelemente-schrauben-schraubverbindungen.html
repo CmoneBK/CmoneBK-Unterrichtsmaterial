@@ -412,6 +412,23 @@ body.zeigt-formelzeichen .wort-only{display:none !important}
   </div>
 
   <div class="karte">
+    <h2>Die Schraube allein</h2>
+    <p class="sub">Dieselbe Schraube ohne Bauteile &ndash; so steht sie auf der
+      Einzelteilzeichnung. Gewinde und Ma&szlig;e folgen der Wahl oben.</p>
+
+    <svg class="zeichnung" id="svgSchraubeNorm" viewBox="0 0 760 340" role="img"
+         aria-label="Normgerechte Darstellung einer Sechskantschraube: Hauptansicht mit Kopf, Schaft und Gewinde sowie die Ansicht von der Kuppe her"></svg>
+    <p class="fussnote" id="znHinweis"></p>
+
+    <div class="merke">
+      <b>Von vorn gesehen:</b> Der Au&szlig;endurchmesser <em>d</em> ist ein breiter
+      Vollkreis, der Kerndurchmesser <em>d</em><sub>3</sub> ein schmaler Kreisbogen
+      von rund drei Vierteln &ndash; ein Viertel bleibt offen, &uuml;blicherweise oben
+      rechts. Ein geschlossener schmaler Kreis w&auml;re eine Fase, kein Gewinde.
+    </div>
+  </div>
+
+  <div class="karte">
     <h2>Die Regeln dahinter</h2>
     <p class="sub">Die Nummern stehen an den passenden Stellen in der Zeichnung.</p>
     <div class="tabellenrahmen">
@@ -1344,7 +1361,7 @@ var aktuellerReiter = "grundlagen";
 function reiterZeichnen(name){
   if(name === "grundlagen"){ zeichnePrinzip(); zeichneReib(); }
   if(name === "aufbau"){ zeichneSchraube(); zeichneGewindeprofil(); }
-  if(name === "zeichnung") zeichneVerbindung();
+  if(name === "zeichnung"){ zeichneVerbindung(); zeichneSchraubeNorm(); }
   if(name === "funktion"){ zeichneAbwickeln(); zeichneAufteilung();
                           zeichneVergleich(); zeichneStreuband(); }
   if(name === "fortgeschritten") zeichneVerspannung();
@@ -1814,8 +1831,83 @@ var REGELN = [
   {nr:8, text:"Die Schraffur reicht bis zur breiten Linie, beim Innengewinde also bis zum " +
               "Kerndurchmesser.", arten:["einschraub"]},
   {nr:9, text:"Bohrtiefe größer als Gewindetiefe, Gewindetiefe größer als " +
-              "Einschraubtiefe. Die Bohrspitze wird mit 120° gezeichnet.", arten:["einschraub"]}
+              "Einschraubtiefe. Die Bohrspitze wird mit 120° gezeichnet.", arten:["einschraub"]},
+  {nr:10, text:"Sechskant über Ecke: Der Umriss ist das Eckenmaß e ≈ 1,155 · s. " +
+               "Zwei Kanten trennen die drei sichtbaren Flächen, die Fase schneidet " +
+               "sie in drei Bögen. Die Schlüsselweite s liegt quer dazu und ist in " +
+               "dieser Ansicht nicht messbar.", arten:["durchsteck","einschraub"]}
 ];
+
+/* Sechskant in Ansicht, ueber Ecke gesehen - so wird er normgerecht
+   dargestellt.
+
+   Die Blickrichtung zeigt auf eine Ecke. Der Umriss ist deshalb nicht die
+   Schluesselweite s, sondern das Eckenmass e = 2*s/Wurzel(3); s liegt quer
+   zur Zeichenebene und ist hier nicht messbar. Sichtbar sind drei Flaechen,
+   getrennt durch zwei Kanten bei e/4.
+
+   Die Fase am freien Ende ist ein Kegel, der die Schluesselflaechen gerade
+   beruehrt. Wo er die drei Flaechen schneidet, entstehen Hyperbeln; gezeichnet
+   werden sie nach Norm als Kreisboegen. Jeder Bogen beruehrt die Stirnflaeche
+   in der Mitte seiner Flaeche und faellt zu den Kanten um die Fasentiefe ab.
+
+   o = {achse, von, bis, s, sk, faseAn:"von"|"bis", waagerecht, fuell, farbe}
+   "von" und "bis" laufen entlang der Achse, "achse" steht quer dazu.
+   Zurueck kommen rE und die Fasentiefe - der Aufrufer braucht beide fuer
+   Bemassung und Hinweismarken. */
+function sechskantAnsicht(g, o){
+  var rS = o.s / 2 * o.sk;
+  var rE = rS * 2 / Math.sqrt(3);
+  var farbe = o.farbe || "#0f172a";
+  var strich = o.strich || BREIT;
+  var laenge = Math.abs(o.bis - o.von);
+  /* Bei kleinem Massstab waere die echte Fasentiefe nicht mehr zu sehen. */
+  var tief = Math.max(3, Math.min((rE - rS) * Math.tan(Math.PI / 6), laenge * 0.4));
+
+  var anFase = (o.faseAn === "bis") ? o.bis : o.von;
+  var anderes = (o.faseAn === "bis") ? o.von : o.bis;
+  var richtung = (anderes > anFase) ? 1 : -1;
+  var qT = anFase + richtung * tief;          /* Ende der Fase */
+  var qS = anFase - richtung * tief;          /* Steuerpunkt der Boegen */
+
+  /* q laeuft entlang der Achse, r quer dazu. */
+  function pt(q, r){
+    return o.waagerecht ? (q + "," + (o.achse + r)) : ((o.achse + r) + "," + q);
+  }
+  function linie(q1, r1, q2, r2){
+    var a = pt(q1, r1).split(","), b = pt(q2, r2).split(",");
+    g.appendChild(ns("line", {x1:a[0], y1:a[1], x2:b[0], y2:b[1],
+      stroke:farbe, "stroke-width":strich}));
+  }
+
+  /* Umriss: Stirnflaeche so breit wie s, dann auf e aufgehende Fase. */
+  g.appendChild(ns("path", {d:
+    "M" + pt(anFase, -rS) + " L" + pt(anFase, rS) +
+    " L" + pt(qT, rE) + " L" + pt(anderes, rE) +
+    " L" + pt(anderes, -rE) + " L" + pt(qT, -rE) + " Z",
+    fill:o.fuell || "#ffffff", stroke:farbe, "stroke-width":strich}));
+
+  /* Die zwei Kanten zwischen den drei sichtbaren Flaechen. */
+  [-1, 1].forEach(function(v){ linie(qT, v * rE / 2, anderes, v * rE / 2); });
+
+  /* Die drei Boegen: mittlerer ueber die vordere Flaeche, zwei kleine ueber
+     die beiden angeschnittenen. Scheitel jeweils auf der Stirnflaeche. */
+  g.appendChild(ns("path", {d:
+    "M" + pt(qT, -rE / 2) + " Q" + pt(qS, 0) + " " + pt(qT, rE / 2),
+    fill:"none", stroke:farbe, "stroke-width":strich}));
+  [-1, 1].forEach(function(v){
+    g.appendChild(ns("path", {d:
+      "M" + pt(qT, v * rE / 2) + " Q" + pt(qS, v * rE * 0.75) + " " + pt(qT, v * rE),
+      fill:"none", stroke:farbe, "stroke-width":strich}));
+  });
+
+  return {rE:rE, rS:rS, tief:tief};
+}
+
+/* Eckenmass aus der Schluesselweite - der ideale Sechskant, wie er
+   gezeichnet wird. Die Norm nennt fuer e wegen der Toleranzen einen etwas
+   kleineren Wert; fuer die Zeichnung ist der geometrische richtig. */
+function eckenmass(s){ return s * 2 / Math.sqrt(3); }
 
 /* Schraffurmuster: gegenlaeufig fuer benachbarte Teile (Regel 5). */
 function schraffurDefs(svg){
@@ -1847,7 +1939,9 @@ function masslinieSenkrecht(g, x, y1, y2, text, versatz){
   g.appendChild(ns("line", {x1:x, y1:y1, x2:lx, y2:y1, stroke:"#cbd5e1", "stroke-width":0.8}));
   g.appendChild(ns("line", {x1:x, y1:y2, x2:lx, y2:y2, stroke:"#cbd5e1", "stroke-width":0.8}));
   var t = svgText(0, 0, text, {anchor:"middle", size:12, fill:"#475569", weight:600});
-  t.setAttribute("transform", "translate(" + (lx - 5) + "," + ((y1 + y2) / 2) +
+  /* Neun statt fuenf: Bei kurzen Massangaben laeuft die Masslinie sonst
+     mitten durch die Zahl. */
+  t.setAttribute("transform", "translate(" + (lx - 9) + "," + ((y1 + y2) / 2) +
     ") rotate(-90)");
   g.appendChild(t);
 }
@@ -1900,7 +1994,7 @@ function zeichneVerbindung(){
 
   /* --- Massstab --- */
   var gesamtH = k + laenge + (einschraub ? (bohrtiefe - einschraubtiefe + 6) : 0);
-  var gesamtB = Math.max(scheibeD, s) + 2;
+  var gesamtB = Math.max(scheibeD, eckenmass(s)) + 2;
   var sk = Math.min(300 / gesamtH, 130 / gesamtB, 9);
 
   var cx = 300, yKopfO = 56;
@@ -1966,13 +2060,10 @@ function zeichneVerbindung(){
 
   /* ---------------- Schraube: wird NICHT geschnitten (Regel 1) --------------- */
   var weiss = "#ffffff";
-  /* Sechskantkopf, Ansicht auf die Schluesselflaeche */
-  var rS = s / 2 * sk, fase = Math.min(rS * 0.16, (k * sk) * 0.3);
-  g.appendChild(ns("path", {d:
-    "M" + (cx - rS) + "," + (yKopfO + fase) + " L" + (cx - rS + fase) + "," + yKopfO +
-    " L" + (cx + rS - fase) + "," + yKopfO + " L" + (cx + rS) + "," + (yKopfO + fase) +
-    " L" + (cx + rS) + "," + yKopfU + " L" + (cx - rS) + "," + yKopfU + " Z",
-    fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
+  /* Sechskantkopf ueber Ecke, mit der Andeutung der drei Flaechen (Regel 10) */
+  var kopfSk = sechskantAnsicht(g, {achse:cx, von:yKopfO, bis:yKopfU,
+    s:s, sk:sk, faseAn:"von", fuell:weiss});
+  var rS = kopfSk.rS, rE = kopfSk.rE;
 
   /* Scheibe unter dem Kopf - ebenfalls ohne Schraffur */
   var rSch = scheibeD / 2 * sk;
@@ -2002,11 +2093,10 @@ function zeichneVerbindung(){
     /* Scheibe und Mutter, beide ohne Schraffur */
     g.appendChild(ns("rect", {x:cx - rSch, y:yP2U, width:2*rSch, height:ySch2U - yP2U,
       fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
-    g.appendChild(ns("path", {d:
-      "M" + (cx - rS) + "," + ySch2U + " L" + (cx + rS) + "," + ySch2U +
-      " L" + (cx + rS) + "," + (yMutU - fase) + " L" + (cx + rS - fase) + "," + yMutU +
-      " L" + (cx - rS + fase) + "," + yMutU + " L" + (cx - rS) + "," + (yMutU - fase) + " Z",
-      fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
+    /* Die Mutter bekommt dieselbe Andeutung; ihre Fase liegt unten, am
+       freien Ende. */
+    sechskantAnsicht(g, {achse:cx, von:yMutU, bis:ySch2U,
+      s:s, sk:sk, faseAn:"von", fuell:weiss});
     /* Mutter und Scheibe werden nicht geschnitten, verdecken die Schraube also.
        Sichtbar bleibt nur der Ueberstand unterhalb der Mutter. */
     [-1, 1].forEach(function(v){
@@ -2030,9 +2120,12 @@ function zeichneVerbindung(){
     hinweis(mg, cx - rDh + 2, ySch1U + (yP1U - ySch1U) * 0.35,
       cx - rDh - 76, ySch1U - 18, "\u2300 " + z(Dh,1), "end");
 
-    /* Schluesselweite ueber dem Kopf */
-    masslinie(mg, cx - rS, yKopfO - 8, cx + rS, yKopfO - 8,
-      (zustand.sym ? "s" : "SW") + " = " + z(s,0), -26);
+    /* Ueber dem Kopf steht das Eckenmass: In dieser Ansicht ist e der
+       Umriss. Die Schluesselweite liegt quer dazu und waere hier erfunden -
+       sie steht in der Zeichnung "Die Schraube allein" an der Stelle, an der
+       man sie wirklich sieht. */
+    masslinie(mg, cx - rE, yKopfO + kopfSk.tief, cx + rE, yKopfO + kopfSk.tief,
+      "e \u2248 " + z(eckenmass(s),1), -34);
 
     /* Klemmlaenge rechts neben den Bauteilen */
     masslinieSenkrecht(mg, pr, ySch1U, einschraub ? yP1U : yP2U,
@@ -2071,7 +2164,10 @@ function zeichneVerbindung(){
       7: [[cx + rD, einschraub ? (yEnde + yGewU) / 2 : 0], [cx + rD + 62, einschraub ? yGewU - 8 : 0]],
       8: [[cx + rD3 + 4, einschraub ? yGewU - 10 : 0], [cx + rD + 62, einschraub ? yGewU + 30 : 0]],
       9: [[cx - rKern * 0.5, einschraub ? yBohrU + spitze * 0.6 : 0],
-          [cx - rKern - 72, einschraub ? yBohrU + spitze + 8 : 0]]
+          [cx - rKern - 72, einschraub ? yBohrU + spitze + 8 : 0]],
+      /* Weiter oben als die Marken 4 und 5 - sonst draengeln sie sich links
+         neben der Scheibe. */
+      10: [[cx - rE * 0.75, yKopfO + kopfSk.tief * 0.55], [cx - rE - 64, yKopfO - 6]]
     };
     sichtbar.forEach(function(r){
       var st = stellen[r.nr];
@@ -2103,6 +2199,140 @@ function zeichneVerbindung(){
   var unten = (einschraub ? yBohrU + spitze : yEnde) + 34;
   if(zeigeRegeln && einschraub) unten = Math.max(unten, yBohrU + spitze + 40);
   svg.setAttribute("viewBox", "0 0 760 " + Math.round(Math.max(300, unten)));
+}
+
+/* --- Die Schraube allein ---------------------------------------------------
+   Einzelteildarstellung, zwei Ansichten. Die zweite ist kein Schmuck: Die
+   Schluesselweite s ist nur dort messbar (in der Hauptansicht liegt sie quer
+   zur Zeichenebene), und die Regel fuer das Gewinde im Kreis - breiter
+   Vollkreis aussen, schmaler Dreiviertelbogen fuer den Kern - laesst sich
+   nur dort zeigen. */
+var NENNLAENGEN = [10,12,16,20,25,30,35,40,45,50,55,60,65,70,80,90,100,110,120];
+
+function zeichneSchraubeNorm(){
+  var svg = el("svgSchraubeNorm"); leeren(svg); pfeilDefs(svg);
+  var g = ns("g", {}); svg.appendChild(g);
+
+  var m = gewindeMasse(el("zGewinde").value);
+  var zeigeMasse = el("zMasse").checked;
+  var dunkel = "#0f172a", weiss = "#ffffff";
+
+  /* Laenge rund das Fuenffache des Nenndurchmessers, auf eine Nennlaenge
+     gerundet; Gewindelaenge nach Norm. */
+  var l = NENNLAENGEN[0], i;
+  for(i = 0; i < NENNLAENGEN.length; i++){
+    if(NENNLAENGEN[i] <= 5 * m.d) l = NENNLAENGEN[i];
+  }
+  var b = Math.min(l, normGewindelaenge(m.d, l));
+
+  var rEmm = eckenmass(m.s) / 2;
+  var oy = 160, ox = 74;
+  /* Keine feste Obergrenze: Eine M4 soll die Flaeche genauso ausfuellen
+     wie eine M24 - sonst steht die kleine Schraube verloren im Bild. */
+  var sk = Math.min(420 / (m.k + l), 148 / (2 * rEmm));
+
+  var xKopfL = ox, xKopfR = ox + m.k * sk;
+  var xEnde = xKopfR + l * sk;
+  var xGewinde = xEnde - b * sk;
+  var rD = m.d / 2 * sk, rD3 = m.d3 / 2 * sk;
+
+  /* ---------- Hauptansicht ---------- */
+  var kopf = sechskantAnsicht(g, {waagerecht:true, achse:oy,
+    von:xKopfL, bis:xKopfR, s:m.s, sk:sk, faseAn:"von", fuell:weiss});
+
+  /* Die Auflageflaeche ist nur als Ring sichtbar - hinter dem Schaft gibt es
+     dort keine Kante. Das Weiss deckt den Teil der Linie ab, der nicht
+     hingehoert. */
+  g.appendChild(ns("rect", {x:xKopfR - BREIT, y:oy - rD, width:2 * BREIT,
+    height:2 * rD, fill:weiss, stroke:"none"}));
+
+  if(xGewinde > xKopfR + 0.5){
+    g.appendChild(ns("rect", {x:xKopfR, y:oy - rD, width:xGewinde - xKopfR,
+      height:2 * rD, fill:weiss, stroke:"none"}));
+    [-1, 1].forEach(function(v){
+      g.appendChild(ns("line", {x1:xKopfR, y1:oy + v * rD, x2:xGewinde, y2:oy + v * rD,
+        stroke:dunkel, "stroke-width":BREIT}));
+    });
+  }
+
+  /* Gewinde: aussen breit, Kern schmal. Der Pfad bleibt offen, damit die
+     Kante am Gewindeanfang nicht breit mitgezeichnet wird - sie ist das
+     Gewindeende und gehoert schmal. */
+  var kuppe = Math.min(rD * 0.3, m.P * sk + 2);
+  g.appendChild(ns("path", {d:
+    "M" + xGewinde + "," + (oy - rD) + " L" + (xEnde - kuppe) + "," + (oy - rD) +
+    " L" + xEnde + "," + (oy - rD + kuppe) + " L" + xEnde + "," + (oy + rD - kuppe) +
+    " L" + (xEnde - kuppe) + "," + (oy + rD) + " L" + xGewinde + "," + (oy + rD),
+    fill:weiss, stroke:dunkel, "stroke-width":BREIT}));
+  [-1, 1].forEach(function(v){
+    g.appendChild(ns("line", {x1:xGewinde, y1:oy + v * rD3, x2:xEnde, y2:oy + v * rD3,
+      stroke:dunkel, "stroke-width":SCHMAL}));
+  });
+  g.appendChild(ns("line", {x1:xGewinde, y1:oy - rD, x2:xGewinde, y2:oy + rD,
+    stroke:dunkel, "stroke-width":SCHMAL}));
+
+  g.appendChild(ns("line", {x1:xKopfL - 20, y1:oy, x2:xEnde + 12, y2:oy,
+    stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"16 3 3 3"}));
+
+  /* ---------- Ansicht von der Kuppe her ---------- */
+  var vx = 655, rE = rEmm * sk, rS = m.s / 2 * sk;
+
+  var ecken = "";
+  for(i = 0; i < 6; i++){
+    var w = Math.PI / 180 * (90 + 60 * i);
+    ecken += (i ? " L" : "M") + (vx + rE * Math.cos(w)).toFixed(2) + "," +
+             (oy + rE * Math.sin(w)).toFixed(2);
+  }
+  g.appendChild(ns("path", {d:ecken + " Z", fill:weiss, stroke:dunkel,
+    "stroke-width":BREIT}));
+  /* Die Fase des Kopfes liegt auf der abgewandten Seite und ist von hier
+     nicht zu sehen - hier steht kein Kreis dafuer.
+     Aussendurchmesser breit, Kern als Dreiviertelbogen schmal. */
+  g.appendChild(ns("circle", {cx:vx, cy:oy, r:rD, fill:weiss, stroke:dunkel,
+    "stroke-width":BREIT}));
+  g.appendChild(ns("path", {d:"M" + (vx + rD3) + "," + oy +
+    " A" + rD3 + "," + rD3 + " 0 1 1 " + vx + "," + (oy - rD3),
+    fill:"none", stroke:dunkel, "stroke-width":SCHMAL}));
+
+  [[vx - rE - 14, oy, vx + rE + 14, oy], [vx, oy - rE - 14, vx, oy + rE + 14]]
+    .forEach(function(a){
+      g.appendChild(ns("line", {x1:a[0], y1:a[1], x2:a[2], y2:a[3],
+        stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"16 3 3 3"}));
+    });
+
+  /* ---------- Benennungen ----------
+     Oben stehen die Benennungen, unten und rechts die Masse - so kreuzen
+     sich die Linien nicht. */
+  hinweis(g, xKopfL + kopf.tief + 4, oy + kopf.rE * 0.5, 30, 318,
+    "Sechskant \u00fcber Ecke: drei Fl\u00e4chen, drei B\u00f6gen", "start");
+  hinweis(g, xGewinde, oy - rD * 0.5, xGewinde - 18, 64, "Gewindeende", "end");
+  hinweis(g, (xGewinde + xEnde) / 2, oy - rD3, xGewinde + 44, 32,
+    "Kern d\u2083 schmal", "start");
+  hinweis(g, (xGewinde + xEnde) / 2 + 28, oy - rD, xEnde - 40, 62,
+    "Au\u00dfen d breit", "end");
+  hinweis(g, vx + rD3 * 0.72, oy - rD3 * 0.72, vx + 58, 54,
+    "offenes Viertel", "end");
+
+  /* ---------- Bemassung ---------- */
+  if(zeigeMasse){
+    var mg = ns("g", {}); g.appendChild(mg);
+    masslinie(mg, xKopfR, oy + rD, xEnde, oy + rD, "l = " + z(l,0), 74);
+    masslinie(mg, xGewinde, oy + rD, xEnde, oy + rD, "b = " + z(b,0), 44);
+    masslinie(mg, xKopfL, oy - kopf.rE, xKopfR, oy - kopf.rE, "k = " + z(m.k,1), -22);
+    masslinieSenkrecht(mg, xEnde, oy - rD, oy + rD, "d = " + z(m.d,0), 34);
+    masslinie(mg, vx - rS, oy + rE, vx + rS, oy + rE,
+      (zustand.sym ? "s" : "SW") + " = " + z(m.s,0), 34);
+    masslinieSenkrecht(mg, vx - rE, oy - rE, oy + rE,
+      "e \u2248 " + z(eckenmass(m.s),1), -26);
+  }
+
+  el("znHinweis").innerHTML =
+    "Sechskantschraube " + m.bez + ", L\u00e4nge " + z(l,0) + " mm, Gewindel\u00e4nge " +
+    z(b,0) + " mm (Norml\u00e4nge f\u00fcr diese Gr\u00f6\u00dfe). Die L\u00e4nge <em>l</em> wird ohne Kopf " +
+    "gemessen. In der Hauptansicht ist der Umriss des Kopfes das Eckenma\u00df " +
+    "<em>e</em> \u2248 " + z(eckenmass(m.s),1) + " mm; die Schl\u00fcsselweite " +
+    "<em>s</em> = " + z(m.s,0) + " mm liegt quer dazu und ist erst in der Ansicht " +
+    "rechts messbar. Beide Ansichten sind im selben Ma\u00dfstab gezeichnet.";
 }
 
 /* ============================================================================
@@ -3554,8 +3784,9 @@ function start(){
 
   /* Ereignisse: Zeichnung */
   ["zArt","zGewinde","zT1","zT2","zSchraffur","zMasse","zRegeln"].forEach(function(id){
-    el(id).addEventListener("input", zeichneVerbindung);
-    el(id).addEventListener("change", zeichneVerbindung);
+    function beide(){ zeichneVerbindung(); zeichneSchraubeNorm(); }
+    el(id).addEventListener("input", beide);
+    el(id).addEventListener("change", beide);
   });
 
   /* Ereignisse: Funktion */
@@ -3580,6 +3811,7 @@ function start(){
   zeichneStreuband();
   zeichneGewindeprofil();
   zeichneVerbindung();
+  zeichneSchraubeNorm();
   zeichneVerspannung();
   rechne();
   beispielSetzen();           /* setzt Paarung, Regler und zeichnet das Reibungsbild */
