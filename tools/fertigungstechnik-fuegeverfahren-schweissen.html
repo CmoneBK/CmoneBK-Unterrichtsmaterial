@@ -1865,10 +1865,19 @@ function stossSkizze(svg, id){
     naht("M76,62 L62,62 L76,48 Z"); naht("M94,62 L108,62 L94,48 Z");
   }else if(id === "ueber"){
     bl(10, 40, 92, 18, A); bl(72, 58, 92, 18, B);
-    naht("M102,40 L102,58 L116,58 Z"); naht("M72,76 L58,76 L72,58 Z");
+    /* Beide Kehlnaehte sitzen in einer einspringenden Ecke: oben zwischen
+       der Stirnflaeche des oberen Blechs und der Oberseite des unteren,
+       unten zwischen der Stirnflaeche des unteren und der Unterseite des
+       oberen. Die untere lag vorher an der Unterseite des unteren Blechs -
+       dort ist gar keine Ecke. */
+    naht("M102,40 L102,58 L116,58 Z"); naht("M72,58 L72,72 L58,58 Z");
   }else if(id === "eck"){
+    /* Am Eckstoss liegen die Aussenflaechen buendig - dort gibt es keine
+       einspringende Ecke und damit auch keine zweite Kehlnaht. Die stand
+       vorher rechts neben beiden Blechen in der Luft. Geschweisst wird
+       entweder innen, wie hier, oder aussen als HV-Naht. */
     bl(10, 62, 90, 18, A); bl(82, 12, 18, 50, B);
-    naht("M82,62 L68,62 L82,48 Z"); naht("M100,62 L100,48 L114,62 Z");
+    naht("M82,62 L68,62 L82,48 Z");
   }else if(id === "kreuz"){
     bl(10, 44, 150, 18, A); bl(76, 4, 18, 40, B); bl(76, 62, 18, 40, B);
     naht("M76,44 L64,44 L76,32 Z"); naht("M94,44 L106,44 L94,32 Z");

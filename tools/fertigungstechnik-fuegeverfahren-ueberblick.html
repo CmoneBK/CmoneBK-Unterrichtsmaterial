@@ -588,6 +588,42 @@ function sechskantAnsicht(g, o){
   return {rS:rS, rE:rE, tief:tief};
 }
 
+/* Mutter in Ansicht, ueber Ecke gesehen. Wie der Schraubenkopf, nur an
+   beiden Stirnflaechen gefast: Bei der Mutter liegen beide frei, beim Kopf
+   ist die eine die Auflageflaeche. */
+function sechskantMutter(g, o){
+  var rS = o.sw / 2, rE = eckenmass(o.sw) / 2;
+  var laenge = Math.abs(o.bis - o.von);
+  var tief = Math.max(2.5, Math.min((rE - rS) * Math.tan(Math.PI / 6), laenge * 0.3));
+  var v = (o.bis > o.von) ? 1 : -1;
+  var a = o.von, b = o.bis, a2 = a + v * tief, b2 = b - v * tief;
+  var strich = kante(o.strich || C.eS);
+  function pt(q, r){
+    return o.waagerecht ? (q + "," + (o.achse + r)) : ((o.achse + r) + "," + q);
+  }
+  pfad(g, "M" + pt(a, -rS) + " L" + pt(a, rS) + " L" + pt(a2, rE) +
+    " L" + pt(b2, rE) + " L" + pt(b, rS) + " L" + pt(b, -rS) +
+    " L" + pt(b2, -rE) + " L" + pt(a2, -rE) + " Z",
+    o.fuell || C.eF, o.strich || C.eS, {sw:1.8});
+  /* Die zwei Kanten zwischen den drei sichtbaren Flaechen - sie laufen nur
+     durch den ungefasten Teil. */
+  [-1, 1].forEach(function(w){
+    pfad(g, "M" + pt(a2, w * rE / 2) + " L" + pt(b2, w * rE / 2),
+      "none", strich, {sw:breit()});
+  });
+  /* An jeder Stirnflaeche die drei Boegen der Fase. */
+  [[a, a2], [b, b2]].forEach(function(e){
+    var qT = e[1], qS = e[1] - 2 * (e[1] - e[0]);
+    pfad(g, "M" + pt(qT, -rE / 2) + " Q" + pt(qS, 0) + " " + pt(qT, rE / 2),
+      "none", strich, {sw:breit()});
+    [-1, 1].forEach(function(w){
+      pfad(g, "M" + pt(qT, w * rE / 2) + " Q" + pt(qS, w * rE * 0.75) + " "
+        + pt(qT, w * rE), "none", strich, {sw:breit()});
+    });
+  });
+  return {rS:rS, rE:rE, tief:tief};
+}
+
 /* Schaft einer Schraube, Achse senkrecht, mit Fase am unteren Ende (Kuppe).
    Quer zur Achse hat der Zylinder keine Kante - nur die beiden Mantellinien,
    die Fase und die Stirnflaeche dazwischen. */
@@ -1002,6 +1038,13 @@ verfahren({
     var by = cy + nr + 12, rds = 8, luft = 14 * (1 - zieh);
     var rL = rds + 2.5, rK = rds * 0.82;
     var xSchlitz = cx + spalt / 2;
+    /* In einer Bohrung ist kein Werkstoff: Vorher lief die Schraffur des
+       Auges durch das Loch hindurch. Der Hohlraum wird deshalb erst
+       freigestellt, danach kommen seine Waende und die Schraube darueber.
+       Links das Durchgangsloch (Wand auf rL), rechts das Gewinde - dort
+       reicht der Hohlraum bis zum Nenndurchmesser. */
+    rect(g, cx - ab - 2, by - rL, ab + 2 - spalt / 2, 2 * rL, "#ffffff", "none");
+    rect(g, xSchlitz, by - rds, ab - spalt / 2, 2 * rds, "#ffffff", "none");
     [-1, 1].forEach(function(v){
       /* Durchgangsloch: Wand im linken Backen. */
       linie(g, cx - ab, by + v * rL, cx - spalt / 2, by + v * rL,
@@ -1012,10 +1055,13 @@ verfahren({
       linie(g, xSchlitz, by + v * rds, cx + ab, by + v * rds,
         kante(C.bS), schmal());
     });
-    schaftWaagerecht(g, by, rds, cx-ab+10-luft, cx+ab-6-luft, 3);
+    /* Der Kopf liegt auf der Stirnflaeche des Auges auf, nicht halb darin.
+       Angezogen wandert er an sie heran. */
+    var kopfAn = cx - ab - luft;
+    schaftWaagerecht(g, by, rds, kopfAn, cx+ab-6-luft, 3);
     gewindeWaagerecht(g, by, rds, cx+6-luft, cx+ab-6-luft, 3);
-    sechskantAnsicht(g, {waagerecht:true, achse:by, von:cx-ab+10-luft,
-      bis:cx-ab-4-luft, sw:30, faseAn:"bis"});
+    sechskantAnsicht(g, {waagerecht:true, achse:by, von:kopfAn,
+      bis:kopfAn - 14, sw:30, faseAn:"bis"});
 
     txt(g, cx+nr+14, cy-nr+16, "geschlitzte Nabe", {fill:C.bS, size:12});
     txt(g, cx+nr+14, cy+4, "Welle", {fill:"#475569", size:12});
@@ -1032,7 +1078,7 @@ verfahren({
       });
       txt(g, cx-nr-14, cy-nr-6, zWort("flaechenpressung") + " rundum",
         {anchor:"end", fill:"#dc2626", size:12});
-      kraftpfeil(g, cx-ab-34, by, cx-ab-10, by, "#1d4ed8", 2.6);
+      kraftpfeil(g, cx-ab-48, by, cx-ab-24, by, "#1d4ed8", 2.6);
       kraftpfeil(g, cx+ab+34, by, cx+ab+10, by, "#1d4ed8", 2.6);
     }
     txt(g, cx-ab-16, by2+16, "Schlitzbreite " + (spalt > 8 ? "offen" : "zusammengezogen"),
@@ -1042,92 +1088,113 @@ verfahren({
 
 verfahren({
   id:"spannsatz",
-  /* Welle und Spannschraube werden laengs nicht geschnitten. */
+  /* Welle, Spannschrauben und Muttern werden laengs nicht geschnitten. */
   vollteile:["#e2e8f0", "#dbeafe"],
-  achse:[[96,145,544,145]], gruppe:"kraft", name:"Kegelspannsatz",
-  prinzip:"Zwei Kegelringe werden axial zusammengezogen. Dabei weiten sie sich nach außen und " +
-          "schrumpfen nach innen – sie klemmen Welle und Nabe gleichzeitig.",
+  achse:[[10,145,530,145]], gruppe:"kraft", name:"Kegelspannsatz",
+  prinzip:"Ein Innenring mit Kegelmantel wird von Schrauben in einen Au\u00dfenring mit " +
+          "Kegelbohrung gezogen. Dabei schrumpft er auf die Welle und weitet den " +
+          "Au\u00dfenring in die Nabe.",
   phasen:[
-    {ab:0,    text:"Der Spannsatz liegt lose zwischen Welle und Nabe."},
-    {ab:0.35, text:"Die Spannschrauben ziehen die Kegelringe axial zusammen."},
-    {ab:0.7,  text:"Die Kegelflächen schieben die Ringe radial auseinander – die Verbindung klemmt."}],
+    {ab:0,    text:"Innen- und Au\u00dfenring liegen lose zwischen Welle und Nabe \u2013 die Flansche stehen noch auseinander."},
+    {ab:0.35, text:"Die Muttern werden angezogen: Sie ziehen den Innenring in die Kegelbohrung des Au\u00dfenrings."},
+    {ab:0.7,  text:"Der Kegel presst den Innenring auf die Welle und den Au\u00dfenring in die Nabe \u2013 Reibung \u00fcbertr\u00e4gt das Moment."}],
   plus:["Sehr hohe Momente, spielfrei","Lage und Winkel frei einstellbar",
         "Ohne Nut, keine Kerbwirkung"],
   minus:["Teures Zukaufteil","Braucht Bauraum im Durchmesser",
-         "Anziehreihenfolge und Drehmoment müssen stimmen"],
-  loesbar:"ja, durch Lösen der Schrauben", last:"sehr hoch, spielfrei",
+         "Anziehreihenfolge und Drehmoment m\u00fcssen stimmen"],
+  loesbar:"ja, durch L\u00f6sen der Schrauben", last:"sehr hoch, spielfrei",
   werkstoff:"metallisch", dicht:"nein", aufwand:"mittel",
-  einsatz:"Riemenscheiben, Kupplungen, Antriebsräder",
+  einsatz:"Riemenscheiben, Kupplungen, Antriebsr\u00e4der",
   zeichnen:function(g, t){
     var zieh = stufe(t, 0.35, 0.85);
-    var cy = 145, wr = 30, nr = 112, rb = 46;   /* rb = Hoehe der Ringe */
-    var lx = 140, rx = 500;
-    var weg = 26 * zieh;
+    /* Laengsschnitt. Von innen nach aussen: Welle, Innenring, Aussenring,
+       Nabe. Die beiden Ringe beruehren sich an einem Kegelmantel, der nach
+       links enger wird. */
+    var cy = 145, wr = 24, rNi = 70, rNa = 104, rF = 100;
+    var rs = 85, rd = 9, sw = 26, fd = 26;
+    var xN1 = 150, xN2 = 330;          /* Nabe */
+    var xO1 = 150, xO2 = 390;          /* Aussenring, Flansch ab xFo */
+    var xFo = 364;
+    var steig = 0.092;                 /* Kegelsteigung, ueberhoeht */
+    /* Der Flanschspalt ist das Mass, das beim Anziehen kleiner wird. Alles
+       Weitere folgt daraus. */
+    var spalt = 22 * (1 - zieh) + 6;
+    var xR = xO2 + spalt;              /* linke Flanschflaeche des Innenrings */
+    var xL = xR - 268;                 /* linkes Ende des Innenrings */
+    /* Radiales Spiel an Welle und Nabe - stark ueberhoeht, sonst waere vom
+       Klemmen nichts zu sehen. */
+    var luft = 3 * (1 - zieh);
+    function kA(x){ return 58 - (xO2 - x) * steig; }   /* Kegel am Aussenring */
+    function kI(x){ return 58 - (xR  - x) * steig; }   /* Kegel am Innenring */
 
-    rect(g, lx-40, cy-wr, (rx+40)-(lx-40), 2*wr, "#e2e8f0", "#475569");
-    /* Die Benennung steht in der Welle selbst - links davon sitzt jetzt der
-       Flansch mit den Spannschrauben. */
-    txt(g, lx-34, cy+18, "Welle", {fill:"#475569", size:12});
-    rect(g, lx, cy-nr, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
-    rect(g, lx, cy+wr+rb, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
-    txt(g, lx+6, cy-nr-8, "Nabe", {fill:C.bS, size:12});
+    rect(g, 10, cy - wr, 510, 2 * wr, "#e2e8f0", "#475569", {sw:1.6});
+    txt(g, 16, cy + 6, "Welle", {fill:"#475569", size:12});
 
-    /* Ein Innenring mit Doppelkegel auf der Welle, darueber zwei Aussenringe
-       mit dem Gegenkegel - einer von links, einer von rechts. Die
-       Spannschrauben ziehen die beiden Aussenringe gegeneinander; dabei
-       laufen sie auf dem Kegel nach aussen. */
-    var links = lx + 16, rechts = rx - 16, mitte = (links + rechts) / 2;
-    var mA = "#bfdbfe", mI = "#cbd5e1";       /* Aussen- und Innenring */
-    [-1,1].forEach(function(v){
-      var yA = cy + v*(wr + 2), yB = cy + v*(wr + rb);
-      var flach = yA + v*rb*0.12, spitz = yA + v*rb*0.6;
-      /* Innenring: liegt auf der Welle und laeuft zu beiden Seiten kegelig
-         aus - in der Mitte am dicksten. */
-      pfad(g, "M"+links+","+yA+" L"+rechts+","+yA+" L"+rechts+","+flach+
-              " L"+mitte+","+spitz+" L"+links+","+flach+" Z", mI, C.eS, {sw:1.6});
-      /* Die beiden Aussenringe, beim Anziehen aufeinander zu. */
-      /* Angezogen ruecken die beiden Aussenringe zusammen - anfangs steht
-         der Doppelkegel zwischen ihnen noch frei. */
-      var spalt = 26 * (1 - zieh);
-      pfad(g, "M"+links+","+flach+" L"+(mitte-spalt)+","+spitz+
-              " L"+(mitte-spalt)+","+yB+" L"+links+","+yB+" Z", mA, C.eS, {sw:1.6});
-      pfad(g, "M"+rechts+","+flach+" L"+(mitte+spalt)+","+spitz+
-              " L"+(mitte+spalt)+","+yB+" L"+rechts+","+yB+" Z", mA, C.eS, {sw:1.6});
+    [-1, 1].forEach(function(v){
+      /* Nabe */
+      rect(g, xN1, cy + (v < 0 ? -rNa : rNi), xN2 - xN1, rNa - rNi,
+        C.bF, C.bS, {sw:1.8});
+      /* Aussenring: Kegelbohrung innen, Flansch rechts aus der Nabe heraus. */
+      pfad(g, "M" + xO1 + "," + (cy + v * kA(xO1)) +
+              " L" + xO2 + "," + (cy + v * kA(xO2)) +
+              " L" + xO2 + "," + (cy + v * rF) +
+              " L" + xFo + "," + (cy + v * rF) +
+              " L" + xFo + "," + (cy + v * (rNi - luft)) +
+              " L" + xO1 + "," + (cy + v * (rNi - luft)) + " Z",
+        "#bfdbfe", C.eS, {sw:1.8});
+      /* Innenring: sitzt auf der Welle, Kegelmantel aussen, Flansch rechts. */
+      pfad(g, "M" + xL + "," + (cy + v * (wr + luft)) +
+              " L" + (xR + fd) + "," + (cy + v * (wr + luft)) +
+              " L" + (xR + fd) + "," + (cy + v * rF) +
+              " L" + xR + "," + (cy + v * rF) +
+              " L" + xR + "," + (cy + v * kI(xR)) +
+              " L" + xL + "," + (cy + v * kI(xL)) + " Z",
+        "#cbd5e1", C.eS, {sw:1.8});
     });
-    txt(g, rx+8, cy-wr-16, "Kegelringe", {fill:C.eS, size:12});
+    txt(g, xN1 + 8, cy - rNa + 16, "Nabe", {fill:C.bS, size:12});
+    /* Die Beschriftung sitzt in der Flaeche des jeweiligen Rings, zwischen
+       den beiden Pfeilpaaren. */
+    txt(g, 200, cy + 58, "Au\u00dfenring", {fill:C.eS, size:11.5});
+    txt(g, 344, cy + 46, "Innenring", {fill:C.eS, size:11.5});
 
-    /* Die Spannschraube liegt in den beiden Aussenringen: Kopf am linken,
-       Gewinde im rechten. Angezogen zieht sie die beiden gegeneinander -
-       das ist die Kraft, die alles Weitere ausloest. */
-    [-1,1].forEach(function(v){
-      /* Die Schraube liegt im dicken Teil der Aussenringe, nahe der Nabe -
-         weiter innen deckte ihre Flaeche den Kegel zu. */
-      var ys = cy + v*(wr + rb*0.82);
-      schaftWaagerecht(g, ys, 6, links + 8, rechts - 8, 3);
-      gewindeWaagerecht(g, ys, 6, mitte + 30, rechts - 8, 3);
-      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:links + 8,
-        bis:links - 8, sw:20, faseAn:"bis"});
+    /* Die Spannschraube steckt im Flansch des Aussenrings - Kopf links an
+       seiner Stirnflaeche - und laeuft durch den Flansch des Innenrings.
+       Dort sitzt die Mutter. Angezogen wandert sie auf dem Gewinde nach
+       links und zieht den Innenring in den Kegel. */
+    [-1, 1].forEach(function(v){
+      var ys = cy + v * rs;
+      schaftWaagerecht(g, ys, rd, xFo, 480, 4);
+      gewindeWaagerecht(g, ys, rd, 408, 480, 4);
+      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:xFo, bis:xFo - 24,
+        sw:sw, faseAn:"bis"});
+      sechskantMutter(g, {waagerecht:true, achse:ys, von:xR + fd,
+        bis:xR + fd + 24, sw:sw});
     });
+    txt(g, 150, cy - rF - 12, "Spannschraube mit Mutter", {fill:C.eS, size:11.5});
+
     if(zieh > 0.03){
-      kraftpfeil(g, links - 40, cy - nr + 18, links - 6, cy - nr + 18, "#1d4ed8", 2.6);
-      kraftpfeil(g, links - 40, cy + nr - 18, links - 6, cy + nr - 18, "#1d4ed8", 2.6);
-    }
-    txt(g, lx - 44, cy + nr + 18,
-      "Die Spannschrauben ziehen die beiden Außenringe gegeneinander – "
-      + "auf dem Doppelkegel laufen sie nach außen",
-      {anchor:"start", fill:C.eS, size:11.5});
-    if(zieh > 0.03){
-      [-1,1].forEach(function(v){
-        for(var i=0;i<3;i++){
-          var x = lx+110+i*90;
-          /* nach innen auf die Welle */
-          kraftpfeil(g, x-9, cy + v*(wr+28), x-9, cy + v*(wr+4), "#dc2626", 2.2);
-          /* nach aussen auf die Nabe */
-          kraftpfeil(g, x+9, cy + v*(wr+32), x+9, cy + v*(nr-4), "#dc2626", 2.2);
+      /* Was die Muttern tun: die beiden Flansche gegeneinander ziehen. */
+      [-1, 1].forEach(function(v){
+        var ya = cy + v * (rF + 12);
+        kraftpfeil(g, xFo - 40, ya, xFo - 8, ya, "#1d4ed8", 2.6);
+        kraftpfeil(g, xR + fd + 56, ya, xR + fd + 24, ya, "#1d4ed8", 2.6);
+      });
+      /* Und was der Kegel daraus macht: radiale Pressung nach innen auf die
+         Welle und nach aussen in die Nabe. */
+      [-1, 1].forEach(function(v){
+        for(var i = 0; i < 2; i++){
+          var x = 176 + i * 124;
+          kraftpfeil(g, x - 10, cy + v * (wr + 30), x - 10, cy + v * (wr + 4),
+            "#dc2626", 2.2);
+          kraftpfeil(g, x + 10, cy + v * (rNi - 32), x + 10, cy + v * (rNi - 2),
+            "#dc2626", 2.2);
         }
       });
-      txt(g, rx+8, cy+wr+40, "radial pressen", {fill:"#dc2626", size:12});
+      txt(g, 470, cy + 34, "radial pressen", {fill:"#dc2626", size:12});
     }
+    txt(g, 12, 274,
+      "Mutter anziehen \u2192 Innenring wandert in den Kegel \u2192 er presst auf Welle und Nabe",
+      {fill:C.eS, size:11.5, weight:400});
   }
 });
 
@@ -1468,7 +1535,17 @@ verfahren({
 verfahren({
   id:"bolzen",
   vollteile:["#dbeafe"],
-  achse:[[300,36,300,272]], gruppe:"form", name:"Bolzen mit Splint",
+  /* Zwei Achsen: die des Bolzens und, sobald der Splint sitzt, die seiner
+     Querbohrung. */
+  achse:function(t){
+    var a = [[300,36,300,272]];
+    if(stufe(t, 0.62, 0.82) > 0.05){
+      var sy = 62 - 150 * (1 - stufe(t, 0.3, 0.58)) + 182;
+      a.push([248, sy, 356, sy]);
+    }
+    return a;
+  },
+  gruppe:"form", name:"Bolzen mit Splint",
   prinzip:"Ein Bolzen verbindet zwei Laschen gelenkig. Ein Splint sichert ihn gegen Herausfallen.",
   phasen:[
     {ab:0,    text:"Zwei Laschen mit fluchtenden Bohrungen."},
@@ -1531,20 +1608,30 @@ verfahren({
     txt(g, cx+r+16, by-6, "Bolzen", {fill:C.eS, size:12});
 
     if(splint > 0.05){
-      /* Splint: Oese oben, zwei aufgebogene Schenkel unten. Er steckt in
-         einer Querbohrung dicht unter der Gabel. */
-      /* Der Splint sitzt unter der Gabel, nicht in ihr - sonst koennte man
-         ihn weder stecken noch aufbiegen. */
-      var sy = by + 182, a = 26 * splint, strich = kante("#b45309");
+      /* Ein Splint sitzt quer zur Bolzenachse, dicht unter der Gabel - nur
+         quer davor kann er den Bolzen am Herausrutschen hindern. Er steckt
+         deshalb in einer Querbohrung.
+         Der Bolzen wird laengs nicht geschnitten. Von der Bohrung sieht man
+         darum nur die beiden Muendungskanten auf seinen Mantellinien; was
+         dazwischen liegt, verdeckt er. Sichtbar bleiben die Oese davor und
+         die aufgebogenen Schenkel dahinter. */
+      var sy = by + 182, rSp = 4, a = 20 * splint, strich = kante("#b45309");
       [-1, 1].forEach(function(v){
-        linie(g, cx + v*4, sy - 14, cx + v*4, sy + 6, strich, schmal(),
+        linie(g, cx + v*r, sy - rSp, cx + v*r, sy + rSp, kante(C.eS), breit(),
           {opacity:splint});
-        linie(g, cx + v*4, sy + 6, cx + v*(4 + a), sy + 6 + a*0.7, strich,
-          schmal(), {opacity:splint});
       });
-      pfad(g, "M"+(cx-4)+","+(sy-14)+" A 6 8 0 0 1 "+(cx+4)+","+(sy-14),
+      /* Oese: der umgebogene Draht vor dem Bolzen. */
+      pfad(g, "M"+(cx-r)+","+(sy-2.5)+" L"+(cx-r-12)+","+(sy-2.5)+
+           " A 4 4 0 0 0 "+(cx-r-12)+","+(sy+2.5)+" L"+(cx-r)+","+(sy+2.5),
         "none", strich, {sw:schmal(), opacity:splint});
-      txt(g, cx+34, sy+22, "Splint", {fill:"#b45309", size:12, opacity:splint});
+      /* Die beiden Schenkel, nach dem Stecken auseinandergebogen. Nach oben
+         ist wenig Platz - dort steht die Lasche. */
+      [[-1, 0.2], [1, 0.75]].forEach(function(e){
+        linie(g, cx + r, sy + e[0]*2.5, cx + r + a, sy + e[0]*(2.5 + a*e[1]),
+          strich, schmal(), {opacity:splint});
+      });
+      txt(g, cx + r + 28, sy + 16, "Splint",
+        {fill:"#b45309", size:12, opacity:splint});
     }
     if(last > 0.05){
       kraftpfeil(g, 40, (gO+fuge1)/2, 66, (gO+fuge1)/2, "#7c3aed", 3);
@@ -2426,8 +2513,8 @@ function prinzipbilder(){
   gewindeSenkrecht(g, 160, 11, cy+d-4, cy+d+26, 4);
   sechskantAnsicht(g, {achse:160, von:cy-d-2, bis:cy-d-20, sw:34,
     faseAn:"bis"});
-  sechskantAnsicht(g, {achse:160, von:cy+d+4, bis:cy+d+20, sw:34,
-    faseAn:"bis"});
+  /* Die Mutter ist an beiden Stirnflaechen gefast - beide liegen frei. */
+  sechskantMutter(g, {achse:160, von:cy+d+4, bis:cy+d+22, sw:34});
   kraftpfeil(g, 160, cy-d-56, 160, cy-d-32, "#1d4ed8", 3);
   kraftpfeil(g, 160, cy+d+56, 160, cy+d+38, "#1d4ed8", 3);
   txt(g, 176, cy-d-36, "Kraft", {fill:"#1d4ed8", size:13});
