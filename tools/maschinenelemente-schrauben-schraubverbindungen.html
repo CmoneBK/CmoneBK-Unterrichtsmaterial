@@ -1291,11 +1291,19 @@ var DUNKEL = "#0f172a";
 
 function masslinie(g, x1, y1, x2, y2, text, versatz){
   var v = versatz || 0;
-  var waag = Math.abs(y2 - y1) < 0.5;
+  /* Waagerecht oder senkrecht entscheidet die laengere Strecke - nicht die
+     Frage, ob die beiden Konturpunkte genau gleich liegen. An einer Fase
+     tun sie das naemlich nicht, und die Masshilfslinie muss trotzdem an der
+     Kontur ansetzen. */
+  var waag = Math.abs(x2 - x1) >= Math.abs(y2 - y1);
   /* Die Masshilfslinie steht nach DIN ISO 129 ueber die Masslinie hinaus. */
   var ue = (v >= 0 ? 7 : -7);
-  var lx1 = waag ? x1 : x1 + v, lx2 = waag ? x2 : x2 + v;
-  var ly1 = waag ? y1 + v : y1,  ly2 = waag ? y2 + v : y2;
+  /* Die Masslinie liegt auf einer Hoehe, auch wenn die Konturpunkte es
+     nicht tun: Sie folgt dem aeusseren der beiden. */
+  var basis = waag ? ((v >= 0 ? Math.max(y1, y2) : Math.min(y1, y2)) + v)
+                   : ((v >= 0 ? Math.max(x1, x2) : Math.min(x1, x2)) + v);
+  var lx1 = waag ? x1 : basis, lx2 = waag ? x2 : basis;
+  var ly1 = waag ? basis : y1,  ly2 = waag ? basis : y2;
   g.appendChild(ns("line", {x1:lx1, y1:ly1, x2:lx2, y2:ly2,
     stroke:DUNKEL, "stroke-width":SCHMAL, "marker-start":"url(#pfeilA)",
     "marker-end":"url(#pfeilB)"}));
@@ -1325,12 +1333,15 @@ function pfeilDefs(svg){
     var farbe = PFEILFARBEN[name];
     /* DIN ISO 129: geschlossener, ausgefuellter Pfeil, schlank - rund drei
        mal so lang wie breit. Der alte war fast so breit wie lang. */
+    /* Der Bezugspunkt ist die Spitze: Sie liegt auf dem Massepunkt, der
+       Koerper zeigt von dort nach innen. Lag er auf der Basis, stand der
+       ganze Pfeil neun Einheiten daneben. */
     var mA = ns("marker", {id:"pfeilA"+name, markerWidth:10, markerHeight:4,
-      refX:9, refY:2, orient:"auto", markerUnits:"strokeWidth"});
+      refX:0, refY:2, orient:"auto", markerUnits:"strokeWidth"});
     mA.appendChild(ns("path", {d:"M9,0.4 L9,3.6 L0,2 z", fill:farbe}));
     defs.appendChild(mA);
     var mB = ns("marker", {id:"pfeilB"+name, markerWidth:10, markerHeight:4,
-      refX:1, refY:2, orient:"auto", markerUnits:"strokeWidth"});
+      refX:9, refY:2, orient:"auto", markerUnits:"strokeWidth"});
     mB.appendChild(ns("path", {d:"M0,0.4 L0,3.6 L9,2 z", fill:farbe}));
     defs.appendChild(mB);
   }
@@ -2043,9 +2054,25 @@ function zeichneVerbindung(){
     bauteil(g, pl, ySch1U, cx - rDh - pl, yP1U - ySch1U, "schrafA", zeigeSchraffur);
     bauteil(g, cx + rDh, ySch1U, pr - (cx + rDh), yP1U - ySch1U, "schrafA", zeigeSchraffur);
 
-    /* Grundkoerper mit Grundloch: Schraffur bis zur breiten Linie, also bis d3 */
-    bauteil(g, pl - 14, yP1U, cx - rD3 - (pl - 14), grundH, "schrafB", zeigeSchraffur);
-    bauteil(g, cx + rD3, yP1U, (pr + 14) - (cx + rD3), grundH, "schrafB", zeigeSchraffur);
+    /* Der Grundkoerper ist ein Stueck. Zwei Rechtecke mit einer Luecke
+       dazwischen waeren kein Grundloch, sondern ein Durchgangsloch - unter
+       der Bohrung stuende kein Werkstoff. */
+    spitze = rKern / Math.tan(60 * Math.PI / 180);   /* 120 Grad eingeschlossen */
+    bauteil(g, pl - 14, yP1U, (pr + 14) - (pl - 14), grundH, "schrafB", zeigeSchraffur);
+    /* Die Bohrung ist Hohlraum. Die Schraffur endet an der breiten Linie,
+       beim Innengewinde also am Kerndurchmesser. */
+    g.appendChild(ns("path", {d:
+      "M" + (cx - rD3) + "," + yP1U + " L" + (cx - rD3) + "," + yGewU +
+      " L" + (cx - rKern) + "," + yGewU + " L" + (cx - rKern) + "," + yBohrU +
+      " L" + cx + "," + (yBohrU + spitze) +
+      " L" + (cx + rKern) + "," + yBohrU + " L" + (cx + rKern) + "," + yGewU +
+      " L" + (cx + rD3) + "," + yGewU + " L" + (cx + rD3) + "," + yP1U + " Z",
+      fill:"#ffffff", stroke:"none"}));
+    /* Kerndurchmesser als breite Linie - sie begrenzt die Schraffur. */
+    [-1, 1].forEach(function(v){
+      g.appendChild(ns("line", {x1:cx + v*rD3, y1:yP1U, x2:cx + v*rD3, y2:yGewU,
+        stroke:"#0f172a", "stroke-width":BREIT}));
+    });
 
     /* Innengewinde: Kerndurchmesser breit (schon als Bauteilkante), Aussen-
        durchmesser schmal - nur dort sichtbar, wo keine Schraube steckt. */
@@ -2063,7 +2090,6 @@ function zeichneVerbindung(){
       g.appendChild(ns("line", {x1:cx + v*rKern, y1:yGewU, x2:cx + v*rKern, y2:yBohrU,
         stroke:"#0f172a", "stroke-width":BREIT}));
     });
-    spitze = rKern / Math.tan(60 * Math.PI / 180);   /* 120 Grad eingeschlossen */
     g.appendChild(ns("path", {d:"M" + (cx - rKern) + "," + yBohrU + " L" + cx + "," +
       (yBohrU + spitze) + " L" + (cx + rKern) + "," + yBohrU,
       fill:"none", stroke:"#0f172a", "stroke-width":BREIT}));
@@ -2090,6 +2116,21 @@ function zeichneVerbindung(){
 
   /* ---------------- Schraube: wird NICHT geschnitten (Regel 1) --------------- */
   var weiss = "#ffffff";
+  var kuppe = Math.min(rD * 0.3, m.P * sk * 0.7);    /* Fase am Schraubenende */
+  yGewO = yEnde - gewindeL * sk;
+
+  /* Die deckende Flaeche des Schafts kommt zuerst: Kopf und Scheibe liegen
+     davor. Kaeme sie danach, naehme sie deren Kanten die halbe
+     Strichbreite - an der Unterkante der Scheibe war genau das zu sehen.
+     Die Flaeche folgt der Kontur, an ihrem Ende sitzt die Kuppe. */
+  g.appendChild(ns("path", {d:
+    "M" + (cx - rD) + "," + ySch1U + " L" + (cx + rD) + "," + ySch1U +
+    " L" + (cx + rD) + "," + (yEnde - kuppe) +
+    " L" + (cx + rD - kuppe) + "," + yEnde +
+    " L" + (cx - rD + kuppe) + "," + yEnde +
+    " L" + (cx - rD) + "," + (yEnde - kuppe) + " Z",
+    fill:weiss, stroke:"none"}));
+
   /* Sechskantkopf ueber Ecke, mit der Andeutung der drei Flaechen (Regel 10) */
   var kopfSk = sechskantAnsicht(g, {achse:cx, von:yKopfO, bis:yKopfU,
     s:s, sk:sk, faseAn:"von", fuell:weiss});
@@ -2100,14 +2141,15 @@ function zeichneVerbindung(){
   g.appendChild(ns("rect", {x:cx - rSch, y:yKopfU, width:2*rSch, height:ySch1U - yKopfU,
     fill:weiss, stroke:"#0f172a", "stroke-width":BREIT}));
 
-  /* Schaft und Gewinde */
-  yGewO = yEnde - gewindeL * sk;
-  g.appendChild(ns("rect", {x:cx - rD, y:ySch1U, width:2*rD, height:yEnde - ySch1U,
-    fill:weiss, stroke:"none"}));
+  /* Kanten des Schafts, das Gewinde und die Kuppe */
   [-1, 1].forEach(function(v){
-    g.appendChild(ns("line", {x1:cx + v*rD, y1:ySch1U, x2:cx + v*rD, y2:yEnde,
+    g.appendChild(ns("line", {x1:cx + v*rD, y1:ySch1U, x2:cx + v*rD, y2:yEnde - kuppe,
       stroke:"#0f172a", "stroke-width":BREIT}));
-    g.appendChild(ns("line", {x1:cx + v*rD3, y1:Math.max(yGewO, ySch1U), x2:cx + v*rD3, y2:yEnde,
+    g.appendChild(ns("line", {x1:cx + v*rD, y1:yEnde - kuppe,
+      x2:cx + v*(rD - kuppe), y2:yEnde, stroke:"#0f172a", "stroke-width":BREIT}));
+    /* Die Kernlinie endet an der Fase, nicht an der Stirnflaeche. */
+    g.appendChild(ns("line", {x1:cx + v*rD3, y1:Math.max(yGewO, ySch1U),
+      x2:cx + v*rD3, y2:yEnde - kuppe + (rD - rD3),
       stroke:"#0f172a", "stroke-width":SCHMAL}));
   });
   /* Gewindeende an der Schraube (Regel 3): breite Vollinie */
@@ -2115,8 +2157,8 @@ function zeichneVerbindung(){
     g.appendChild(ns("line", {x1:cx - rD, y1:yGewO, x2:cx + rD, y2:yGewO,
       stroke:"#0f172a", "stroke-width":BREIT}));
   }
-  /* Kuppe */
-  g.appendChild(ns("line", {x1:cx - rD, y1:yEnde, x2:cx + rD, y2:yEnde,
+  /* Stirnflaeche zwischen den beiden Fasen */
+  g.appendChild(ns("line", {x1:cx - rD + kuppe, y1:yEnde, x2:cx + rD - kuppe, y2:yEnde,
     stroke:"#0f172a", "stroke-width":BREIT}));
 
   if(!einschraub){
@@ -2130,9 +2172,12 @@ function zeichneVerbindung(){
     /* Mutter und Scheibe werden nicht geschnitten, verdecken die Schraube also.
        Sichtbar bleibt nur der Ueberstand unterhalb der Mutter. */
     [-1, 1].forEach(function(v){
-      g.appendChild(ns("line", {x1:cx + v*rD, y1:yMutU, x2:cx + v*rD, y2:yEnde,
+      g.appendChild(ns("line", {x1:cx + v*rD, y1:yMutU, x2:cx + v*rD, y2:yEnde - kuppe,
         stroke:"#0f172a", "stroke-width":BREIT}));
-      g.appendChild(ns("line", {x1:cx + v*rD3, y1:yMutU, x2:cx + v*rD3, y2:yEnde,
+      g.appendChild(ns("line", {x1:cx + v*rD, y1:yEnde - kuppe,
+        x2:cx + v*(rD - kuppe), y2:yEnde, stroke:"#0f172a", "stroke-width":BREIT}));
+      g.appendChild(ns("line", {x1:cx + v*rD3, y1:yMutU,
+        x2:cx + v*rD3, y2:yEnde - kuppe + (rD - rD3),
         stroke:"#0f172a", "stroke-width":SCHMAL}));
     });
   }
@@ -2347,10 +2392,14 @@ function zeichneSchraubeNorm(){
   /* ---------- Bemassung ---------- */
   if(zeigeMasse){
     var mg = ns("g", {}); g.appendChild(mg);
-    masslinie(mg, xKopfR, oy + rD, xEnde, oy + rD, "l = " + z(l,0), 74);
-    masslinie(mg, xGewinde, oy + rD, xEnde, oy + rD, "b = " + z(b,0), 44);
+    /* Jede Masshilfslinie setzt an der Kontur an: l an der Auflageflaeche
+       des Kopfes und am Ende der Kuppe, b und d dort, wo der Zylinder
+       aufhoert und die Fase anfaengt. */
+    masslinie(mg, xKopfR, oy + kopf.rE, xEnde, oy + rD - kuppe, "l = " + z(l,0), 74);
+    masslinie(mg, xGewinde, oy + rD, xEnde, oy + rD - kuppe, "b = " + z(b,0), 44);
     masslinie(mg, xKopfL, oy - kopf.rE, xKopfR, oy - kopf.rE, "k = " + z(m.k,1), -22);
-    masslinieSenkrecht(mg, xEnde, oy - rD, oy + rD, "d = " + z(m.d,0), 34);
+    masslinieSenkrecht(mg, xEnde - kuppe, oy - rD, oy + rD, "d = " + z(m.d,0),
+      34 + kuppe);
     masslinie(mg, vx - rS, oy + rE, vx + rS, oy + rE,
       (zustand.sym ? "s" : "SW") + " = " + z(m.s,0), 34);
     masslinieSenkrecht(mg, vx - rE, oy - rE, oy + rE,
@@ -2827,7 +2876,10 @@ function zeichneSchraube(){
   /* Kopfmasse: bei Sechskant aus der Norm, sonst proportional. */
   var kopfD, kopfH, kopfNotiz;
   if(form.typ === "hex"){
-    kopfD = m.s; kopfH = m.k; kopfNotiz = "Schlüsselweite s und Kopfhöhe k nach Norm.";
+    kopfD = m.s; kopfH = m.k;
+    kopfNotiz = "Schlüsselweite s und Kopfhöhe k nach Norm. In der Ansicht " +
+      "ist der Umriss des Kopfes das Eckenmaß e; s liegt quer dazu und ist " +
+      "hier nicht messbar.";
   }else if(form.typ === "zyl"){
     kopfD = 1.5 * m.d; kopfH = m.d; kopfNotiz = "Kopfmaße proportional dargestellt (d_k ≈ 1,5·d, k ≈ d).";
   }else{
@@ -2851,62 +2903,66 @@ function zeichneSchraube(){
   var rD3 = m.d3 / 2 * sk;
   var rK  = kopfD / 2 * sk;
 
-  var blau = "#1d4ed8", fuell = "#dbeafe";
+  /* Dieselben Regeln wie in den uebrigen Zeichnungen: zwei Linienbreiten
+     im Verhaeltnis 2:1, kein Farbton im Bauteil. Farbig bleiben nur die
+     Benennungen - sie sind Erklaerung, nicht Zeichnung. */
+  var dunkel = DUNKEL, fuell = "#ffffff";
 
   /* --- Kopf --- */
   if(form.typ === "hex"){
-    var fase = Math.min(rK*0.12, kopfH*sk*0.30);
-    g.appendChild(ns("path",{d:
-      "M"+xKopfL+","+(oy-rK+fase)+" L"+(xKopfL+fase)+","+(oy-rK)+
-      " L"+(xKopfR-fase)+","+(oy-rK)+" L"+xKopfR+","+(oy-rK+fase)+
-      " L"+xKopfR+","+(oy+rK-fase)+" L"+(xKopfR-fase)+","+(oy+rK)+
-      " L"+(xKopfL+fase)+","+(oy+rK)+" L"+xKopfL+","+(oy+rK-fase)+" Z",
-      fill:fuell, stroke:blau, "stroke-width":1.8}));
+    /* Sechskant ueber Ecke: Der Umriss ist das Eckenmass e, nicht die
+       Schluesselweite. Sichtbar sind drei Flaechen, getrennt durch zwei
+       Kanten; die Fase am freien Ende ergibt drei Boegen. */
+    var kopfSk = sechskantAnsicht(g, {waagerecht:true, achse:oy,
+      von:xKopfR, bis:xKopfL, s:kopfD, sk:sk, faseAn:"bis", fuell:fuell});
+    rK = kopfSk.rE;
   }else if(form.typ === "zyl"){
     g.appendChild(ns("rect",{x:xKopfL, y:oy-rK, width:kopfH*sk, height:rK*2,
-      fill:fuell, stroke:blau, "stroke-width":1.8, rx:2}));
+      fill:fuell, stroke:dunkel, "stroke-width":BREIT}));
+    /* Der Innensechskant liegt hinter der Stirnflaeche - verdeckte Kante,
+       also schmale Strichlinie. */
     var swI = rK*0.55;
     g.appendChild(ns("rect",{x:xKopfL+2, y:oy-swI, width:kopfH*sk*0.6, height:swI*2,
-      fill:"none", stroke:blau, "stroke-width":1, "stroke-dasharray":"4 3"}));
+      fill:"none", stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"7 3"}));
   }else{
     g.appendChild(ns("path",{d:
       "M"+xKopfL+","+(oy-rK)+" L"+xKopfR+","+(oy-rD)+
       " L"+xKopfR+","+(oy+rD)+" L"+xKopfL+","+(oy+rK)+" Z",
-      fill:fuell, stroke:blau, "stroke-width":1.8}));
+      fill:fuell, stroke:dunkel, "stroke-width":BREIT}));
     var swS = rK*0.45;
     g.appendChild(ns("rect",{x:xKopfL+2, y:oy-swS, width:kopfH*sk*0.55, height:swS*2,
-      fill:"none", stroke:blau, "stroke-width":1, "stroke-dasharray":"4 3"}));
+      fill:"none", stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"7 3"}));
   }
 
-  /* --- Schaft --- */
+  /* --- Schaft: nur die beiden Mantellinien sind Kanten --- */
   if(xGewinde > xKopfR + 0.5){
     g.appendChild(ns("rect",{x:xKopfR, y:oy-rD, width:xGewinde-xKopfR, height:rD*2,
-      fill:fuell, stroke:blau, "stroke-width":1.8}));
+      fill:fuell, stroke:"none"}));
+    [-1, 1].forEach(function(v){
+      g.appendChild(ns("line",{x1:xKopfR, y1:oy+v*rD, x2:xGewinde, y2:oy+v*rD,
+        stroke:dunkel, "stroke-width":BREIT}));
+    });
   }
 
-  /* --- Gewinde: Aussenlinie voll, Kernlinie duenn (Normdarstellung) --- */
-  var kuppe = Math.min(rD*0.8, 10);
+  /* --- Gewinde nach DIN ISO 6410: aussen breit, Kern schmal, das
+     Gewindeende eine breite Vollinie quer zur Achse. Angedeutete
+     Gewindegaenge kennt die Norm nicht - sie standen hier vorher. --- */
+  var kuppe = Math.min(rD*0.3, m.P*sk + 2);
   g.appendChild(ns("path",{d:
     "M"+xGewinde+","+(oy-rD)+" L"+(xEnde-kuppe)+","+(oy-rD)+
     " L"+xEnde+","+(oy-rD+kuppe)+" L"+xEnde+","+(oy+rD-kuppe)+
     " L"+(xEnde-kuppe)+","+(oy+rD)+" L"+xGewinde+","+(oy+rD)+" Z",
-    fill:fuell, stroke:blau, "stroke-width":1.8}));
-  g.appendChild(ns("line",{x1:xGewinde, y1:oy-rD3, x2:xEnde, y2:oy-rD3, stroke:blau, "stroke-width":0.9}));
-  g.appendChild(ns("line",{x1:xGewinde, y1:oy+rD3, x2:xEnde, y2:oy+rD3, stroke:blau, "stroke-width":0.9}));
-  g.appendChild(ns("line",{x1:xGewinde, y1:oy-rD, x2:xGewinde, y2:oy+rD, stroke:blau, "stroke-width":1.2}));
-
-  /* Gewindegaenge andeuten, solange sie noch unterscheidbar sind */
-  var schritt = m.P * sk;
-  if(schritt >= 3){
-    for(var xg = xGewinde + schritt; xg < xEnde - 1; xg += schritt){
-      g.appendChild(ns("line",{x1:xg, y1:oy-rD, x2:xg-schritt*0.5, y2:oy-rD3, stroke:blau, "stroke-width":0.5, opacity:0.5}));
-      g.appendChild(ns("line",{x1:xg, y1:oy+rD, x2:xg-schritt*0.5, y2:oy+rD3, stroke:blau, "stroke-width":0.5, opacity:0.5}));
-    }
-  }
+    fill:fuell, stroke:dunkel, "stroke-width":BREIT}));
+  [-1, 1].forEach(function(v){
+    /* Die Kernlinie endet an der Kuppe, nicht an der Stirnflaeche. */
+    g.appendChild(ns("line",{x1:xGewinde, y1:oy+v*rD3,
+      x2:xEnde - kuppe + (rD - rD3), y2:oy+v*rD3,
+      stroke:dunkel, "stroke-width":SCHMAL}));
+  });
 
   /* Mittellinie */
   g.appendChild(ns("line",{x1:xKopfL-24, y1:oy, x2:xEnde+24, y2:oy,
-    stroke:"#94a3b8", "stroke-width":0.9, "stroke-dasharray":"14 3 3 3"}));
+    stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"16 3 3 3"}));
 
   /* --- Benennungen --- */
   if(zeigeBez){
@@ -2921,24 +2977,37 @@ function zeichneSchraube(){
 
   /* --- Masse --- */
   if(zeigeMasse){
-    masslinie(g, (lMitKopf ? xKopfL : xKopfR), oy+rD+8, xEnde, oy+rD+8, "l = " + z(l,0) + " mm", 52);
-    masslinie(g, xGewinde, oy+rD+8, xEnde, oy+rD+8, "b = " + z(b,0) + " mm", 26);
-    masslinie(g, xEnde+10, oy-rD, xEnde+10, oy+rD, "d = " + z(m.d,0), 14);
+    /* Die Masshilfslinien setzen an der Kontur an, nicht acht Pixel
+       daneben: l am Kopf und am Ende der Kuppe, d dort, wo der Zylinder
+       aufhoert. */
+    masslinie(g, (lMitKopf ? xKopfL : xKopfR), oy+rK, xEnde, oy+rD-kuppe,
+      "l = " + z(l,0) + " mm", 52);
+    masslinie(g, xGewinde, oy+rD, xEnde, oy+rD-kuppe, "b = " + z(b,0) + " mm", 26);
+    masslinie(g, xEnde-kuppe, oy-rD, xEnde-kuppe, oy+rD, "d = " + z(m.d,0),
+      24 + kuppe);
     if(form.typ === "hex"){
-      masslinie(g, xKopfL-10, oy-rK, xKopfL-10, oy+rK, "s = " + z(m.s,0), -46);
+      /* In dieser Ansicht ist der Umriss das Eckenmass. Die Schluesselweite
+         liegt quer dazu und waere hier erfunden - sie steht in der Tabelle. */
+      masslinie(g, xKopfL, oy-rK, xKopfL, oy+rK,
+        "e \u2248 " + z(eckenmass(m.s),1), -40);
     }else{
-      masslinie(g, xKopfL-10, oy-rK, xKopfL-10, oy+rK, "d_k ≈ " + z(kopfD,1), -52);
+      masslinie(g, xKopfL, oy-rK, xKopfL, oy+rK,
+        "dₖ ≈ " + z(kopfD,1), -46);
     }
-    masslinie(g, xKopfL, oy-rK-8, xKopfR, oy-rK-8, "k = " + z(kopfH,1), -18);
+    masslinie(g, xKopfL, oy-rK, xKopfR, oy-rK, "k = " + z(kopfH,1), -26);
   }
 
-  g.appendChild(svgText(20, 326, "Maßstab " + z(sk,2) + " : 1 · " + groesse + " · " + form.name,
-    {size:12, fill:"#94a3b8"}));
+  /* Die Angabe zum Maßstab gehoert zur Erklaerebene, nicht zur Zeichnung. */
+  var eg = ns("g", {"class":"erklaer"}); g.appendChild(eg);
+  eg.appendChild(svgText(20, 326, "Maßstab " + z(sk,2) + " : 1 · " + groesse
+    + " · " + form.name, {size:12, fill:"#94a3b8"}));
 
   el("normHinweis").textContent = form.norm + ". " + kopfNotiz +
     (lMitKopf ? " Beim Senkkopf wird die Länge l einschließlich Kopf gemessen, da er versenkt sitzt."
               : " Die Länge l wird ohne Kopf gemessen.") +
-    " Die Zeichnung ist eine vereinfachte Normdarstellung (Gewinde als Doppellinie).";
+    " Die Zeichnung folgt der Normdarstellung: Gewinde als Doppellinie, " +
+    "Außendurchmesser breit, Kerndurchmesser schmal, Gewindeende als breite " +
+    "Vollinie quer zur Achse.";
 
   /* --- Masstabelle --- */
   var t = el("tabMasse");
