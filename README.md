@@ -173,6 +173,12 @@ Eine ganze Seite nimmt sich im `head` aus und verschwindet dann aus der
 **Kein Attribut heißt: gehört überall dazu.** Neue Seiten erscheinen also erst
 einmal für alle.
 
+Neben der Wahl steht ein Info-Symbol. Es sagt, was die Auswahl ist und was
+nicht: Grundlage sind die Bildungspläne, die Zuordnung selbst ist eine
+Auslegung — andere Lehrkräfte kommen an manchen Stellen mit gutem Grund zu
+einem anderen Schluss. Deshalb ist sie eine Voreinstellung und keine
+Vorschrift.
+
 Die sieben Schlüssel sind `bfs-hs10`, `bfs-for`, `hbfs-c2`, `fos-c3`, `im`, `zm`
 und `tech` (Berufsfachschule mit HS10 bzw. FOR, Höhere
 Berufsfachschule C2, Fachoberschule C3, Industriemechaniker,
