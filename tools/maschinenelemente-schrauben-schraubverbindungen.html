@@ -1285,54 +1285,66 @@ function svgText(x, y, txt, opt){
 function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild); }
 
 /* Ma&szlig;linie mit Pfeilen und beschriftetem Wert. */
+/* Mass-, Masshilfslinie und Massezahl gehoeren zur Zeichnung und werden
+   deshalb wie jede Koerperkante gezeichnet - in einer Farbe. */
+var DUNKEL = "#0f172a";
+
 function masslinie(g, x1, y1, x2, y2, text, versatz){
   var v = versatz || 0;
   var waag = Math.abs(y2 - y1) < 0.5;
+  /* Die Masshilfslinie steht nach DIN ISO 129 ueber die Masslinie hinaus. */
+  var ue = (v >= 0 ? 7 : -7);
   var lx1 = waag ? x1 : x1 + v, lx2 = waag ? x2 : x2 + v;
   var ly1 = waag ? y1 + v : y1,  ly2 = waag ? y2 + v : y2;
   g.appendChild(ns("line", {x1:lx1, y1:ly1, x2:lx2, y2:ly2,
-    stroke:"#64748b", "stroke-width":1, "marker-start":"url(#pfeilA)", "marker-end":"url(#pfeilB)"}));
+    stroke:DUNKEL, "stroke-width":SCHMAL, "marker-start":"url(#pfeilA)",
+    "marker-end":"url(#pfeilB)"}));
   if(waag){
-    g.appendChild(ns("line",{x1:x1,y1:y1,x2:x1,y2:ly1,stroke:"#cbd5e1","stroke-width":.8}));
-    g.appendChild(ns("line",{x1:x2,y1:y2,x2:x2,y2:ly2,stroke:"#cbd5e1","stroke-width":.8}));
-    var t = svgText((lx1+lx2)/2, ly1 - 5, text, {anchor:"middle", size:12, fill:"#475569", weight:600});
+    g.appendChild(ns("line",{x1:x1,y1:y1,x2:x1,y2:ly1+ue,stroke:DUNKEL,"stroke-width":SCHMAL}));
+    g.appendChild(ns("line",{x1:x2,y1:y2,x2:x2,y2:ly2+ue,stroke:DUNKEL,"stroke-width":SCHMAL}));
+    var t = svgText((lx1+lx2)/2, ly1 - 5, text, {anchor:"middle", size:12, fill:DUNKEL, weight:600});
     g.appendChild(t);
   }else{
-    g.appendChild(ns("line",{x1:x1,y1:y1,x2:lx1,y2:y1,stroke:"#cbd5e1","stroke-width":.8}));
-    g.appendChild(ns("line",{x1:x2,y1:y2,x2:lx2,y2:y2,stroke:"#cbd5e1","stroke-width":.8}));
+    g.appendChild(ns("line",{x1:x1,y1:y1,x2:lx1+ue,y2:y1,stroke:DUNKEL,"stroke-width":SCHMAL}));
+    g.appendChild(ns("line",{x1:x2,y1:y2,x2:lx2+ue,y2:y2,stroke:DUNKEL,"stroke-width":SCHMAL}));
     /* Liegt die Masslinie links vom Bauteil, muss der Text nach links laufen -
        sonst schreibt er ueber die Zeichnung. */
     var linksVom = v < 0;
     var t2 = svgText(lx1 + (linksVom ? -6 : 6), (ly1+ly2)/2 + 4, text,
-      {size:12, fill:"#475569", weight:600, anchor: linksVom ? "end" : "start"});
+      {size:12, fill:DUNKEL, weight:600, anchor: linksVom ? "end" : "start"});
     g.appendChild(t2);
   }
 }
 /* Pfeilspitzen in mehreren Farben - eine graue Spitze an einer roten Kraftlinie
    sieht nach Zeichenfehler aus. */
-var PFEILFARBEN = {"":"#64748b", rot:"#dc2626", gruen:"#16a34a", blau:"#1d4ed8", teal:"#0f766e"};
+var PFEILFARBEN = {"":DUNKEL, rot:"#dc2626", gruen:"#16a34a", blau:"#1d4ed8", teal:"#0f766e"};
 function pfeilDefs(svg){
   var defs = ns("defs", {});
   for(var name in PFEILFARBEN){
     if(!PFEILFARBEN.hasOwnProperty(name)) continue;
     var farbe = PFEILFARBEN[name];
-    var mA = ns("marker", {id:"pfeilA"+name, markerWidth:8, markerHeight:8, refX:7, refY:3,
-      orient:"auto", markerUnits:"strokeWidth"});
-    mA.appendChild(ns("path", {d:"M7,0 L7,6 L0,3 z", fill:farbe}));
+    /* DIN ISO 129: geschlossener, ausgefuellter Pfeil, schlank - rund drei
+       mal so lang wie breit. Der alte war fast so breit wie lang. */
+    var mA = ns("marker", {id:"pfeilA"+name, markerWidth:10, markerHeight:4,
+      refX:9, refY:2, orient:"auto", markerUnits:"strokeWidth"});
+    mA.appendChild(ns("path", {d:"M9,0.4 L9,3.6 L0,2 z", fill:farbe}));
     defs.appendChild(mA);
-    var mB = ns("marker", {id:"pfeilB"+name, markerWidth:8, markerHeight:8, refX:1, refY:3,
-      orient:"auto", markerUnits:"strokeWidth"});
-    mB.appendChild(ns("path", {d:"M0,0 L0,6 L7,3 z", fill:farbe}));
+    var mB = ns("marker", {id:"pfeilB"+name, markerWidth:10, markerHeight:4,
+      refX:1, refY:2, orient:"auto", markerUnits:"strokeWidth"});
+    mB.appendChild(ns("path", {d:"M0,0.4 L0,3.6 L9,2 z", fill:farbe}));
     defs.appendChild(mB);
   }
   svg.appendChild(defs);
 }
-/* Beschriftung mit Hinweislinie. */
+/* Beschriftung mit Hinweislinie. Gehoert zur Erklaerebene, nicht zur
+   Zeichnung - deshalb gestrichelt, grau und in einer eigenen Gruppe. */
 function hinweis(g, x, y, tx, ty, text, anchor){
-  g.appendChild(ns("line",{x1:x,y1:y,x2:tx,y2:ty,stroke:"#94a3b8","stroke-width":1,
+  var e = ns("g", {"class":"erklaer"});
+  g.appendChild(e);
+  e.appendChild(ns("line",{x1:x,y1:y,x2:tx,y2:ty,stroke:"#94a3b8","stroke-width":0.9,
     "stroke-dasharray":"3 2"}));
-  g.appendChild(ns("circle",{cx:x,cy:y,r:2.5,fill:"#94a3b8"}));
-  g.appendChild(svgText(tx + (anchor==="end" ? -5 : 5), ty + 4, text,
+  e.appendChild(ns("circle",{cx:x,cy:y,r:2.5,fill:"#94a3b8"}));
+  e.appendChild(svgText(tx + (anchor==="end" ? -5 : 5), ty + 4, text,
     {anchor:anchor||"start", size:12.5, fill:"#334155", weight:600}));
 }
 function balken(node, teile){
@@ -1713,7 +1725,7 @@ function reibFlach(g, b, FV, FQ, FR, haelt, n){
     {anchor:"end", size:11.5, fill:"#0f766e", weight:600}));
   if(n > 1){
     g.appendChild(svgText(x0+150, y+dicke*2+30, n + " Schrauben",
-      {anchor:"middle", size:11.5, fill:"#64748b"}));
+      {anchor:"middle", size:11.5, fill:DUNKEL}));
   }
 }
 
@@ -1818,7 +1830,8 @@ var REGELN = [
               "also keine Schraffur.", arten:["durchsteck","einschraub"]},
   {nr:2, text:"Außengewinde: Außendurchmesser als breite, Kerndurchmesser als schmale " +
               "Vollinie.", arten:["durchsteck","einschraub"]},
-  {nr:3, text:"Das Gewindeende wird als schmale Vollinie quer zur Achse gezeichnet.",
+  {nr:3, text:"Das Gewindeende wird als breite Vollinie quer zur Achse gezeichnet – "
+              + "schmal ist nur der schräge Gewindeauslauf.",
    arten:["durchsteck","einschraub"]},
   {nr:4, text:"Das Durchgangsloch hat Spiel: Es ist größer als der Gewindedurchmesser.",
    arten:["durchsteck","einschraub"]},
@@ -1880,12 +1893,18 @@ function sechskantAnsicht(g, o){
       stroke:farbe, "stroke-width":strich}));
   }
 
-  /* Umriss: Stirnflaeche so breit wie s, dann auf e aufgehende Fase. */
-  g.appendChild(ns("path", {d:
-    "M" + pt(anFase, -rS) + " L" + pt(anFase, rS) +
+  /* Umriss: Stirnflaeche so breit wie s, dann auf e aufgehende Fase.
+     Flaeche und Kante getrennt, weil die Auflagekante am anderen Ende nicht
+     immer ganz durchlaeuft. */
+  var umriss = "M" + pt(anFase, -rS) + " L" + pt(anFase, rS) +
     " L" + pt(qT, rE) + " L" + pt(anderes, rE) +
-    " L" + pt(anderes, -rE) + " L" + pt(qT, -rE) + " Z",
-    fill:o.fuell || "#ffffff", stroke:farbe, "stroke-width":strich}));
+    " L" + pt(anderes, -rE) + " L" + pt(qT, -rE) + " Z";
+  g.appendChild(ns("path", {d:umriss, fill:o.fuell || "#ffffff", stroke:"none"}));
+
+  /* Die Auflageflaeche steht senkrecht zur Achse und liegt vor dem Schaft -
+     der verdeckt sie nicht. Die Kante laeuft deshalb durch. */
+  g.appendChild(ns("path", {d:umriss, fill:"none", stroke:farbe,
+    "stroke-width":strich}));
 
   /* Die zwei Kanten zwischen den drei sichtbaren Flaechen. */
   [-1, 1].forEach(function(v){ linie(qT, v * rE / 2, anderes, v * rE / 2); });
@@ -1915,7 +1934,7 @@ function schraffurDefs(svg){
   [["schrafA", 45], ["schrafB", -45]].forEach(function(a){
     var pat = ns("pattern", {id:a[0], width:7, height:7, patternUnits:"userSpaceOnUse",
       patternTransform:"rotate(" + a[1] + ")"});
-    pat.appendChild(ns("line", {x1:0, y1:0, x2:0, y2:7, stroke:"#475569", "stroke-width":0.8}));
+    pat.appendChild(ns("line", {x1:0, y1:0, x2:0, y2:7, stroke:DUNKEL, "stroke-width":0.8}));
     defs.appendChild(pat);
   });
   svg.appendChild(defs);
@@ -1934,11 +1953,12 @@ function bauteil(g, x, y, w, h, muster, schraffur){
    so kaum Platz in der Breite, sodass mehrere Masse nebeneinander passen. */
 function masslinieSenkrecht(g, x, y1, y2, text, versatz){
   var lx = x + versatz;
-  g.appendChild(ns("line", {x1:lx, y1:y1, x2:lx, y2:y2, stroke:"#64748b",
-    "stroke-width":1, "marker-start":"url(#pfeilA)", "marker-end":"url(#pfeilB)"}));
-  g.appendChild(ns("line", {x1:x, y1:y1, x2:lx, y2:y1, stroke:"#cbd5e1", "stroke-width":0.8}));
-  g.appendChild(ns("line", {x1:x, y1:y2, x2:lx, y2:y2, stroke:"#cbd5e1", "stroke-width":0.8}));
-  var t = svgText(0, 0, text, {anchor:"middle", size:12, fill:"#475569", weight:600});
+  var ue = (versatz >= 0 ? 7 : -7);
+  g.appendChild(ns("line", {x1:lx, y1:y1, x2:lx, y2:y2, stroke:DUNKEL,
+    "stroke-width":SCHMAL, "marker-start":"url(#pfeilA)", "marker-end":"url(#pfeilB)"}));
+  g.appendChild(ns("line", {x1:x, y1:y1, x2:lx + ue, y2:y1, stroke:DUNKEL, "stroke-width":SCHMAL}));
+  g.appendChild(ns("line", {x1:x, y1:y2, x2:lx + ue, y2:y2, stroke:DUNKEL, "stroke-width":SCHMAL}));
+  var t = svgText(0, 0, text, {anchor:"middle", size:12, fill:DUNKEL, weight:600});
   /* Neun statt fuenf: Bei kurzen Massangaben laeuft die Masslinie sonst
      mitten durch die Zahl. */
   t.setAttribute("transform", "translate(" + (lx - 9) + "," + ((y1 + y2) / 2) +
@@ -1951,13 +1971,15 @@ function mittellinie(g, x, y1, y2){
     stroke:"#0f172a", "stroke-width":SCHMAL, "stroke-dasharray":"16 3 3 3"}));
 }
 
-/* Nummerierter Hinweis auf eine Stelle in der Zeichnung. */
+/* Nummerierter Hinweis auf eine Stelle in der Zeichnung. Erklaerebene. */
 function regelMarke(g, nr, x, y, tx, ty){
-  g.appendChild(ns("line", {x1:x, y1:y, x2:tx, y2:ty,
+  var e = ns("g", {"class":"erklaer"});
+  g.appendChild(e);
+  e.appendChild(ns("line", {x1:x, y1:y, x2:tx, y2:ty,
     stroke:"#2563eb", "stroke-width":0.9, "stroke-dasharray":"3 2"}));
-  g.appendChild(ns("circle", {cx:tx, cy:ty, r:10, fill:"#eff6ff",
+  e.appendChild(ns("circle", {cx:tx, cy:ty, r:10, fill:"#eff6ff",
     stroke:"#2563eb", "stroke-width":1.4}));
-  g.appendChild(svgText(tx, ty + 4.5, String(nr),
+  e.appendChild(svgText(tx, ty + 4.5, String(nr),
     {anchor:"middle", size:12, fill:"#1d4ed8", weight:700}));
 }
 
@@ -2031,9 +2053,9 @@ function zeichneVerbindung(){
       g.appendChild(ns("line", {x1:cx + v*rD, y1:yEnde, x2:cx + v*rD, y2:yGewU,
         stroke:"#0f172a", "stroke-width":SCHMAL}));
     });
-    /* Gewindeende im Grundloch (Regel 3) */
+    /* Gewindeende im Grundloch (Regel 3): breite Vollinie */
     g.appendChild(ns("line", {x1:cx - rD, y1:yGewU, x2:cx + rD, y2:yGewU,
-      stroke:"#0f172a", "stroke-width":SCHMAL}));
+      stroke:"#0f172a", "stroke-width":BREIT}));
     /* Kernloch unterhalb des Gewindes plus 120-Grad-Spitze */
     [-1, 1].forEach(function(v){
       g.appendChild(ns("line", {x1:cx + v*rD3, y1:yGewU, x2:cx + v*rKern, y2:yGewU,
@@ -2058,6 +2080,14 @@ function zeichneVerbindung(){
     bauteil(g, cx + rDh, yP1U, pr - (cx + rDh), yP2U - yP1U, "schrafB", zeigeSchraffur);
   }
 
+  /* Die Fuge zwischen den Bauteilen ist auch im Durchgangsloch zu sehen:
+     Durch das Spiel blickt man auf die Wand der Bohrung dahinter. Verdeckt
+     wird sie erst von der Schraube, also von rD an nach innen. */
+  [-1, 1].forEach(function(v){
+    g.appendChild(ns("line", {x1:cx + v * rD, y1:yP1U, x2:cx + v * rDh, y2:yP1U,
+      stroke:"#0f172a", "stroke-width":BREIT}));
+  });
+
   /* ---------------- Schraube: wird NICHT geschnitten (Regel 1) --------------- */
   var weiss = "#ffffff";
   /* Sechskantkopf ueber Ecke, mit der Andeutung der drei Flaechen (Regel 10) */
@@ -2080,10 +2110,10 @@ function zeichneVerbindung(){
     g.appendChild(ns("line", {x1:cx + v*rD3, y1:Math.max(yGewO, ySch1U), x2:cx + v*rD3, y2:yEnde,
       stroke:"#0f172a", "stroke-width":SCHMAL}));
   });
-  /* Gewindeende an der Schraube (Regel 3) */
+  /* Gewindeende an der Schraube (Regel 3): breite Vollinie */
   if(yGewO > ySch1U){
     g.appendChild(ns("line", {x1:cx - rD, y1:yGewO, x2:cx + rD, y2:yGewO,
-      stroke:"#0f172a", "stroke-width":SCHMAL}));
+      stroke:"#0f172a", "stroke-width":BREIT}));
   }
   /* Kuppe */
   g.appendChild(ns("line", {x1:cx - rD, y1:yEnde, x2:cx + rD, y2:yEnde,
@@ -2236,16 +2266,10 @@ function zeichneSchraubeNorm(){
   var xGewinde = xEnde - b * sk;
   var rD = m.d / 2 * sk, rD3 = m.d3 / 2 * sk;
 
-  /* ---------- Hauptansicht ---------- */
-  var kopf = sechskantAnsicht(g, {waagerecht:true, achse:oy,
-    von:xKopfL, bis:xKopfR, s:m.s, sk:sk, faseAn:"von", fuell:weiss});
-
-  /* Die Auflageflaeche ist nur als Ring sichtbar - hinter dem Schaft gibt es
-     dort keine Kante. Das Weiss deckt den Teil der Linie ab, der nicht
-     hingehoert. */
-  g.appendChild(ns("rect", {x:xKopfR - BREIT, y:oy - rD, width:2 * BREIT,
-    height:2 * rD, fill:weiss, stroke:"none"}));
-
+  /* ---------- Hauptansicht ----------
+     Reihenfolge nach Tiefe: Schaft und Gewinde zuerst, der Kopf zuletzt. Er
+     liegt vor dem Schaft; wuerde er zuerst kommen, naehme dessen deckende
+     Flaeche die halbe Breite seiner Auflagekante weg. */
   if(xGewinde > xKopfR + 0.5){
     g.appendChild(ns("rect", {x:xKopfR, y:oy - rD, width:xGewinde - xKopfR,
       height:2 * rD, fill:weiss, stroke:"none"}));
@@ -2257,19 +2281,26 @@ function zeichneSchraubeNorm(){
 
   /* Gewinde: aussen breit, Kern schmal. Der Pfad bleibt offen, damit die
      Kante am Gewindeanfang nicht breit mitgezeichnet wird - sie ist das
-     Gewindeende und gehoert schmal. */
+     Gewindeende und ist eine breite Vollinie - sie wird deshalb einzeln
+     gezogen. */
   var kuppe = Math.min(rD * 0.3, m.P * sk + 2);
   g.appendChild(ns("path", {d:
     "M" + xGewinde + "," + (oy - rD) + " L" + (xEnde - kuppe) + "," + (oy - rD) +
     " L" + xEnde + "," + (oy - rD + kuppe) + " L" + xEnde + "," + (oy + rD - kuppe) +
     " L" + (xEnde - kuppe) + "," + (oy + rD) + " L" + xGewinde + "," + (oy + rD),
     fill:weiss, stroke:dunkel, "stroke-width":BREIT}));
+  /* Die Kernlinien enden an der Fase, nicht am Schraubenende - sonst stehen
+     sie ueber die Kuppe hinaus. */
+  var xKern = xEnde - Math.max(0, kuppe - (rD - rD3));
   [-1, 1].forEach(function(v){
-    g.appendChild(ns("line", {x1:xGewinde, y1:oy + v * rD3, x2:xEnde, y2:oy + v * rD3,
+    g.appendChild(ns("line", {x1:xGewinde, y1:oy + v * rD3, x2:xKern, y2:oy + v * rD3,
       stroke:dunkel, "stroke-width":SCHMAL}));
   });
   g.appendChild(ns("line", {x1:xGewinde, y1:oy - rD, x2:xGewinde, y2:oy + rD,
-    stroke:dunkel, "stroke-width":SCHMAL}));
+    stroke:dunkel, "stroke-width":BREIT}));
+
+  var kopf = sechskantAnsicht(g, {waagerecht:true, achse:oy,
+    von:xKopfL, bis:xKopfR, s:m.s, sk:sk, faseAn:"von", fuell:weiss});
 
   g.appendChild(ns("line", {x1:xKopfL - 20, y1:oy, x2:xEnde + 12, y2:oy,
     stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"16 3 3 3"}));
@@ -2959,14 +2990,14 @@ function zeichneGewindeprofil(){
          " L"+(x+p*0.6875)+","+yD +
          " L"+(x+p)+","+yD3;
   }
-  g.appendChild(ns("path",{d:d, fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":1.8}));
+  g.appendChild(ns("path",{d:d, fill:"#dbeafe", stroke:"#1d4ed8", "stroke-width":BREIT}));
 
   /* Die drei Durchmesserlinien */
   [[yD,"d",  "#1d4ed8", z(m.d,0)],
    [yD2,"d₂","#059669", z(m.d2,2)],
    [yD3,"d₃","#dc2626", z(m.d3,2)]].forEach(function(a){
     g.appendChild(ns("line",{x1:105, y1:a[0], x2:xEnde+20, y2:a[0],
-      stroke:a[2], "stroke-width":1.2, "stroke-dasharray":"7 4"}));
+      stroke:a[2], "stroke-width":SCHMAL, "stroke-dasharray":"7 4"}));
     g.appendChild(svgText(xEnde+28, a[0]+4, a[1] + " = " + a[3] + " mm",
       {size:12.5, fill:a[2], weight:700}));
   });
@@ -2982,7 +3013,7 @@ function zeichneGewindeprofil(){
   for(var xb = 40; xb < xEnde+20; xb += 22){
     bruch += " L"+(xb+11)+",203 L"+(xb+22)+",196";
   }
-  g.appendChild(ns("path",{d:bruch, fill:"none", stroke:"#94a3b8", "stroke-width":1.2}));
+  g.appendChild(ns("path",{d:bruch, fill:"none", stroke:"#94a3b8", "stroke-width":SCHMAL}));
   g.appendChild(svgText(40, 220, "Ausschnitt – die Mittelachse liegt weiter unten.",
     {size:11.5, fill:"#94a3b8"}));
 
