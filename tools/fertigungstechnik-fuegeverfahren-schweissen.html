@@ -833,9 +833,16 @@ var VERFAHREN = [];
 function verfahren(o){ VERFAHREN.push(o); return o; }
 
 /* Zwei Bleche im Stumpfstoss - die Ausgangslage fast aller Bilder hier. */
+/* Draufsicht auf den Stoss: Die beiden Bleche liegen laengs nebeneinander,
+   die Fuge laeuft waagerecht durch das Bild - und die Raupe laeuft laengs
+   der Fuge.
+
+   Vorher stiessen die Bleche stirnseitig aneinander, die Fuge stand also
+   senkrecht, und die Raupe lief trotzdem waagerecht ueber die Oberflaeche.
+   Das ergibt keine Naht, sondern eine Auftragschweissung quer zum Stoss. */
 function bleche(g, cy, dick, lx, rx, fuge){
-  rect(g, lx, cy-dick, (320-fuge/2)-lx, 2*dick, C.aF, C.aS, {sw:1.8});
-  rect(g, 320+fuge/2, cy-dick, rx-(320+fuge/2), 2*dick, C.bF, C.bS, {sw:1.8});
+  rect(g, lx, cy-dick, rx-lx, dick-fuge/2, C.aF, C.aS, {sw:1.8});
+  rect(g, lx, cy+fuge/2, rx-lx, dick-fuge/2, C.bF, C.bS, {sw:1.8});
 }
 
 /* Raupe mit Schuppen - das Bild einer erstarrten Naht. */
@@ -885,36 +892,36 @@ verfahren({
     var bx = start + lauf*(ende-start);
 
     bleche(g, cy, dick, lx, rx, 0);
-    raupe(g, start, bx-6, cy-dick, 9);
+    raupe(g, start, bx-6, cy, 9);
     txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
 
     if(lauf < 1){
       /* Flamme: Kegel, Reduktionszone, Streuflamme */
-      pfad(g, "M"+(bx-30)+","+(cy-dick-86)+" L"+(bx+30)+","+(cy-dick-86)+
-              " L"+bx+","+(cy-dick-16)+" Z", "#fed7aa", "none", {opacity:0.55});
-      pfad(g, "M"+(bx-16)+","+(cy-dick-72)+" L"+(bx+16)+","+(cy-dick-72)+
-              " L"+bx+","+(cy-dick-24)+" Z", C.glut, "none", {opacity:0.9});
-      pfad(g, "M"+(bx-7)+","+(cy-dick-64)+" L"+(bx+7)+","+(cy-dick-64)+
-              " L"+bx+","+(cy-dick-40)+" Z", "#38bdf8", "none");
-      txt(g, bx+36, cy-dick-70, "Kegel", {fill:"#0369a1", size:11.5});
-      txt(g, bx+36, cy-dick-54, "Flammengase schützen", {fill:"#b45309", size:11.5});
+      pfad(g, "M"+(bx-30)+","+(cy-86)+" L"+(bx+30)+","+(cy-86)+
+              " L"+bx+","+(cy-16)+" Z", "#fed7aa", "none", {opacity:0.55});
+      pfad(g, "M"+(bx-16)+","+(cy-72)+" L"+(bx+16)+","+(cy-72)+
+              " L"+bx+","+(cy-24)+" Z", C.glut, "none", {opacity:0.9});
+      pfad(g, "M"+(bx-7)+","+(cy-64)+" L"+(bx+7)+","+(cy-64)+
+              " L"+bx+","+(cy-40)+" Z", "#38bdf8", "none");
+      txt(g, bx+36, cy-70, "Kegel", {fill:"#0369a1", size:11.5});
+      txt(g, bx+36, cy-54, "Flammengase schützen", {fill:"#b45309", size:11.5});
 
-      rect(g, bx-11, cy-dick-138, 22, 56, "#94a3b8", "#334155", {sw:1.4});
-      txt(g, bx-16, cy-dick-130, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
+      rect(g, bx-11, cy-138, 22, 56, "#94a3b8", "#334155", {sw:1.4});
+      txt(g, bx-16, cy-130, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
 
       /* Der Zusatzstab kommt erst dazu, wenn das Bad steht. */
       if(lauf > 0){
         var sx = bx + 62 - 26*lauf;
-        linie(g, sx+56, cy-dick-96, sx, cy-dick-14, C.eS, 5);
-        txt(g, sx+62, cy-dick-100, "Zusatzstab", {fill:C.eS, size:11.5});
+        linie(g, sx+56, cy-96, sx, cy-14, C.eS, 5);
+        txt(g, sx+62, cy-100, "Zusatzstab", {fill:C.eS, size:11.5});
         g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:22, ry:10,
           fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
         txt(g, bx+28, cy-dick+22, "Schmelzbad", {fill:"#b45309", size:11.5});
       }
     }
     if(lauf >= 1){
-      hitze(g, 320, cy-dick-30, 0.5);
-      txt(g, lx+2, cy-dick-64, "Die Wärme läuft weit ins Blech – breite Wärmeeinflusszone",
+      hitze(g, 320, cy-30, 0.5);
+      txt(g, lx+2, cy-64, "Die Wärme läuft weit ins Blech – breite Wärmeeinflusszone",
         {fill:"#c2410c", size:12});
     }
   }
@@ -945,20 +952,20 @@ verfahren({
     var bx = start + lauf*(ende-start);
 
     bleche(g, cy, dick, lx, rx, 0);
-    raupe(g, start, bx-6, cy-dick, 9);
+    raupe(g, start, bx-6, cy, 9);
 
     /* Schlacke deckt die erstarrte Naht ab, bis sie abgeklopft wird */
     if(bx > start+8 && putz < 1){
       var bis = putz > 0 ? start + (bx-6-start)*(1-putz) : bx-6;
       if(bis > start)
-        rect(g, start, cy-dick-13, bis-start, 6, C.lot, C.lotS, {sw:1});
+        rect(g, start, cy-13, bis-start, 6, C.lot, C.lotS, {sw:1});
       if(putz > 0.05)
-        txt(g, start, cy-dick-24, "Schlacke abklopfen", {fill:C.lotS, size:11.5});
+        txt(g, start, cy-24, "Schlacke abklopfen", {fill:C.lotS, size:11.5});
     }
     if(lauf < 1){
       /* Elektrode mit Umhuellung, wird kuerzer */
       var laenge = 96 - 40*lauf;
-      var ey = cy-dick-22-laenge;
+      var ey = cy-22-laenge;
       rect(g, bx-8, ey, 16, laenge-12, "#94a3b8", "#334155", {sw:1.3});
       rect(g, bx-4, ey+6, 8, laenge-12, C.eF, C.eS, {sw:1});
       txt(g, bx+22, ey+16, "Umhüllung", {fill:"#334155", size:11.5});
@@ -966,21 +973,21 @@ verfahren({
 
       /* Lichtbogen und Tropfen erst nach dem Zuenden */
       if(lauf > 0){
-        pfad(g, "M"+(bx-7)+","+(cy-dick-22)+" L"+(bx+7)+","+(cy-dick-22)+
-                " L"+(bx+13)+","+(cy-dick-2)+" L"+(bx-13)+","+(cy-dick-2)+" Z",
+        pfad(g, "M"+(bx-7)+","+(cy-22)+" L"+(bx+7)+","+(cy-22)+
+                " L"+(bx+13)+","+(cy-2)+" L"+(bx-13)+","+(cy-2)+" Z",
           C.glut, "none", {opacity:0.85});
-        txt(g, bx+20, cy-dick-14, "Lichtbogen", {fill:"#b45309", size:11.5});
+        txt(g, bx+20, cy-14, "Lichtbogen", {fill:"#b45309", size:11.5});
         var tp = (t*6) % 1;
-        g.appendChild(ns("circle", {cx:bx, cy:cy-dick-20+tp*18, r:4,
+        g.appendChild(ns("circle", {cx:bx, cy:cy-20+tp*18, r:4,
           fill:C.glut, stroke:"#b45309", "stroke-width":1}));
         g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:20, ry:9,
           fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
       }else{
-        txt(g, bx+20, cy-dick-14, "ansetzen und zünden", {fill:"#b45309", size:11.5});
+        txt(g, bx+20, cy-14, "ansetzen und zünden", {fill:"#b45309", size:11.5});
       }
     }
     if(putz >= 1){
-      txt(g, lx+2, cy-dick-30, "Naht frei geklopft – erst jetzt bindet die nächste Lage",
+      txt(g, lx+2, cy-30, "Naht frei geklopft – erst jetzt bindet die nächste Lage",
         {fill:"#16a34a", size:12});
     }
     txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
@@ -1013,36 +1020,36 @@ verfahren({
     var bx = start + lauf*(ende-start);
 
     bleche(g, cy, dick, lx, rx, 0);
-    raupe(g, start, bx-6, cy-dick, 9);
+    raupe(g, start, bx-6, cy, 9);
     txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
 
     var px = lauf > 0 ? bx : start;
     /* Gasduese mit Schutzgasglocke */
     if(gas > 0.05){
-      pfad(g, "M"+(px-40)+","+(cy-dick-6)+" Q "+px+","+(cy-dick-52)+" "+(px+40)+","+(cy-dick-6)+" Z",
+      pfad(g, "M"+(px-40)+","+(cy-6)+" Q "+px+","+(cy-52)+" "+(px+40)+","+(cy-6)+" Z",
         "#bae6fd", "none", {opacity:0.45*gas});
-      txt(g, px+46, cy-dick-34, "Schutzgas", {fill:"#0369a1", size:11.5, opacity:gas});
+      txt(g, px+46, cy-34, "Schutzgas", {fill:"#0369a1", size:11.5, opacity:gas});
     }
-    pfad(g, "M"+(px-22)+","+(cy-dick-96)+" L"+(px+22)+","+(cy-dick-96)+
-            " L"+(px+15)+","+(cy-dick-40)+" L"+(px-15)+","+(cy-dick-40)+" Z",
+    pfad(g, "M"+(px-22)+","+(cy-96)+" L"+(px+22)+","+(cy-96)+
+            " L"+(px+15)+","+(cy-40)+" L"+(px-15)+","+(cy-40)+" Z",
       "#94a3b8", "#334155", {sw:1.4});
-    txt(g, px-28, cy-dick-92, "Gasdüse", {anchor:"end", fill:"#334155", size:11.5});
+    txt(g, px-28, cy-92, "Gasdüse", {anchor:"end", fill:"#334155", size:11.5});
 
     /* Draht laeuft durch die Duese ins Bad */
-    linie(g, px, cy-dick-100, px, cy-dick-(lauf > 0 ? 14 : 30), C.eS, 3.4);
-    kraftpfeil(g, px, cy-dick-128, px, cy-dick-104, "#1d4ed8", 2.4);
-    txt(g, px+8, cy-dick-118, "Draht läuft nach", {fill:C.eS, size:11.5});
+    linie(g, px, cy-100, px, cy-(lauf > 0 ? 14 : 30), C.eS, 3.4);
+    kraftpfeil(g, px, cy-128, px, cy-104, "#1d4ed8", 2.4);
+    txt(g, px+8, cy-118, "Draht läuft nach", {fill:C.eS, size:11.5});
 
     if(lauf > 0 && lauf < 1){
-      pfad(g, "M"+(bx-6)+","+(cy-dick-14)+" L"+(bx+6)+","+(cy-dick-14)+
-              " L"+(bx+12)+","+(cy-dick-2)+" L"+(bx-12)+","+(cy-dick-2)+" Z",
+      pfad(g, "M"+(bx-6)+","+(cy-14)+" L"+(bx+6)+","+(cy-14)+
+              " L"+(bx+12)+","+(cy-2)+" L"+(bx-12)+","+(cy-2)+" Z",
         C.glut, "none", {opacity:0.85});
       g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:20, ry:9,
         fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
       txt(g, bx+26, cy-dick+22, "Schmelzbad", {fill:"#b45309", size:11.5});
     }
     if(lauf >= 1){
-      txt(g, lx+2, cy-dick-30, "Naht ohne Schlacke – keine Nacharbeit",
+      txt(g, lx+2, cy-30, "Naht ohne Schlacke – keine Nacharbeit",
         {fill:"#16a34a", size:12});
     }
   }
@@ -1073,38 +1080,38 @@ verfahren({
     var bx = lauf > 0 ? start + lauf*(ende-start) : start;
 
     bleche(g, cy, dick, lx, rx, 0);
-    raupe(g, start, bx-6, cy-dick, 8);
+    raupe(g, start, bx-6, cy, 8);
     txt(g, lx+2, cy+dick+20, "Grundwerkstoff", {fill:C.aS, size:12});
 
     var schirm = Math.max(gas, nach);
     if(schirm > 0.05){
-      pfad(g, "M"+(bx-42)+","+(cy-dick-6)+" Q "+bx+","+(cy-dick-54)+" "+(bx+42)+","+(cy-dick-6)+" Z",
+      pfad(g, "M"+(bx-42)+","+(cy-6)+" Q "+bx+","+(cy-54)+" "+(bx+42)+","+(cy-6)+" Z",
         "#bae6fd", "none", {opacity:0.45*schirm});
-      txt(g, bx+48, cy-dick-34, nach > 0.05 ? "Gas strömt nach" : "Argon strömt vor",
+      txt(g, bx+48, cy-34, nach > 0.05 ? "Gas strömt nach" : "Argon strömt vor",
         {fill:"#0369a1", size:11.5});
     }
-    pfad(g, "M"+(bx-22)+","+(cy-dick-96)+" L"+(bx+22)+","+(cy-dick-96)+
-            " L"+(bx+15)+","+(cy-dick-42)+" L"+(bx-15)+","+(cy-dick-42)+" Z",
+    pfad(g, "M"+(bx-22)+","+(cy-96)+" L"+(bx+22)+","+(cy-96)+
+            " L"+(bx+15)+","+(cy-42)+" L"+(bx-15)+","+(cy-42)+" Z",
       "#94a3b8", "#334155", {sw:1.4});
     /* Wolframelektrode: bleibt immer gleich lang */
-    pfad(g, "M"+(bx-4)+","+(cy-dick-96)+" L"+(bx+4)+","+(cy-dick-96)+
-            " L"+(bx+4)+","+(cy-dick-26)+" L"+bx+","+(cy-dick-18)+
-            " L"+(bx-4)+","+(cy-dick-26)+" Z", "#cbd5e1", "#334155", {sw:1.3});
-    txt(g, bx-28, cy-dick-92, "Wolfram,", {anchor:"end", fill:"#334155", size:11.5});
-    txt(g, bx-28, cy-dick-78, "schmilzt nicht ab", {anchor:"end", fill:"#334155", size:11.5});
+    pfad(g, "M"+(bx-4)+","+(cy-96)+" L"+(bx+4)+","+(cy-96)+
+            " L"+(bx+4)+","+(cy-26)+" L"+bx+","+(cy-18)+
+            " L"+(bx-4)+","+(cy-26)+" Z", "#cbd5e1", "#334155", {sw:1.3});
+    txt(g, bx-28, cy-92, "Wolfram,", {anchor:"end", fill:"#334155", size:11.5});
+    txt(g, bx-28, cy-78, "schmilzt nicht ab", {anchor:"end", fill:"#334155", size:11.5});
 
     if(lauf > 0 && lauf < 1){
-      pfad(g, "M"+(bx-5)+","+(cy-dick-18)+" L"+(bx+5)+","+(cy-dick-18)+
-              " L"+(bx+11)+","+(cy-dick-2)+" L"+(bx-11)+","+(cy-dick-2)+" Z",
+      pfad(g, "M"+(bx-5)+","+(cy-18)+" L"+(bx+5)+","+(cy-18)+
+              " L"+(bx+11)+","+(cy-2)+" L"+(bx-11)+","+(cy-2)+" Z",
         C.glut, "none", {opacity:0.8});
       var sx = bx + 64 - 22*((t*3) % 1);
-      linie(g, sx+58, cy-dick-92, sx, cy-dick-12, C.eS, 5);
-      txt(g, sx+64, cy-dick-96, "Zusatzstab, von Hand", {fill:C.eS, size:11.5});
+      linie(g, sx+58, cy-92, sx, cy-12, C.eS, 5);
+      txt(g, sx+64, cy-96, "Zusatzstab, von Hand", {fill:C.eS, size:11.5});
       g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:17, ry:8,
         fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
     }
     if(nach >= 1){
-      txt(g, lx+2, cy-dick-30, "Sehr saubere Naht – kaum Spritzer, kein Abklopfen",
+      txt(g, lx+2, cy-30, "Sehr saubere Naht – kaum Spritzer, kein Abklopfen",
         {fill:"#16a34a", size:12});
     }
   }
@@ -1144,25 +1151,25 @@ verfahren({
     /* Pulverschuettung */
     var pvBis = saug > 0 ? start + ((ende)-start)*saug : ende;
     pfad(g, "M"+pvBis+","+(cy-dick)+" L"+(rx-10)+","+(cy-dick)+
-            " L"+(rx-10)+","+(cy-dick-26)+" L"+pvBis+","+(cy-dick-26)+" Z",
+            " L"+(rx-10)+","+(cy-26)+" L"+pvBis+","+(cy-26)+" Z",
       "#fde68a", "#b45309", {sw:1});
-    if(saug < 0.5) txt(g, pvBis+16, cy-dick-32, "Pulverschüttung", {fill:C.lotS, size:11.5});
+    if(saug < 0.5) txt(g, pvBis+16, cy-32, "Pulverschüttung", {fill:C.lotS, size:11.5});
     /* erstarrte Schlackenkruste hinter dem Kopf */
     if(bx > start)
-      rect(g, start, cy-dick-12, (bx-10)-start, 12, C.lot, C.lotS, {sw:1});
+      rect(g, start, cy-12, (bx-10)-start, 12, C.lot, C.lotS, {sw:1});
     if(saug > 0.1){
-      kraftpfeil(g, pvBis+20, cy-dick-64, pvBis+20, cy-dick-34, "#0f766e", 2.4);
-      txt(g, pvBis+28, cy-dick-56, "Pulver absaugen und wiederverwenden",
+      kraftpfeil(g, pvBis+20, cy-64, pvBis+20, cy-34, "#0f766e", 2.4);
+      txt(g, pvBis+28, cy-56, "Pulver absaugen und wiederverwenden",
         {fill:"#0f766e", size:11.5});
     }
     if(lauf < 1){
-      rect(g, bx-10, cy-dick-130, 20, 100, "#94a3b8", "#334155", {sw:1.4});
-      linie(g, bx, cy-dick-34, bx, cy-dick-10, C.eS, 3.4);
-      txt(g, bx-18, cy-dick-126, "Drahtvorschub", {anchor:"end", fill:"#334155", size:11.5});
-      txt(g, bx+16, cy-dick-18, "Lichtbogen unsichtbar", {fill:"#b45309", size:11.5});
+      rect(g, bx-10, cy-130, 20, 100, "#94a3b8", "#334155", {sw:1.4});
+      linie(g, bx, cy-34, bx, cy-10, C.eS, 3.4);
+      txt(g, bx-18, cy-126, "Drahtvorschub", {anchor:"end", fill:"#334155", size:11.5});
+      txt(g, bx+16, cy-18, "Lichtbogen unsichtbar", {fill:"#b45309", size:11.5});
     }
     if(saug >= 1){
-      txt(g, lx+2, cy-dick-46, "Tiefer Einbrand in einer Lage – dafür nur in der Wanne",
+      txt(g, lx+2, cy-46, "Tiefer Einbrand in einer Lage – dafür nur in der Wanne",
         {fill:"#c2410c", size:12});
     }
   }
@@ -1200,11 +1207,11 @@ verfahren({
         zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
 
     /* Strahlkegel */
-    pfad(g, "M"+(bx-26)+","+(cy-dick-112)+" L"+(bx+26)+","+(cy-dick-112)+
+    pfad(g, "M"+(bx-26)+","+(cy-112)+" L"+(bx+26)+","+(cy-112)+
             " L"+(bx+3)+","+(cy-dick)+" L"+(bx-3)+","+(cy-dick)+" Z",
       "#fca5a5", "none", {opacity:0.55});
-    rect(g, bx-30, cy-dick-146, 60, 34, "#94a3b8", "#334155", {sw:1.4});
-    txt(g, bx-36, cy-dick-124, "Optik", {anchor:"end", fill:"#334155", size:11.5});
+    rect(g, bx-30, cy-146, 60, 34, "#94a3b8", "#334155", {sw:1.4});
+    txt(g, bx-36, cy-124, "Optik", {anchor:"end", fill:"#334155", size:11.5});
 
     if(auf > 0.05){
       /* Dampfkapillare */
@@ -1216,11 +1223,11 @@ verfahren({
     }
     if(lauf >= 1){
       /* Vergleichsbild: was eine Lichtbogennaht hier braeuchte */
-      pfad(g, "M"+(320-44)+","+(cy-dick-14)+" Q 320,"+(cy-dick-40)+" "+(320+44)+","+(cy-dick-14),
+      pfad(g, "M"+(320-44)+","+(cy-14)+" Q 320,"+(cy-40)+" "+(320+44)+","+(cy-14),
         "none", "#94a3b8", {sw:1.4, dash:"5 4"});
-      txt(g, 320+52, cy-dick-30, "so breit wäre eine Lichtbogennaht",
+      txt(g, 320+52, cy-30, "so breit wäre eine Lichtbogennaht",
         {fill:"#64748b", size:11.5, weight:400});
-      txt(g, lx+2, cy-dick-56, "Schmale Naht, winzige Wärmeeinflusszone, kaum Verzug",
+      txt(g, lx+2, cy-56, "Schmale Naht, winzige Wärmeeinflusszone, kaum Verzug",
         {fill:"#16a34a", size:12});
     }
   }
@@ -1256,26 +1263,26 @@ verfahren({
     /* zwei ueberlappende Bleche */
     rect(g, 110, cy-dick, 420, dick, C.aF, C.aS, {sw:1.8});
     rect(g, 110, cy, 420, dick, C.bF, C.bS, {sw:1.8});
-    txt(g, 116, cy-dick-10, "Blech A", {fill:C.aS, size:12});
+    txt(g, 116, cy-10, "Blech A", {fill:C.aS, size:12});
     txt(g, 116, cy+dick+20, "Blech B", {fill:C.bS, size:12});
 
     /* Elektroden */
-    pfad(g, "M"+(cx-22)+","+(cy-dick-86-weg)+" L"+(cx+22)+","+(cy-dick-86-weg)+
-            " L"+(cx+13)+","+(cy-dick-2-weg)+" L"+(cx-13)+","+(cy-dick-2-weg)+" Z",
+    pfad(g, "M"+(cx-22)+","+(cy-86-weg)+" L"+(cx+22)+","+(cy-86-weg)+
+            " L"+(cx+13)+","+(cy-2-weg)+" L"+(cx-13)+","+(cy-2-weg)+" Z",
       C.eF, C.eS, {sw:1.6});
     pfad(g, "M"+(cx-22)+","+(cy+dick+86+weg)+" L"+(cx+22)+","+(cy+dick+86+weg)+
             " L"+(cx+13)+","+(cy+dick+2+weg)+" L"+(cx-13)+","+(cy+dick+2+weg)+" Z",
       C.eF, C.eS, {sw:1.6});
-    txt(g, cx+30, cy-dick-60-weg, "Elektrode", {fill:C.eS, size:12});
+    txt(g, cx+30, cy-60-weg, "Elektrode", {fill:C.eS, size:12});
 
     if(zu > 0.1 || halten > 0.05){
-      kraftpfeil(g, cx-40, cy-dick-108-weg, cx-40, cy-dick-88-weg, "#dc2626", 3);
+      kraftpfeil(g, cx-40, cy-108-weg, cx-40, cy-88-weg, "#dc2626", 3);
       kraftpfeil(g, cx-40, cy+dick+108+weg, cx-40, cy+dick+88+weg, "#dc2626", 3);
-      txt(g, cx-48, cy-dick-98-weg, "Elektrodenkraft", {anchor:"end", fill:"#dc2626", size:11.5});
+      txt(g, cx-48, cy-98-weg, "Elektrodenkraft", {anchor:"end", fill:"#dc2626", size:11.5});
     }
     if(strom > 0.05){
       /* Stromweg */
-      linie(g, cx, cy-dick-70, cx, cy+dick+70, "#f59e0b", 3, {dash:"7 5", opacity:0.8});
+      linie(g, cx, cy-70, cx, cy+dick+70, "#f59e0b", 3, {dash:"7 5", opacity:0.8});
       txt(g, cx+30, cy-dick+20, "Strom", {fill:"#b45309", size:11.5});
       /* Linse waechst zwischen den Blechen */
       var r = 4 + 16*strom;

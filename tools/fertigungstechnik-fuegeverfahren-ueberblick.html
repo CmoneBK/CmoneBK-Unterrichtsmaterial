@@ -996,11 +996,22 @@ verfahren({
     [-1, 1].forEach(function(v){
       linie(g, cx+v*spalt/2, cy+wr-4, cx+v*spalt/2, by2, kante(C.bS), breit());
     });
-    /* Klemmschraube quer zum Schlitz, im Auge. Sie wird nicht geschnitten.
-       Beim Anziehen wandert sie tiefer hinein: Anfangs steht der Kopf von der
-       Backe ab, am Ende liegt er an. Stand sie still, waere nicht zu sehen,
-       dass hier ueberhaupt jemand dreht. */
+    /* Die Schraube steckt in einem Durchgangsloch im linken Backen und ist
+       in ein Gewinde im rechten geschraubt. Ohne diese beiden Loecher zoege
+       sie nichts zusammen - sie laege nur auf dem Auge. */
     var by = cy + nr + 12, rds = 8, luft = 14 * (1 - zieh);
+    var rL = rds + 2.5, rK = rds * 0.82;
+    var xSchlitz = cx + spalt / 2;
+    [-1, 1].forEach(function(v){
+      /* Durchgangsloch: Wand im linken Backen. */
+      linie(g, cx - ab, by + v * rL, cx - spalt / 2, by + v * rL,
+        kante(C.bS), breit());
+      /* Innengewinde im rechten Backen: Kern breit, Nenndurchmesser schmal.
+         Sichtbar bleibt, was die Schraube nicht verdeckt. */
+      linie(g, xSchlitz, by + v * rK, cx + ab, by + v * rK, kante(C.bS), breit());
+      linie(g, xSchlitz, by + v * rds, cx + ab, by + v * rds,
+        kante(C.bS), schmal());
+    });
     schaftWaagerecht(g, by, rds, cx-ab+10-luft, cx+ab-6-luft, 3);
     gewindeWaagerecht(g, by, rds, cx+6-luft, cx+ab-6-luft, 3);
     sechskantAnsicht(g, {waagerecht:true, achse:by, von:cx-ab+10-luft,
@@ -1061,56 +1072,51 @@ verfahren({
     rect(g, lx, cy+wr+rb, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
     txt(g, lx+6, cy-nr-8, "Nabe", {fill:C.bS, size:12});
 
-    /* Zwei Kegelringe, die sich ineinander schieben: der aeussere innen
-       kegelig, der innere aussen kegelig. Beim Anziehen keilen sie sich und
-       druecken nach aussen gegen die Nabe und nach innen gegen die Welle.
-       Beide brauchen verschiedene Schraffuren - mit derselben verschmolzen
-       sie zu einem Block, in dem nur eine Diagonale stand. */
+    /* Ein Innenring mit Doppelkegel auf der Welle, darueber zwei Aussenringe
+       mit dem Gegenkegel - einer von links, einer von rechts. Die
+       Spannschrauben ziehen die beiden Aussenringe gegeneinander; dabei
+       laufen sie auf dem Kegel nach aussen. */
+    var links = lx + 16, rechts = rx - 16, mitte = (links + rechts) / 2;
+    var mA = "#bfdbfe", mI = "#cbd5e1";       /* Aussen- und Innenring */
     [-1,1].forEach(function(v){
       var yA = cy + v*(wr + 2), yB = cy + v*(wr + rb);
-      var links = lx + 20 + weg, rechts = rx - 30;
-      /* Die Kegelflaeche laeuft ueber die ganze Laenge: links duenn, rechts
-         dick beim aeusseren Ring, umgekehrt beim inneren. */
-      /* Die Kegelflaeche laeuft von der Nabenseite links zur Wellenseite
-         rechts - links ist der Innenring dick, rechts der Aussenring. */
-      var kl = yB - v*6, kr = yA + v*6;
-      pfad(g, "M"+links+","+yB+" L"+rechts+","+yB+
-              " L"+rechts+","+kr+" L"+links+","+kl+" Z",
-        "#bfdbfe", C.eS, {sw:1.6});
-      pfad(g, "M"+links+","+kl+" L"+rechts+","+kr+
-              " L"+rechts+","+yA+" L"+links+","+yA+" Z",
-        "#cbd5e1", C.eS, {sw:1.6});
+      var flach = yA + v*rb*0.12, spitz = yA + v*rb*0.6;
+      /* Innenring: liegt auf der Welle und laeuft zu beiden Seiten kegelig
+         aus - in der Mitte am dicksten. */
+      pfad(g, "M"+links+","+yA+" L"+rechts+","+yA+" L"+rechts+","+flach+
+              " L"+mitte+","+spitz+" L"+links+","+flach+" Z", mI, C.eS, {sw:1.6});
+      /* Die beiden Aussenringe, beim Anziehen aufeinander zu. */
+      /* Angezogen ruecken die beiden Aussenringe zusammen - anfangs steht
+         der Doppelkegel zwischen ihnen noch frei. */
+      var spalt = 26 * (1 - zieh);
+      pfad(g, "M"+links+","+flach+" L"+(mitte-spalt)+","+spitz+
+              " L"+(mitte-spalt)+","+yB+" L"+links+","+yB+" Z", mA, C.eS, {sw:1.6});
+      pfad(g, "M"+rechts+","+flach+" L"+(mitte+spalt)+","+spitz+
+              " L"+(mitte+spalt)+","+yB+" L"+rechts+","+yB+" Z", mA, C.eS, {sw:1.6});
     });
     txt(g, rx+8, cy-wr-16, "Kegelringe", {fill:C.eS, size:12});
 
-    /* Die Spannschraube liegt in den Ringen und zieht sie axial zusammen.
-       Vorher standen hier zwei Rechtecke, in denen niemand eine Schraube
-       erkennt - und damit blieb offen, was den Satz eigentlich spannt. */
-    var sLinks = lx + 20 + weg;               /* linke Stirn der Ringe */
-    var fL = sLinks - 46;                     /* Flansch des Aussenrings */
+    /* Die Spannschraube liegt in den beiden Aussenringen: Kopf am linken,
+       Gewinde im rechten. Angezogen zieht sie die beiden gegeneinander -
+       das ist die Kraft, die alles Weitere ausloest. */
     [-1,1].forEach(function(v){
-      var yA = cy + v*(wr + 2), yB = cy + v*(wr + rb);
-      /* Der Aussenring hat links einen Flansch. Dort sitzen die Schrauben -
-         das ist der Punkt, an dem sie angreifen. Ohne ihn stand die Schraube
-         in den Ringen, ohne irgendwo zu ziehen. */
-      pfad(g, "M"+fL+","+yA+" L"+sLinks+","+yA+" L"+sLinks+","+yB+
-              " L"+fL+","+yB+" Z", "#bfdbfe", C.eS, {sw:1.6});
-      /* Die Schraube steckt im Flansch und ist in den Innenring geschraubt.
-         Beim Anziehen zieht sie beide Ringe axial ineinander. */
-      var ys = cy + v*(wr + rb/2);
-      schaftWaagerecht(g, ys, 8, fL, sLinks + 34, 3);
-      gewindeWaagerecht(g, ys, 8, sLinks, sLinks + 34, 3);
-      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:fL,
-        bis:fL - 16, sw:26, faseAn:"bis"});
+      /* Die Schraube liegt im dicken Teil der Aussenringe, nahe der Nabe -
+         weiter innen deckte ihre Flaeche den Kegel zu. */
+      var ys = cy + v*(wr + rb*0.82);
+      schaftWaagerecht(g, ys, 6, links + 8, rechts - 8, 3);
+      gewindeWaagerecht(g, ys, 6, mitte + 30, rechts - 8, 3);
+      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:links + 8,
+        bis:links - 8, sw:20, faseAn:"bis"});
     });
+    if(zieh > 0.03){
+      kraftpfeil(g, links - 40, cy - nr + 18, links - 6, cy - nr + 18, "#1d4ed8", 2.6);
+      kraftpfeil(g, links - 40, cy + nr - 18, links - 6, cy + nr - 18, "#1d4ed8", 2.6);
+    }
     txt(g, lx - 44, cy + nr + 18,
-      "Die Schraube sitzt im Flansch des Außenrings und ist in den Innenring "
-      + "geschraubt – sie zieht beide ineinander",
+      "Die Spannschrauben ziehen die beiden Außenringe gegeneinander – "
+      + "auf dem Doppelkegel laufen sie nach außen",
       {anchor:"start", fill:C.eS, size:11.5});
     if(zieh > 0.03){
-      kraftpfeil(g, fL-40, cy-nr+18, fL-6, cy-nr+18, "#1d4ed8", 2.6);
-      kraftpfeil(g, fL-40, cy+nr-18, fL-6, cy+nr-18, "#1d4ed8", 2.6);
-
       [-1,1].forEach(function(v){
         for(var i=0;i<3;i++){
           var x = lx+110+i*90;
@@ -1494,10 +1500,17 @@ verfahren({
     var rL = r + 4;
     function lasche(x, y, w, h, fuell, farbe){
       rect(g, x, y, w, h, fuell, "none");
+      /* In der Bohrung ist kein Werkstoff - dort darf auch keine Schraffur
+         stehen bleiben. */
+      rect(g, cx - rL, y, 2 * rL, h, "#ffffff", "none");
       var k = kante(farbe);
+      /* Die Stirnflaeche laeuft bis an den Bolzen, nicht nur bis zur
+         Lochwand: Durch das Spiel sieht man auf die Wand der Bohrung
+         dahinter, und wo die auf die Stirnflaeche trifft, liegt eine Kante.
+         Verdeckt wird sie erst vom Bolzen. */
       [y, y + h].forEach(function(yy){
-        linie(g, x, yy, cx - rL, yy, k, breit());
-        linie(g, cx + rL, yy, x + w, yy, k, breit());
+        linie(g, x, yy, cx - r, yy, k, breit());
+        linie(g, cx + r, yy, x + w, yy, k, breit());
       });
       linie(g, x, y, x, y + h, k, breit());
       linie(g, x + w, y, x + w, y + h, k, breit());
@@ -2406,9 +2419,17 @@ function prinzipbilder(){
   var g = ns("g", {}); svg.appendChild(g);
   rect(g, lx, cy-d, rx-lx, d, C.aF, C.aS, {sw:1.8});
   rect(g, lx, cy, rx-lx, d, C.bF, C.bS, {sw:1.8});
-  rect(g, 148, cy-d-16, 24, 2*d+16, C.eF, C.eS, {sw:1.6});
-  kraftpfeil(g, 160, cy-d-52, 160, cy-d-22, "#1d4ed8", 3);
-  kraftpfeil(g, 160, cy+d+52, 160, cy+d+22, "#1d4ed8", 3);
+  /* Dieselbe Schraube wie in den Verfahrensbildern - ein blaues Rechteck
+     sagt nicht, dass hier etwas angezogen wird. Farbig bleibt sie: eine
+     Prinzipskizze ist keine technische Zeichnung. */
+  schaftSenkrecht(g, 160, 11, cy-d-2, cy+d+26, 4);
+  gewindeSenkrecht(g, 160, 11, cy+d-4, cy+d+26, 4);
+  sechskantAnsicht(g, {achse:160, von:cy-d-2, bis:cy-d-20, sw:34,
+    faseAn:"bis"});
+  sechskantAnsicht(g, {achse:160, von:cy+d+4, bis:cy+d+20, sw:34,
+    faseAn:"bis"});
+  kraftpfeil(g, 160, cy-d-56, 160, cy-d-32, "#1d4ed8", 3);
+  kraftpfeil(g, 160, cy+d+56, 160, cy+d+38, "#1d4ed8", 3);
   txt(g, 176, cy-d-36, "Kraft", {fill:"#1d4ed8", size:13});
   kraftpfeil(g, 62, cy-10, 118, cy-10, "#0f766e", 2.6);
   txt(g, 62, cy-18, "Reibung", {fill:"#0f766e", size:13});
