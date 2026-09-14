@@ -534,6 +534,111 @@ function mittellinien(g, segmente){
     linie(g, a[0], a[1], a[2], a[3], NORM_KANTE, NORM_SCHMAL, {dash:"20 3 5 3"});
   });
 }
+/* Eckenmass aus der Schluesselweite. Der Sechskant wird ueber Ecke
+   gezeichnet; der Umriss ist deshalb e = 2*s/Wurzel(3), nicht s. */
+function eckenmass(s){ return s * 2 / Math.sqrt(3); }
+
+/* Welche Farbe und Breite hat eine Kante gerade? In der Normdarstellung
+   schwarz, sonst die Farbe des Teils. linie() und randlose Pfade gehen an
+   normFassung() vorbei - die greift nur, wo eine Flaeche gefuellt wird. */
+function kante(farbe){ return normModus() ? NORM_KANTE : farbe; }
+function breit(){ return normModus() ? NORM_BREIT : 1.8; }
+function schmal(){ return normModus() ? NORM_SCHMAL : 1; }
+
+/* Sechskant in Ansicht, ueber Ecke gesehen - so wird er normgerecht
+   dargestellt. Sichtbar sind drei Flaechen, getrennt durch zwei Kanten bei
+   e/4. Die Fase am freien Ende ist ein Kegel; wo er die drei Flaechen
+   schneidet, entstehen Hyperbeln, die nach Norm als Kreisboegen gezeichnet
+   werden. Die Schluesselweite liegt quer zur Zeichenebene und ist in dieser
+   Ansicht nicht messbar.
+   o = {achse, von, bis, sw, faseAn:"von"|"bis", waagerecht, fuell, strich} */
+function sechskantAnsicht(g, o){
+  var rS = o.sw / 2, rE = eckenmass(o.sw) / 2;
+  var laenge = Math.abs(o.bis - o.von);
+  var tief = Math.max(3, Math.min((rE - rS) * Math.tan(Math.PI / 6), laenge * 0.4));
+  var anFase = (o.faseAn === "bis") ? o.bis : o.von;
+  var anderes = (o.faseAn === "bis") ? o.von : o.bis;
+  var richtung = (anderes > anFase) ? 1 : -1;
+  var qT = anFase + richtung * tief;          /* Ende der Fase */
+  var qS = anFase - richtung * tief;          /* Steuerpunkt der Boegen */
+  var strich = kante(o.strich || C.eS);
+
+  function pt(q, r){
+    return o.waagerecht ? (q + "," + (o.achse + r)) : ((o.achse + r) + "," + q);
+  }
+  /* Umriss als gefuellte Flaeche: Sie deckt, was dahinter liegt, und die
+     Auflagekante laeuft durch - die Flaeche steht senkrecht zur Achse und
+     wird vom Schaft nicht verdeckt. */
+  pfad(g, "M" + pt(anFase, -rS) + " L" + pt(anFase, rS) +
+    " L" + pt(qT, rE) + " L" + pt(anderes, rE) +
+    " L" + pt(anderes, -rE) + " L" + pt(qT, -rE) + " Z",
+    o.fuell || C.eF, o.strich || C.eS, {sw:1.8});
+  /* Die zwei Kanten zwischen den drei sichtbaren Flaechen. */
+  [-1, 1].forEach(function(v){
+    pfad(g, "M" + pt(qT, v * rE / 2) + " L" + pt(anderes, v * rE / 2),
+      "none", strich, {sw:breit()});
+  });
+  /* Die drei Boegen der Fase. */
+  pfad(g, "M" + pt(qT, -rE / 2) + " Q" + pt(qS, 0) + " " + pt(qT, rE / 2),
+    "none", strich, {sw:breit()});
+  [-1, 1].forEach(function(v){
+    pfad(g, "M" + pt(qT, v * rE / 2) + " Q" + pt(qS, v * rE * 0.75) + " "
+      + pt(qT, v * rE), "none", strich, {sw:breit()});
+  });
+  return {rS:rS, rE:rE, tief:tief};
+}
+
+/* Schaft einer Schraube, Achse senkrecht, mit Fase am unteren Ende (Kuppe).
+   Quer zur Achse hat der Zylinder keine Kante - nur die beiden Mantellinien,
+   die Fase und die Stirnflaeche dazwischen. */
+function schaftSenkrecht(g, cx, rd, oben, unten, kuppe, fuell){
+  var f = kuppe || 0, strich = kante(C.eS);
+  pfad(g, "M" + (cx - rd) + "," + oben + " L" + (cx + rd) + "," + oben +
+    " L" + (cx + rd) + "," + (unten - f) + " L" + (cx + rd - f) + "," + unten +
+    " L" + (cx - rd + f) + "," + unten + " L" + (cx - rd) + "," + (unten - f) + " Z",
+    fuell || C.eF, "none");
+  [-1, 1].forEach(function(v){
+    pfad(g, "M" + (cx + v * rd) + "," + oben + " L" + (cx + v * rd) + ","
+      + (unten - f) + " L" + (cx + v * (rd - f)) + "," + unten,
+      "none", strich, {sw:breit()});
+  });
+  if(f > 0) linie(g, cx - rd + f, unten, cx + rd - f, unten, strich, breit());
+}
+
+/* Aussengewinde nach DIN ISO 6410: Aussendurchmesser breit (das ist schon
+   die Mantellinie des Schafts), Kerndurchmesser schmal, und das Gewindeende
+   eine breite Vollinie quer zur Achse. */
+function gewindeSenkrecht(g, cx, rd, vonY, bisY, kuppe){
+  var r3 = rd * 0.82, f = kuppe || 0, strich = kante(C.eS);
+  [-1, 1].forEach(function(v){
+    linie(g, cx + v * r3, vonY, cx + v * r3, bisY - f + (rd - r3),
+      strich, schmal());
+  });
+  linie(g, cx - rd, vonY, cx + rd, vonY, strich, breit());
+}
+
+/* Dieselben beiden Bausteine mit waagerechter Achse. */
+function schaftWaagerecht(g, cy, rd, links, rechts, kuppe){
+  var f = kuppe || 0, strich = kante(C.eS);
+  pfad(g, "M" + links + "," + (cy - rd) + " L" + (rechts - f) + "," + (cy - rd) +
+    " L" + rechts + "," + (cy - rd + f) + " L" + rechts + "," + (cy + rd - f) +
+    " L" + (rechts - f) + "," + (cy + rd) + " L" + links + "," + (cy + rd) + " Z",
+    C.eF, "none");
+  [-1, 1].forEach(function(v){
+    pfad(g, "M" + links + "," + (cy + v * rd) + " L" + (rechts - f) + ","
+      + (cy + v * rd) + " L" + rechts + "," + (cy + v * (rd - f)),
+      "none", strich, {sw:breit()});
+  });
+  if(f > 0) linie(g, rechts, cy - rd + f, rechts, cy + rd - f, strich, breit());
+}
+function gewindeWaagerecht(g, cy, rd, vonX, bisX, kuppe){
+  var r3 = rd * 0.82, f = kuppe || 0, strich = kante(C.eS);
+  [-1, 1].forEach(function(v){
+    linie(g, vonX, cy + v * r3, bisX - f + (rd - r3), cy + v * r3, strich, schmal());
+  });
+  linie(g, vonX, cy - rd, vonX, cy + rd, strich, breit());
+}
+
 function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild); }
 function txt(g, x, y, s, opt){
   var o = opt || {};
@@ -750,9 +855,16 @@ verfahren({
     }
     rect(g, lx, y1o, breite, y1u-y1o, C.aF, C.aS);
     rect(g, lx, y2o, breite, y2u-y2o, C.bF, C.bS);
-    rect(g, cx-24, oben-19, 48, 19, C.eF, C.eS);
-    rect(g, cx-9, oben, 18, yEnde-oben, C.eF, C.eS);
-    rect(g, cx-21, y2u, 42, 18, C.eF, C.eS);
+    /* Die Schraube: Sechskant ueber Ecke an Kopf und Mutter, Gewinde nach
+       DIN ISO 6410, Kuppe am Ende. Drei Rechtecke waren es vorher - in der
+       Normdarstellung wurde daraus dreimal Weiss mit schwarzem Rand. */
+    var rd = 9, sw = 36, kuppe = 3.5;
+    schaftSenkrecht(g, cx, rd, oben, yEnde, kuppe);
+    /* Das Gewinde beginnt im oberen Bauteil - so laeuft die Mutter beim
+       Anziehen die ganze Strecke auf Gewinde. */
+    gewindeSenkrecht(g, cx, rd, y1o + 12, yEnde, kuppe);
+    sechskantAnsicht(g, {achse:cx, von:oben, bis:oben-19, sw:sw, faseAn:"bis"});
+    sechskantAnsicht(g, {achse:cx, von:y2u, bis:y2u+18, sw:sw, faseAn:"bis"});
 
     if(schliessen < 1){
       pfad(g, "M"+(cx+30)+","+(y2u+4)+" A 22 22 0 1 1 "+(cx+26)+","+(y2u+21),
@@ -870,19 +982,30 @@ verfahren({
     var cx = 300, cy = 145, wr = 40, nr = 78;
     var spalt = 14 * (1 - zieh) + 3;
 
-    g.appendChild(ns("circle", {cx:cx, cy:cy, r:nr, fill:C.bF, stroke:C.bS, "stroke-width":1.8}));
+    /* Nabe und Auge sind ein Bauteil - also ein Umriss. Vorher schwebte die
+       Schraube als drei Rechtecke unter einem Kreis. */
+    var ab = 54, yk = Math.sqrt(nr*nr - ab*ab), by2 = cy + nr + 34;
+    pfad(g, "M" + (cx-ab) + "," + (cy+yk) + " L" + (cx-ab) + "," + by2 +
+      " L" + (cx+ab) + "," + by2 + " L" + (cx+ab) + "," + (cy+yk) +
+      " A " + nr + " " + nr + " 0 1 0 " + (cx-ab) + "," + (cy+yk) + " Z",
+      C.bF, C.bS, {sw:1.8});
     g.appendChild(ns("circle", {cx:cx, cy:cy, r:wr, fill:"#e2e8f0", stroke:"#475569", "stroke-width":1.6}));
-    /* Schlitz nach unten */
-    rect(g, cx-spalt/2, cy+wr-4, spalt, nr-wr+22, "#ffffff", C.bS, {sw:1.4});
-    /* Klemmschraube quer durch die beiden Backen */
-    var by = cy + nr - 6;
-    rect(g, cx-64, by, 128, 13, C.eF, C.eS, {sw:1.4});
-    rect(g, cx-76, by-3, 14, 19, C.eF, C.eS, {sw:1.4});
-    rect(g, cx+62, by-3, 14, 19, C.eF, C.eS, {sw:1.4});
+    /* Der Schlitz laeuft von der Bohrung durch das Auge nach aussen. Er macht
+       die Nabe federnd - ohne ihn klemmt nichts. */
+    rect(g, cx-spalt/2, cy+wr-4, spalt, by2-(cy+wr-4), "#ffffff", "none");
+    [-1, 1].forEach(function(v){
+      linie(g, cx+v*spalt/2, cy+wr-4, cx+v*spalt/2, by2, kante(C.bS), breit());
+    });
+    /* Klemmschraube quer zum Schlitz, im Auge. Sie wird nicht geschnitten. */
+    var by = cy + nr + 12, rds = 8, kb = 13;
+    schaftWaagerecht(g, by, rds, cx-ab+10, cx+ab-6, 3);
+    gewindeWaagerecht(g, by, rds, cx+6, cx+ab-6, 3);
+    sechskantAnsicht(g, {waagerecht:true, achse:by, von:cx-ab+10,
+      bis:cx-ab-4, sw:30, faseAn:"bis"});
 
     txt(g, cx+nr+14, cy-nr+16, "geschlitzte Nabe", {fill:C.bS, size:12});
     txt(g, cx+nr+14, cy+4, "Welle", {fill:"#475569", size:12});
-    txt(g, cx+nr+14, by+12, "Klemmschraube", {fill:C.eS, size:12});
+    txt(g, cx+ab+12, by+4, "Klemmschraube", {fill:C.eS, size:12});
 
     if(zieh > 0.05){
       [[-1,0],[1,0],[0,-1]].forEach(function(v){
@@ -895,17 +1018,18 @@ verfahren({
       });
       txt(g, cx-nr-14, cy-nr-6, zWort("flaechenpressung") + " rundum",
         {anchor:"end", fill:"#dc2626", size:12});
-      kraftpfeil(g, cx-92, by+7, cx-70, by+7, "#1d4ed8", 2.6);
-      kraftpfeil(g, cx+92, by+7, cx+70, by+7, "#1d4ed8", 2.6);
+      kraftpfeil(g, cx-ab-34, by, cx-ab-10, by, "#1d4ed8", 2.6);
+      kraftpfeil(g, cx+ab+34, by, cx+ab+10, by, "#1d4ed8", 2.6);
     }
-    txt(g, cx-nr-14, cy+nr+30, "Schlitzbreite " + (spalt > 8 ? "offen" : "zusammengezogen"),
+    txt(g, cx-ab-16, by2+16, "Schlitzbreite " + (spalt > 8 ? "offen" : "zusammengezogen"),
       {anchor:"end", fill:"#64748b", size:11.5, weight:400});
   }
 });
 
 verfahren({
   id:"spannsatz",
-  vollteile:["#e2e8f0"],
+  /* Welle und Spannschraube werden laengs nicht geschnitten. */
+  vollteile:["#e2e8f0", "#dbeafe"],
   achse:[[96,145,544,145]], gruppe:"kraft", name:"Kegelspannsatz",
   prinzip:"Zwei Kegelringe werden axial zusammengezogen. Dabei weiten sie sich nach außen und " +
           "schrumpfen nach innen – sie klemmen Welle und Nabe gleichzeitig.",
@@ -922,36 +1046,58 @@ verfahren({
   einsatz:"Riemenscheiben, Kupplungen, Antriebsräder",
   zeichnen:function(g, t){
     var zieh = stufe(t, 0.35, 0.85);
-    var cy = 145, wr = 30, nr = 96;
+    var cy = 145, wr = 30, nr = 112, rb = 46;   /* rb = Hoehe der Ringe */
     var lx = 140, rx = 500;
     var weg = 26 * zieh;
 
     rect(g, lx-40, cy-wr, (rx+40)-(lx-40), 2*wr, "#e2e8f0", "#475569");
     txt(g, lx-36, cy-wr-8, "Welle", {fill:"#475569", size:12});
-    rect(g, lx, cy-nr, rx-lx, nr-wr-30, C.bF, C.bS, {sw:1.8});
-    rect(g, lx, cy+wr+30, rx-lx, nr-wr-30, C.bF, C.bS, {sw:1.8});
+    rect(g, lx, cy-nr, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
+    rect(g, lx, cy+wr+rb, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
     txt(g, lx+6, cy-nr-8, "Nabe", {fill:C.bS, size:12});
 
-    /* Kegelringe: aussen und innen, gegenlaeufig */
+    /* Zwei Kegelringe, die sich ineinander schieben: der aeussere innen
+       kegelig, der innere aussen kegelig. Beim Anziehen keilen sie sich und
+       druecken nach aussen gegen die Nabe und nach innen gegen die Welle.
+       Beide brauchen verschiedene Schraffuren - mit derselben verschmolzen
+       sie zu einem Block, in dem nur eine Diagonale stand. */
     [-1,1].forEach(function(v){
-      var yA = cy + v*(wr + 2), yB = cy + v*(wr + 30);
-      var aus = 6 * zieh;
-      pfad(g, "M"+(lx+40+weg)+","+yA+" L"+(rx-40)+","+yA+
-              " L"+(rx-40)+","+(yB+v*aus)+" L"+(lx+40+weg)+","+(yB+v*aus)+" Z",
-        C.eF, C.eS, {sw:1.6});
-      pfad(g, "M"+(lx+30)+","+(yB+v*aus)+" L"+(rx-70-weg)+","+(yB+v*aus)+
-              " L"+(rx-40-weg)+","+yA+" L"+(lx+30)+","+yA+" Z",
-        "#bfdbfe", C.eS, {sw:1.4, opacity:0.9});
+      var yA = cy + v*(wr + 2), yB = cy + v*(wr + rb);
+      var links = lx + 20 + weg, rechts = rx - 30;
+      /* Die Kegelflaeche laeuft ueber die ganze Laenge: links duenn, rechts
+         dick beim aeusseren Ring, umgekehrt beim inneren. */
+      /* Die Kegelflaeche laeuft von der Nabenseite links zur Wellenseite
+         rechts - links ist der Innenring dick, rechts der Aussenring. */
+      var kl = yB - v*6, kr = yA + v*6;
+      pfad(g, "M"+links+","+yB+" L"+rechts+","+yB+
+              " L"+rechts+","+kr+" L"+links+","+kl+" Z",
+        "#bfdbfe", C.eS, {sw:1.6});
+      pfad(g, "M"+links+","+kl+" L"+rechts+","+kr+
+              " L"+rechts+","+yA+" L"+links+","+yA+" Z",
+        "#cbd5e1", C.eS, {sw:1.6});
     });
     txt(g, rx+8, cy-wr-16, "Kegelringe", {fill:C.eS, size:12});
 
-    /* Spannschrauben */
-    rect(g, lx+10, cy-wr-26, 24, 12, C.eF, C.eS, {sw:1.3});
-    rect(g, lx+10, cy+wr+14, 24, 12, C.eF, C.eS, {sw:1.3});
+    /* Die Spannschraube liegt in den Ringen und zieht sie axial zusammen.
+       Vorher standen hier zwei Rechtecke, in denen niemand eine Schraube
+       erkennt - und damit blieb offen, was den Satz eigentlich spannt. */
+    var sLinks = lx + 20 + weg;               /* linke Stirn der Ringe */
+    [-1,1].forEach(function(v){
+      var ys = cy + v*(wr + 14);
+      /* Nur der Kopf und ein Stueck Schaft: Der Rest der Schraube steckt in
+         den Ringen und ist nicht zu sehen. Zeichnete man sie ganz, deckte
+         ihre Flaeche die Kegelflaeche zu, um die es hier geht. */
+      schaftWaagerecht(g, ys, 8, sLinks, sLinks + 38, 0);
+      gewindeWaagerecht(g, ys, 8, sLinks + 14, sLinks + 38, 0);
+      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:sLinks,
+        bis:sLinks - 16, sw:26, faseAn:"bis"});
+    });
+    txt(g, lx - 44, cy + nr + 18, "Spannschrauben ziehen die Ringe axial zusammen",
+      {anchor:"start", fill:C.eS, size:11.5});
     if(zieh > 0.03){
-      kraftpfeil(g, lx+40, cy-wr-20, lx+40+weg+18, cy-wr-20, "#1d4ed8", 2.6);
-      kraftpfeil(g, lx+40, cy+wr+20, lx+40+weg+18, cy+wr+20, "#1d4ed8", 2.6);
-      txt(g, lx+44, cy-wr-30, "axial spannen", {fill:C.eS, size:11.5});
+      kraftpfeil(g, sLinks-34, cy-wr-24, sLinks+6, cy-wr-24, "#1d4ed8", 2.6);
+      kraftpfeil(g, sLinks-34, cy+wr+24, sLinks+6, cy+wr+24, "#1d4ed8", 2.6);
+
       [-1,1].forEach(function(v){
         for(var i=0;i<3;i++){
           var x = lx+110+i*90;
@@ -1303,7 +1449,7 @@ verfahren({
 verfahren({
   id:"bolzen",
   vollteile:["#dbeafe"],
-  achse:[[44,150,556,150],[300,98,300,264]], gruppe:"form", name:"Bolzen mit Splint",
+  achse:[[300,36,300,272]], gruppe:"form", name:"Bolzen mit Splint",
   prinzip:"Ein Bolzen verbindet zwei Laschen gelenkig. Ein Splint sichert ihn gegen Herausfallen.",
   phasen:[
     {ab:0,    text:"Zwei Laschen mit fluchtenden Bohrungen."},
@@ -1319,32 +1465,54 @@ verfahren({
   einsatz:"Anhängerkupplungen, Hydraulikzylinder, Landmaschinen",
   zeichnen:function(g, t){
     var stecken = stufe(t, 0.3, 0.58), splint = stufe(t, 0.62, 0.82), last = stufe(t, 0.85, 1);
-    var cy = 150, cx = 300, r = 20;
+    /* Schnitt laengs der Bolzenachse. Nur so sieht man die beiden
+       Scherflaechen, von denen der Text spricht - in der Draufsicht stuende
+       der Bolzen senkrecht auf der Zeichenebene und waere ein Kreis. */
+    var cx = 300, r = 18;
+    var gO = 62, fuge1 = 104, fuge2 = 192, gU = 234;
 
-    pfad(g, "M60,"+(cy-26)+" L"+(cx-6)+","+(cy-26)+" A 26 26 0 0 1 "+(cx-6)+","+(cy+26)+
-            " L60,"+(cy+26)+" Z", C.aF, C.aS, {sw:1.8});
-    pfad(g, "M540,"+(cy-26)+" L"+(cx+6)+","+(cy-26)+" A 26 26 0 0 0 "+(cx+6)+","+(cy+26)+
-            " L540,"+(cy+26)+" Z", C.bF, C.bS, {sw:1.8});
-    g.appendChild(ns("circle", {cx:cx, cy:cy, r:r, fill:"#ffffff", stroke:"#475569",
-      "stroke-width":1.4}));
-    txt(g, 66, cy-36, "Lasche A", {fill:C.aS, size:12});
-    txt(g, 470, cy-36, "Lasche B", {fill:C.bS, size:12});
+    /* Gabel und Lasche greifen ineinander: die Gabel von links mit zwei
+       Schenkeln, die Lasche von rechts dazwischen. Beide Schenkel gehoeren
+       zum selben Teil und bekommen deshalb dieselbe Schraffur. */
+    rect(g, 58, gO, 288, fuge1-gO, C.aF, C.aS, {sw:1.8});
+    rect(g, 58, fuge2, 288, gU-fuge2, C.aF, C.aS, {sw:1.8});
+    rect(g, 254, fuge1, 288, fuge2-fuge1, C.bF, C.bS, {sw:1.8});
+    txt(g, 64, gO-10, "Gabel (Lasche A)", {fill:C.aS, size:12});
+    txt(g, 470, gU+16, "Lasche B", {fill:C.bS, size:12});
 
-    var by = cy - 120 + stecken*120;
-    rect(g, cx-r+2, by-16, 2*r-4, 116, C.eF, C.eS, {sw:1.8, rx:3});
-    rect(g, cx-r-8, by-30, 2*r+16, 15, C.eF, C.eS, {sw:1.8, rx:2});
-    txt(g, cx+r+14, by-20, "Bolzen", {fill:C.eS, size:12});
+    /* Der Bolzen kommt von oben herein. Er wird laengs nicht geschnitten. */
+    var by = gO - 150 * (1 - stecken);
+    schaftSenkrecht(g, cx, r, by, by + 196, 4);
+    rect(g, cx-r-10, by-19, 2*r+20, 19, C.eF, C.eS, {sw:1.8});
+    txt(g, cx+r+16, by-6, "Bolzen", {fill:C.eS, size:12});
 
     if(splint > 0.05){
-      var a = 26 * splint;
-      linie(g, cx-2, by+92, cx-2-a, by+92+a*0.8, "#b45309", 2.6, {opacity:splint});
-      linie(g, cx+2, by+92, cx+2+a, by+92+a*0.8, "#b45309", 2.6, {opacity:splint});
-      txt(g, cx+34, by+108, "Splint", {fill:"#b45309", size:12, opacity:splint});
+      /* Splint: Oese oben, zwei aufgebogene Schenkel unten. Er steckt in
+         einer Querbohrung dicht unter der Gabel. */
+      /* Der Splint sitzt unter der Gabel, nicht in ihr - sonst koennte man
+         ihn weder stecken noch aufbiegen. */
+      var sy = by + 182, a = 26 * splint, strich = kante("#b45309");
+      [-1, 1].forEach(function(v){
+        linie(g, cx + v*4, sy - 14, cx + v*4, sy + 6, strich, schmal(),
+          {opacity:splint});
+        linie(g, cx + v*4, sy + 6, cx + v*(4 + a), sy + 6 + a*0.7, strich,
+          schmal(), {opacity:splint});
+      });
+      pfad(g, "M"+(cx-4)+","+(sy-14)+" A 6 8 0 0 1 "+(cx+4)+","+(sy-14),
+        "none", strich, {sw:schmal(), opacity:splint});
+      txt(g, cx+34, sy+22, "Splint", {fill:"#b45309", size:12, opacity:splint});
     }
     if(last > 0.05){
-      kraftpfeil(g, 40, cy, 66, cy, "#7c3aed", 3);
-      kraftpfeil(g, 560, cy, 534, cy, "#7c3aed", 3);
-      txt(g, 60, cy+64, "Der Bolzen wird auf Abscheren belastet – hier zweischnittig",
+      kraftpfeil(g, 40, (gO+fuge1)/2, 66, (gO+fuge1)/2, "#7c3aed", 3);
+      kraftpfeil(g, 40, (fuge2+gU)/2, 66, (fuge2+gU)/2, "#7c3aed", 3);
+      kraftpfeil(g, 560, (fuge1+fuge2)/2, 534, (fuge1+fuge2)/2, "#7c3aed", 3);
+      /* Die beiden Fugen sind die Scherflaechen. */
+      [fuge1, fuge2].forEach(function(y){
+        linie(g, cx-r-14, y, cx+r+14, y, "#7c3aed", 2.4, {opacity:last});
+      });
+      txt(g, cx+r+20, fuge1-6, "2 Scherflächen",
+        {fill:"#7c3aed", size:12, opacity:last});
+      txt(g, 58, gU+40, "Der Bolzen wird auf Abscheren belastet – hier zweischnittig",
         {fill:"#7c3aed", size:12, opacity:last});
     }
   }
@@ -1520,8 +1688,10 @@ verfahren({
       linie(g, bx2, bz+7, bx3, bz+7, NORM_KANTE, NORM_SCHMAL, {dash:"9 4"});
       /* Symbol der V-Naht: Spitze auf der Bezugslinie, Oeffnung nach oben.
          Ueber der Linie heisst: die Naht liegt auf der Pfeilseite. */
+      /* Das Sinnbild wird wie die Bezugslinie schmal gezeichnet - es ist
+         kein Bauteilumriss. */
       pfad(g, "M"+(bx2+20)+","+(bz-17)+" L"+(bx2+30)+","+bz+" L"+(bx2+40)+","+(bz-17),
-        "none", NORM_KANTE, {sw:NORM_BREIT});
+        "none", NORM_KANTE, {sw:NORM_SCHMAL});
       txt(g, bx3+8, bz+4, "V-Naht nach ISO 2553",
         {fill:NORM_KANTE, size:11.5, weight:400});
     }
@@ -1778,29 +1948,53 @@ verfahren({
     var auftrag = stufe(t, 0.28, 0.5), drehen = stufe(t, 0.55, 0.8), haerten = stufe(t, 0.82, 1);
     var cx = 300, cy = 190, tiefe = 92;
 
-    rect(g, cx-150, cy-tiefe, 300, tiefe+40, C.bF, C.bS, {sw:1.8});
-    rect(g, cx-22, cy-tiefe, 44, tiefe, "#ffffff", C.bS, {sw:1.3});
-    for(var i=0;i<7;i++){
-      var y = cy - tiefe + 8 + i*12;
-      linie(g, cx-22, y, cx-14, y+6, C.bS, 1);
-      linie(g, cx+22, y, cx+14, y+6, C.bS, 1);
-    }
-    txt(g, cx+160, cy-tiefe+16, "Bauteil mit Innengewinde", {fill:C.bS, size:12});
+    /* Grundloch mit Innengewinde. Das Kernloch reicht tiefer als das
+       Gewinde, das Gewinde tiefer als die Schraube - sonst setzt sie auf.
+       Die Schraffur endet an der breiten Linie, beim Innengewinde also am
+       Kerndurchmesser. */
+    var rd = 18, r3 = rd * 0.82;
+    var yO = cy - tiefe;                      /* Stirnflaeche des Bauteils */
+    var yE = yO + 66;                         /* Ende der Schraube */
+    var yG = yO + 78;                         /* Gewindeende im Grundloch */
+    var yB = yO + 88;                         /* Bohrungsgrund */
+    var spitze = r3 / Math.tan(60 * Math.PI / 180);   /* 120 Grad */
+    var strichB = kante(C.bS);
 
-    var sy = cy - tiefe - 120 + drehen*116;
-    rect(g, cx-34, sy-20, 68, 20, C.eF, C.eS, {sw:1.6});
-    rect(g, cx-18, sy, 36, 104, C.eF, C.eS, {sw:1.6});
-    txt(g, cx+42, sy-6, "Schraube", {fill:C.eS, size:12});
+    rect(g, cx-150, yO, 300, tiefe+40, C.bF, C.bS, {sw:1.8});
+    pfad(g, "M"+(cx-r3)+","+yO+" L"+(cx-r3)+","+yB+
+      " L"+cx+","+(yB+spitze)+" L"+(cx+r3)+","+yB+" L"+(cx+r3)+","+yO+" Z",
+      "#ffffff", "none");
+    [-1, 1].forEach(function(v){
+      /* Kerndurchmesser breit - er begrenzt die Schraffur. */
+      linie(g, cx+v*r3, yO, cx+v*r3, yB, strichB, breit());
+      linie(g, cx+v*r3, yB, cx, yB+spitze, strichB, breit());
+      /* Nenndurchmesser des Innengewindes schmal, im Werkstoff liegend. */
+      linie(g, cx+v*rd, yO, cx+v*rd, yG, strichB, schmal());
+    });
+    linie(g, cx-rd, yG, cx+rd, yG, strichB, breit());    /* Gewindeende */
+    txt(g, cx+160, yO+16, "Bauteil mit Innengewinde", {fill:C.bS, size:12});
+
+    /* Die Schraube: Sechskant ueber Ecke, Gewinde, Kuppe. Sie wird laengs
+       nicht geschnitten und deckt deshalb, was in ihr steckt. */
+    var sy = yO - 120 + drehen*120;
+    schaftSenkrecht(g, cx, rd, sy, sy + 66, 5);
+    gewindeSenkrecht(g, cx, rd, sy + 8, sy + 66, 5);
+    sechskantAnsicht(g, {achse:cx, von:sy, bis:sy-20, sw:32, faseAn:"bis"});
+    txt(g, cx+54, sy-8, "Schraube", {fill:C.eS, size:12});
 
     if(auftrag > 0){
       var f = haerten > 0.4 ? "#a78bfa" : C.kleb;
       if(drehen < 0.1){
-        rect(g, cx-19, sy+64, 38, 34, f, C.klebS, {sw:1.1, rx:4, opacity:auftrag});
-        txt(g, cx+46, sy+84, "Schraubensicherung auftragen",
+        rect(g, cx-rd+1, sy+40, 2*rd-2, 26, f, C.klebS, {sw:1.1, rx:4, opacity:auftrag});
+        txt(g, cx+rd+26, sy+58, "Schraubensicherung auftragen",
           {fill:C.klebS, size:11.5, opacity:auftrag});
       }else{
-        rect(g, cx-22, cy-tiefe, 4, tiefe, f, "none", {opacity:0.9});
-        rect(g, cx+18, cy-tiefe, 4, tiefe, f, "none", {opacity:0.9});
+        /* Der Klebstoff sitzt in den Gewindegaengen - eine schmale Schicht
+           laengs der Flanken, ueber die Einschraubtiefe. */
+        [-1, 1].forEach(function(v){
+          rect(g, cx + v*rd - (v < 0 ? 0 : 3), yO+2, 3, yE-yO-4, f, "none",
+            {opacity:0.9});
+        });
       }
     }
     if(haerten > 0.1){
@@ -2191,17 +2385,18 @@ function prinzipbilder(){
   /* --- Formschluss: die Teile greifen ineinander --- */
   svg = el("svgUeF"); leeren(svg); spitzen(svg, FARBEN);
   g = ns("g", {}); svg.appendChild(g);
-  var zx = 160, zb = 34, zt = 22;
-  pfad(g, "M"+lx+","+(cy-d)+" L"+rx+","+(cy-d)+" L"+rx+","+cy+
-          " L"+(zx+zb)+","+cy+" L"+(zx+zb)+","+(cy+zt)+" L"+zx+","+(cy+zt)+
-          " L"+zx+","+cy+" L"+lx+","+cy+" Z", C.aF, C.aS, {sw:1.8});
-  pfad(g, "M"+lx+","+(cy+d+zt)+" L"+rx+","+(cy+d+zt)+" L"+rx+","+(cy+zt+2)+
-          " L"+(zx+zb-2)+","+(cy+zt+2)+" L"+(zx+zb-2)+","+(cy+2)+" L"+(zx+2)+","+(cy+2)+
-          " L"+(zx+2)+","+(cy+zt+2)+" L"+lx+","+(cy+zt+2)+" Z", C.bF, C.bS, {sw:1.8});
-  kraftpfeil(g, 68, cy+zt+16, 128, cy+zt+16, "#7c3aed", 3);
-  kraftpfeil(g, 262, cy-16, 202, cy-16, "#7c3aed", 3);
-  txt(g, 68, cy+zt+40, "Last", {fill:"#7c3aed", size:13});
-  txt(g, zx+zb+14, cy-d-10, "Flanke trägt", {fill:"#7c3aed", size:13});
+  /* Zwei ueberlappende Laschen, ein Bolzen quer hindurch. Die Last drueckt
+     gegen den Bolzen - nicht gegen Reibung und nicht gegen eine Klebschicht.
+     Das unterscheidet den Formschluss von seinen beiden Nachbarbildern. */
+  var bx = 160, br = 17, ue = 34;             /* Bolzen, Ueberlappung */
+  rect(g, lx, cy-d, (bx+ue)-lx, d, C.aF, C.aS, {sw:1.8});
+  rect(g, bx-ue, cy, rx-(bx-ue), d, C.bF, C.bS, {sw:1.8});
+  /* Der Bolzen steht vor beiden Laschen und deckt sie deshalb. */
+  rect(g, bx-br, cy-d-14, 2*br, 2*d+28, C.eF, C.eS, {sw:1.8, rx:3});
+  kraftpfeil(g, 96, cy-d/2, 46, cy-d/2, "#7c3aed", 3);
+  kraftpfeil(g, 224, cy+d+d/2-d, 274, cy+d/2, "#7c3aed", 3);
+  txt(g, 46, cy-d-10, "Last", {fill:"#7c3aed", size:13});
+  txt(g, bx+br+10, cy-d-22, "Bolzen trägt", {fill:"#1d4ed8", size:13});
 
   /* --- Stoffschluss: eine durchgehende Schicht verbindet --- */
   svg = el("svgUeS"); leeren(svg); spitzen(svg, FARBEN);
