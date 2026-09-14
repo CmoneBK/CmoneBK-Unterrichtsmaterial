@@ -1289,6 +1289,21 @@ function leeren(node){ while(node.firstChild) node.removeChild(node.firstChild);
    deshalb wie jede Koerperkante gezeichnet - in einer Farbe. */
 var DUNKEL = "#0f172a";
 
+/* Massepfeil nach DIN ISO 129: geschlossenes, ausgefuelltes Dreieck, rund
+   drei mal so lang wie breit. (dx, dy) ist die Richtung, in die er zeigt;
+   die Spitze liegt auf dem Massepunkt.
+   Als Marker war die Spitze eine Anweisung an den Betrachter - zeichnet er
+   sie nicht, fehlt sie ersatzlos. Ein Dreieck im Bild ist einfach da. */
+var PFEIL_L = 9, PFEIL_B = 1.6;
+function pfeilspitze(g, x, y, dx, dy, farbe){
+  var bx = x - PFEIL_L * dx, by = y - PFEIL_L * dy;
+  return g.appendChild(ns("polygon", {points:[
+    x.toFixed(2) + "," + y.toFixed(2),
+    (bx - PFEIL_B * dy).toFixed(2) + "," + (by + PFEIL_B * dx).toFixed(2),
+    (bx + PFEIL_B * dy).toFixed(2) + "," + (by - PFEIL_B * dx).toFixed(2)
+  ].join(" "), fill: farbe || DUNKEL}));
+}
+
 function masslinie(g, x1, y1, x2, y2, text, versatz){
   var v = versatz || 0;
   /* Waagerecht oder senkrecht entscheidet die laengere Strecke - nicht die
@@ -1305,8 +1320,17 @@ function masslinie(g, x1, y1, x2, y2, text, versatz){
   var lx1 = waag ? x1 : basis, lx2 = waag ? x2 : basis;
   var ly1 = waag ? basis : y1,  ly2 = waag ? basis : y2;
   g.appendChild(ns("line", {x1:lx1, y1:ly1, x2:lx2, y2:ly2,
-    stroke:DUNKEL, "stroke-width":SCHMAL, "marker-start":"url(#pfeilA)",
-    "marker-end":"url(#pfeilB)"}));
+    stroke:DUNKEL, "stroke-width":SCHMAL}));
+  /* Die Spitzen zeigen nach aussen, jede auf ihren Massepunkt. */
+  if(waag){
+    var sx = (lx2 >= lx1) ? 1 : -1;
+    pfeilspitze(g, lx1, ly1, -sx, 0);
+    pfeilspitze(g, lx2, ly2, sx, 0);
+  }else{
+    var sy = (ly2 >= ly1) ? 1 : -1;
+    pfeilspitze(g, lx1, ly1, 0, -sy);
+    pfeilspitze(g, lx2, ly2, 0, sy);
+  }
   if(waag){
     g.appendChild(ns("line",{x1:x1,y1:y1,x2:x1,y2:ly1+ue,stroke:DUNKEL,"stroke-width":SCHMAL}));
     g.appendChild(ns("line",{x1:x2,y1:y2,x2:x2,y2:ly2+ue,stroke:DUNKEL,"stroke-width":SCHMAL}));
@@ -1336,11 +1360,16 @@ function pfeilDefs(svg){
     /* Der Bezugspunkt ist die Spitze: Sie liegt auf dem Massepunkt, der
        Koerper zeigt von dort nach innen. Lag er auf der Basis, stand der
        ganze Pfeil neun Einheiten daneben. */
-    var mA = ns("marker", {id:"pfeilA"+name, markerWidth:10, markerHeight:4,
+    /* Das viewBox gehoert dazu: Ohne eigenes Koordinatensystem haengt die
+       Groesse der Spitze davon ab, wie der Betrachter die Definition
+       auslegt. Jede andere Markerdefinition im Bestand hat eines. */
+    var mA = ns("marker", {id:"pfeilA"+name, viewBox:"0 0 10 4",
+      markerWidth:10, markerHeight:4,
       refX:0, refY:2, orient:"auto", markerUnits:"strokeWidth"});
     mA.appendChild(ns("path", {d:"M9,0.4 L9,3.6 L0,2 z", fill:farbe}));
     defs.appendChild(mA);
-    var mB = ns("marker", {id:"pfeilB"+name, markerWidth:10, markerHeight:4,
+    var mB = ns("marker", {id:"pfeilB"+name, viewBox:"0 0 10 4",
+      markerWidth:10, markerHeight:4,
       refX:9, refY:2, orient:"auto", markerUnits:"strokeWidth"});
     mB.appendChild(ns("path", {d:"M0,0.4 L0,3.6 L9,2 z", fill:farbe}));
     defs.appendChild(mB);
@@ -1966,7 +1995,10 @@ function masslinieSenkrecht(g, x, y1, y2, text, versatz){
   var lx = x + versatz;
   var ue = (versatz >= 0 ? 7 : -7);
   g.appendChild(ns("line", {x1:lx, y1:y1, x2:lx, y2:y2, stroke:DUNKEL,
-    "stroke-width":SCHMAL, "marker-start":"url(#pfeilA)", "marker-end":"url(#pfeilB)"}));
+    "stroke-width":SCHMAL}));
+  var sv = (y2 >= y1) ? 1 : -1;
+  pfeilspitze(g, lx, y1, 0, -sv);
+  pfeilspitze(g, lx, y2, 0, sv);
   g.appendChild(ns("line", {x1:x, y1:y1, x2:lx + ue, y2:y1, stroke:DUNKEL, "stroke-width":SCHMAL}));
   g.appendChild(ns("line", {x1:x, y1:y2, x2:lx + ue, y2:y2, stroke:DUNKEL, "stroke-width":SCHMAL}));
   var t = svgText(0, 0, text, {anchor:"middle", size:12, fill:DUNKEL, weight:600});
