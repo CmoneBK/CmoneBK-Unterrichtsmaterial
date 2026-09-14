@@ -996,12 +996,15 @@ verfahren({
     [-1, 1].forEach(function(v){
       linie(g, cx+v*spalt/2, cy+wr-4, cx+v*spalt/2, by2, kante(C.bS), breit());
     });
-    /* Klemmschraube quer zum Schlitz, im Auge. Sie wird nicht geschnitten. */
-    var by = cy + nr + 12, rds = 8, kb = 13;
-    schaftWaagerecht(g, by, rds, cx-ab+10, cx+ab-6, 3);
-    gewindeWaagerecht(g, by, rds, cx+6, cx+ab-6, 3);
-    sechskantAnsicht(g, {waagerecht:true, achse:by, von:cx-ab+10,
-      bis:cx-ab-4, sw:30, faseAn:"bis"});
+    /* Klemmschraube quer zum Schlitz, im Auge. Sie wird nicht geschnitten.
+       Beim Anziehen wandert sie tiefer hinein: Anfangs steht der Kopf von der
+       Backe ab, am Ende liegt er an. Stand sie still, waere nicht zu sehen,
+       dass hier ueberhaupt jemand dreht. */
+    var by = cy + nr + 12, rds = 8, luft = 14 * (1 - zieh);
+    schaftWaagerecht(g, by, rds, cx-ab+10-luft, cx+ab-6-luft, 3);
+    gewindeWaagerecht(g, by, rds, cx+6-luft, cx+ab-6-luft, 3);
+    sechskantAnsicht(g, {waagerecht:true, achse:by, von:cx-ab+10-luft,
+      bis:cx-ab-4-luft, sw:30, faseAn:"bis"});
 
     txt(g, cx+nr+14, cy-nr+16, "geschlitzte Nabe", {fill:C.bS, size:12});
     txt(g, cx+nr+14, cy+4, "Welle", {fill:"#475569", size:12});
@@ -1051,7 +1054,9 @@ verfahren({
     var weg = 26 * zieh;
 
     rect(g, lx-40, cy-wr, (rx+40)-(lx-40), 2*wr, "#e2e8f0", "#475569");
-    txt(g, lx-36, cy-wr-8, "Welle", {fill:"#475569", size:12});
+    /* Die Benennung steht in der Welle selbst - links davon sitzt jetzt der
+       Flansch mit den Spannschrauben. */
+    txt(g, lx-34, cy+18, "Welle", {fill:"#475569", size:12});
     rect(g, lx, cy-nr, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
     rect(g, lx, cy+wr+rb, rx-lx, nr-wr-rb, C.bF, C.bS, {sw:1.8});
     txt(g, lx+6, cy-nr-8, "Nabe", {fill:C.bS, size:12});
@@ -1082,21 +1087,29 @@ verfahren({
        Vorher standen hier zwei Rechtecke, in denen niemand eine Schraube
        erkennt - und damit blieb offen, was den Satz eigentlich spannt. */
     var sLinks = lx + 20 + weg;               /* linke Stirn der Ringe */
+    var fL = sLinks - 46;                     /* Flansch des Aussenrings */
     [-1,1].forEach(function(v){
-      var ys = cy + v*(wr + 14);
-      /* Nur der Kopf und ein Stueck Schaft: Der Rest der Schraube steckt in
-         den Ringen und ist nicht zu sehen. Zeichnete man sie ganz, deckte
-         ihre Flaeche die Kegelflaeche zu, um die es hier geht. */
-      schaftWaagerecht(g, ys, 8, sLinks, sLinks + 38, 0);
-      gewindeWaagerecht(g, ys, 8, sLinks + 14, sLinks + 38, 0);
-      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:sLinks,
-        bis:sLinks - 16, sw:26, faseAn:"bis"});
+      var yA = cy + v*(wr + 2), yB = cy + v*(wr + rb);
+      /* Der Aussenring hat links einen Flansch. Dort sitzen die Schrauben -
+         das ist der Punkt, an dem sie angreifen. Ohne ihn stand die Schraube
+         in den Ringen, ohne irgendwo zu ziehen. */
+      pfad(g, "M"+fL+","+yA+" L"+sLinks+","+yA+" L"+sLinks+","+yB+
+              " L"+fL+","+yB+" Z", "#bfdbfe", C.eS, {sw:1.6});
+      /* Die Schraube steckt im Flansch und ist in den Innenring geschraubt.
+         Beim Anziehen zieht sie beide Ringe axial ineinander. */
+      var ys = cy + v*(wr + rb/2);
+      schaftWaagerecht(g, ys, 8, fL, sLinks + 34, 3);
+      gewindeWaagerecht(g, ys, 8, sLinks, sLinks + 34, 3);
+      sechskantAnsicht(g, {waagerecht:true, achse:ys, von:fL,
+        bis:fL - 16, sw:26, faseAn:"bis"});
     });
-    txt(g, lx - 44, cy + nr + 18, "Spannschrauben ziehen die Ringe axial zusammen",
+    txt(g, lx - 44, cy + nr + 18,
+      "Die Schraube sitzt im Flansch des Außenrings und ist in den Innenring "
+      + "geschraubt – sie zieht beide ineinander",
       {anchor:"start", fill:C.eS, size:11.5});
     if(zieh > 0.03){
-      kraftpfeil(g, sLinks-34, cy-wr-24, sLinks+6, cy-wr-24, "#1d4ed8", 2.6);
-      kraftpfeil(g, sLinks-34, cy+wr+24, sLinks+6, cy+wr+24, "#1d4ed8", 2.6);
+      kraftpfeil(g, fL-40, cy-nr+18, fL-6, cy-nr+18, "#1d4ed8", 2.6);
+      kraftpfeil(g, fL-40, cy+nr-18, fL-6, cy+nr-18, "#1d4ed8", 2.6);
 
       [-1,1].forEach(function(v){
         for(var i=0;i<3;i++){
@@ -1474,9 +1487,27 @@ verfahren({
     /* Gabel und Lasche greifen ineinander: die Gabel von links mit zwei
        Schenkeln, die Lasche von rechts dazwischen. Beide Schenkel gehoeren
        zum selben Teil und bekommen deshalb dieselbe Schraffur. */
-    rect(g, 58, gO, 288, fuge1-gO, C.aF, C.aS, {sw:1.8});
-    rect(g, 58, fuge2, 288, gU-fuge2, C.aF, C.aS, {sw:1.8});
-    rect(g, 254, fuge1, 288, fuge2-fuge1, C.bF, C.bS, {sw:1.8});
+    /* Ein Bolzen sitzt lose - die Bohrung ist groesser als er, sonst waere
+       das Gelenk keines. Sie war bisher nicht gezeichnet, sondern nur vom
+       Bolzen verdeckt. Wo sie die Stirnflaechen trifft, ist deren Kante
+       unterbrochen. */
+    var rL = r + 4;
+    function lasche(x, y, w, h, fuell, farbe){
+      rect(g, x, y, w, h, fuell, "none");
+      var k = kante(farbe);
+      [y, y + h].forEach(function(yy){
+        linie(g, x, yy, cx - rL, yy, k, breit());
+        linie(g, cx + rL, yy, x + w, yy, k, breit());
+      });
+      linie(g, x, y, x, y + h, k, breit());
+      linie(g, x + w, y, x + w, y + h, k, breit());
+      [-1, 1].forEach(function(v){
+        linie(g, cx + v*rL, y, cx + v*rL, y + h, k, breit());
+      });
+    }
+    lasche(58, gO, 288, fuge1-gO, C.aF, C.aS);
+    lasche(58, fuge2, 288, gU-fuge2, C.aF, C.aS);
+    lasche(254, fuge1, 288, fuge2-fuge1, C.bF, C.bS);
     txt(g, 64, gO-10, "Gabel (Lasche A)", {fill:C.aS, size:12});
     txt(g, 470, gU+16, "Lasche B", {fill:C.bS, size:12});
 
