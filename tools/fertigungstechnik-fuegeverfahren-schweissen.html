@@ -1514,6 +1514,11 @@ var ZONEN = [
 ];
 
 function zonenBild(anteil){
+  /* Keine technische Zeichnung: Gefügezonen kennt keine Norm, und der
+     Temperaturverlauf darunter ist ein Diagramm. Sie bleibt deshalb auch in
+     der Normdarstellung farbig - so ist auf den ersten Blick zu sehen, dass
+     hier nichts nach Zeichnungsregeln zu lesen ist. */
+  normErlaubt = false;
   var svg = el("svgZonen");
   leeren(svg); spitzen(svg, FARBEN);
   var g = ns("g", {}); svg.appendChild(g);
@@ -1525,25 +1530,22 @@ function zonenBild(anteil){
     [-1, 1].forEach(function(v){
       var x1 = cx + v*von*halb, x2 = cx + v*z.bis*halb;
       rect(g, Math.min(x1,x2), cy-dick, Math.abs(x2-x1), 2*dick,
-        zustand.norm ? "#ffffff" : z.farbe, "none");
+        z.farbe, "none");
     });
   });
   /* Blechkontur und Trennlinien */
-  rect(g, cx-halb, cy-dick, 2*halb, 2*dick, "none",
-    zustand.norm ? NORM_KANTE : C.aS, {sw:zustand.norm ? NORM_BREIT : 1.8});
+  rect(g, cx-halb, cy-dick, 2*halb, 2*dick, "none", C.aS, {sw:1.8});
   ZONEN.forEach(function(z, i){
     if(i === ZONEN.length-1) return;
     [-1, 1].forEach(function(v){
       linie(g, cx + v*z.bis*halb, cy-dick, cx + v*z.bis*halb, cy+dick,
-        zustand.norm ? NORM_KANTE : "#94a3b8", zustand.norm ? NORM_SCHMAL : 1,
-        {dash:"4 3"});
+        "#94a3b8", 1, {dash:"4 3"});
     });
   });
   /* Nahtueberhoehung */
   pfad(g, "M"+(cx-ZONEN[0].bis*halb)+","+(cy-dick)+" q "+(ZONEN[0].bis*halb)+",-16 "+
           (2*ZONEN[0].bis*halb)+",0 Z",
-    zustand.norm ? "#ffffff" : ZONEN[0].farbe,
-    zustand.norm ? NORM_KANTE : C.aS, {sw:zustand.norm ? NORM_BREIT : 1.6});
+    ZONEN[0].farbe, C.aS, {sw:1.6});
 
   /* Marke an der gewaehlten Stelle */
   var mx = cx + anteil*halb;
@@ -1582,6 +1584,7 @@ function zonenBild(anteil){
   var Tm = Math.exp(-Math.pow(anteil*2.55, 2));
   g.appendChild(ns("circle", {cx:mx, cy:ty-Tm*th, r:5, fill:"#1d4ed8"}));
   linie(g, mx, ty-Tm*th, mx, ty, "#1d4ed8", 1.4, {dash:"3 3"});
+  normErlaubt = true;
 }
 
 /* Legende: ohne sie muesste man den Regler abfahren, um die Baender zu
@@ -1731,6 +1734,10 @@ var VERZUG = [
 var verzugAktiv = "quer";
 
 function verzugBild(){
+  /* Auch das ist keine technische Zeichnung, sondern eine Erklärung: Der
+     Verzug ist stark übertrieben gezeichnet, sonst wäre er nicht zu sehen.
+     Sie bleibt deshalb farbig. */
+  normErlaubt = false;
   var svg = el("svgVerzug");
   leeren(svg); spitzen(svg, FARBEN);
   var g = ns("g", {}); svg.appendChild(g);
@@ -1784,6 +1791,7 @@ function verzugBild(){
     txt(g, cx+46, cy-24, "oben mehr Schweißgut – oben schrumpft es stärker",
       {fill:"#dc2626", size:12});
   }
+  normErlaubt = true;
 }
 
 function verzugNeu(){
