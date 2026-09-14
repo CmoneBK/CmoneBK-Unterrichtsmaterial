@@ -1575,6 +1575,17 @@ verfahren({
        Bolzen verdeckt. Wo sie die Stirnflaechen trifft, ist deren Kante
        unterbrochen. */
     var rL = r + 4;
+    /* Der Bolzen kommt von oben herein - wie weit er schon ist, entscheidet
+       ueber die Kanten in der Bohrung. */
+    var by = gO - 150 * (1 - stecken);
+    /* Wie breit der Bolzen an dieser Hoehe deckt. Null heisst: Er ist hier
+       noch nicht, man sieht durch die Bohrung auf ihre Rueckwand. */
+    function deckt(yy){
+      if(yy >= by - 19 && yy <= by) return r + 10;    /* Kopf */
+      if(yy < by || yy > by + 196) return 0;
+      if(yy > by + 192) return r - (yy - (by + 192)); /* Kuppe */
+      return r;
+    }
     function lasche(x, y, w, h, fuell, farbe){
       rect(g, x, y, w, h, fuell, "none");
       /* In der Bohrung ist kein Werkstoff - dort darf auch keine Schraffur
@@ -1584,10 +1595,14 @@ verfahren({
       /* Die Stirnflaeche laeuft bis an den Bolzen, nicht nur bis zur
          Lochwand: Durch das Spiel sieht man auf die Wand der Bohrung
          dahinter, und wo die auf die Stirnflaeche trifft, liegt eine Kante.
-         Verdeckt wird sie erst vom Bolzen. */
+         Verdeckt wird sie erst vom Bolzen - und nur so weit, wie er
+         ueberhaupt schon da ist. Ist er es nicht, laeuft die Umlaufkante der
+         Bohrung durch. */
       [y, y + h].forEach(function(yy){
-        linie(g, x, yy, cx - r, yy, k, breit());
-        linie(g, cx + r, yy, x + w, yy, k, breit());
+        var d = deckt(yy);
+        if(d <= 0){ linie(g, x, yy, x + w, yy, k, breit()); return; }
+        linie(g, x, yy, cx - d, yy, k, breit());
+        linie(g, cx + d, yy, x + w, yy, k, breit());
       });
       linie(g, x, y, x, y + h, k, breit());
       linie(g, x + w, y, x + w, y + h, k, breit());
@@ -1601,8 +1616,7 @@ verfahren({
     txt(g, 64, gO-10, "Gabel (Lasche A)", {fill:C.aS, size:12});
     txt(g, 470, gU+16, "Lasche B", {fill:C.bS, size:12});
 
-    /* Der Bolzen kommt von oben herein. Er wird laengs nicht geschnitten. */
-    var by = gO - 150 * (1 - stecken);
+    /* Der Bolzen wird laengs nicht geschnitten. */
     schaftSenkrecht(g, cx, r, by, by + 196, 4);
     rect(g, cx-r-10, by-19, 2*r+20, 19, C.eF, C.eS, {sw:1.8});
     txt(g, cx+r+16, by-6, "Bolzen", {fill:C.eS, size:12});

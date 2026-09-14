@@ -2239,7 +2239,9 @@ function zeichneVerbindung(){
       3: [[cx + rD*0.4, y3], [cx + rD + 62, einschraub ? yGewU - 46 : y3 - 30]],
       4: [[cx - rDh, ySch1U + 12], [cx - rDh - 58, ySch1U - 6]],
       5: [[pl + 26, einschraub ? yP1U + 14 : yP1U], [pl - 34, yP1U + 26]],
-      6: [[cx, yKopfO - 16], [cx - 52, yKopfO - 34]],
+      /* Die Marke lag genau auf der linken Pfeilspitze des Eckenmasses und
+         hat sie zugedeckt. Sie steht jetzt links neben der Masslinie. */
+      6: [[cx, yKopfO - 16], [cx - rE - 34, yKopfO - 30]],
       7: [[cx + rD, einschraub ? (yEnde + yGewU) / 2 : 0], [cx + rD + 62, einschraub ? yGewU - 8 : 0]],
       8: [[cx + rD3 + 4, einschraub ? yGewU - 10 : 0], [cx + rD + 62, einschraub ? yGewU + 30 : 0]],
       9: [[cx - rKern * 0.5, einschraub ? yBohrU + spitze * 0.6 : 0],
@@ -2918,29 +2920,34 @@ function zeichneSchraube(){
      Benennungen - sie sind Erklaerung, nicht Zeichnung. */
   var dunkel = DUNKEL, fuell = "#ffffff";
 
-  /* --- Kopf --- */
+  /* --- Kopf ---
+     Gezeichnet wird er hier, eingehaengt aber erst hinter Schaft und
+     Gewinde: Die Reihenfolge ist Tiefe. Der Kopf liegt vor dem Schaft; kaeme
+     er zuerst, naehme dessen deckende Flaeche seiner Auflagekante die halbe
+     Strichbreite weg. */
+  var gKopf = ns("g", {});
   if(form.typ === "hex"){
     /* Sechskant ueber Ecke: Der Umriss ist das Eckenmass e, nicht die
        Schluesselweite. Sichtbar sind drei Flaechen, getrennt durch zwei
        Kanten; die Fase am freien Ende ergibt drei Boegen. */
-    var kopfSk = sechskantAnsicht(g, {waagerecht:true, achse:oy,
+    var kopfSk = sechskantAnsicht(gKopf, {waagerecht:true, achse:oy,
       von:xKopfR, bis:xKopfL, s:kopfD, sk:sk, faseAn:"bis", fuell:fuell});
     rK = kopfSk.rE;
   }else if(form.typ === "zyl"){
-    g.appendChild(ns("rect",{x:xKopfL, y:oy-rK, width:kopfH*sk, height:rK*2,
+    gKopf.appendChild(ns("rect",{x:xKopfL, y:oy-rK, width:kopfH*sk, height:rK*2,
       fill:fuell, stroke:dunkel, "stroke-width":BREIT}));
     /* Der Innensechskant liegt hinter der Stirnflaeche - verdeckte Kante,
        also schmale Strichlinie. */
     var swI = rK*0.55;
-    g.appendChild(ns("rect",{x:xKopfL+2, y:oy-swI, width:kopfH*sk*0.6, height:swI*2,
+    gKopf.appendChild(ns("rect",{x:xKopfL+2, y:oy-swI, width:kopfH*sk*0.6, height:swI*2,
       fill:"none", stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"7 3"}));
   }else{
-    g.appendChild(ns("path",{d:
+    gKopf.appendChild(ns("path",{d:
       "M"+xKopfL+","+(oy-rK)+" L"+xKopfR+","+(oy-rD)+
       " L"+xKopfR+","+(oy+rD)+" L"+xKopfL+","+(oy+rK)+" Z",
       fill:fuell, stroke:dunkel, "stroke-width":BREIT}));
     var swS = rK*0.45;
-    g.appendChild(ns("rect",{x:xKopfL+2, y:oy-swS, width:kopfH*sk*0.55, height:swS*2,
+    gKopf.appendChild(ns("rect",{x:xKopfL+2, y:oy-swS, width:kopfH*sk*0.55, height:swS*2,
       fill:"none", stroke:dunkel, "stroke-width":SCHMAL, "stroke-dasharray":"7 3"}));
   }
 
@@ -2969,6 +2976,10 @@ function zeichneSchraube(){
       x2:xEnde - kuppe + (rD - rD3), y2:oy+v*rD3,
       stroke:dunkel, "stroke-width":SCHMAL}));
   });
+
+  /* Jetzt der Kopf - vor Schaft und Gewinde, damit seine Auflagekante in
+     ganzer Breite durchlaeuft. */
+  g.appendChild(gKopf);
 
   /* Mittellinie */
   g.appendChild(ns("line",{x1:xKopfL-24, y1:oy, x2:xEnde+24, y2:oy,
