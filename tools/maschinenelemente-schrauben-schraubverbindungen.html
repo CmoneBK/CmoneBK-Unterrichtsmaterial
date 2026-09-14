@@ -2038,6 +2038,7 @@ function zeichneVerbindung(){
   var plattenB = Math.max(scheibeD + 16, 3.4 * d);
   var pl = cx - plattenB / 2 * sk, pr = cx + plattenB / 2 * sk;
   var rD = d / 2 * sk, rD3 = m.d3 / 2 * sk, rDh = Dh / 2 * sk;
+  var kuppe = Math.min(rD * 0.3, m.P * sk * 0.7);   /* Fase am Schraubenende */
   var rKern = kernloch / 2 * sk;
 
   var yEnde = 0, yP2U = 0, ySch2U = 0, yMutU = 0, yBohrU = 0, yGewU = 0,
@@ -2076,9 +2077,13 @@ function zeichneVerbindung(){
 
     /* Innengewinde: Kerndurchmesser breit (schon als Bauteilkante), Aussen-
        durchmesser schmal - nur dort sichtbar, wo keine Schraube steckt. */
+    /* Der Nenndurchmesser des Innengewindes laeuft bis dorthin, wo die
+       Schraube noch ihren vollen Durchmesser hat - also bis an den Anfang
+       der Kuppe. Endete er an der Stirnflaeche, klaffte neben der Fase eine
+       Luecke zwischen Gewinde und Schraube. */
     [-1, 1].forEach(function(v){
-      g.appendChild(ns("line", {x1:cx + v*rD, y1:yEnde, x2:cx + v*rD, y2:yGewU,
-        stroke:"#0f172a", "stroke-width":SCHMAL}));
+      g.appendChild(ns("line", {x1:cx + v*rD, y1:yEnde - kuppe, x2:cx + v*rD,
+        y2:yGewU, stroke:"#0f172a", "stroke-width":SCHMAL}));
     });
     /* Gewindeende im Grundloch (Regel 3): breite Vollinie */
     g.appendChild(ns("line", {x1:cx - rD, y1:yGewU, x2:cx + rD, y2:yGewU,
@@ -2116,7 +2121,6 @@ function zeichneVerbindung(){
 
   /* ---------------- Schraube: wird NICHT geschnitten (Regel 1) --------------- */
   var weiss = "#ffffff";
-  var kuppe = Math.min(rD * 0.3, m.P * sk * 0.7);    /* Fase am Schraubenende */
   yGewO = yEnde - gewindeL * sk;
 
   /* Die deckende Flaeche des Schafts kommt zuerst: Kopf und Scheibe liegen
@@ -2397,13 +2401,19 @@ function zeichneSchraubeNorm(){
        aufhoert und die Fase anfaengt. */
     masslinie(mg, xKopfR, oy + kopf.rE, xEnde, oy + rD - kuppe, "l = " + z(l,0), 74);
     masslinie(mg, xGewinde, oy + rD, xEnde, oy + rD - kuppe, "b = " + z(b,0), 44);
-    masslinie(mg, xKopfL, oy - kopf.rE, xKopfR, oy - kopf.rE, "k = " + z(m.k,1), -22);
+    /* Am freien Ende des Kopfes liegt die Fase: Dort ist der Umriss nur so
+       breit wie die Schluesselweite, nicht wie das Eckenmass. */
+    masslinie(mg, xKopfL, oy - kopf.rS, xKopfR, oy - kopf.rE, "k = " + z(m.k,1), -22);
     masslinieSenkrecht(mg, xEnde - kuppe, oy - rD, oy + rD, "d = " + z(m.d,0),
       34 + kuppe);
-    masslinie(mg, vx - rS, oy + rE, vx + rS, oy + rE,
-      (zustand.sym ? "s" : "SW") + " = " + z(m.s,0), 34);
-    masslinieSenkrecht(mg, vx - rE, oy - rE, oy + rE,
-      "e \u2248 " + z(eckenmass(m.s),1), -26);
+    /* In der Stirnansicht liegen die Schluesselflaechen links und rechts,
+       die Ecken oben und unten. Die Masshilfslinien setzen also an den
+       Flaechen an - auf halber Hoehe e/2 - und an den Ecken bei x = vx.
+       Vorher lagen beide Ansatzpunkte ausserhalb des Sechskants. */
+    masslinie(mg, vx - rS, oy + rE / 2, vx + rS, oy + rE / 2,
+      (zustand.sym ? "s" : "SW") + " = " + z(m.s,0), 34 + rE / 2);
+    masslinieSenkrecht(mg, vx, oy - rE, oy + rE,
+      "e \u2248 " + z(eckenmass(m.s),1), -26 - rE);
   }
 
   el("znHinweis").innerHTML =
@@ -2988,13 +2998,16 @@ function zeichneSchraube(){
     if(form.typ === "hex"){
       /* In dieser Ansicht ist der Umriss das Eckenmass. Die Schluesselweite
          liegt quer dazu und waere hier erfunden - sie steht in der Tabelle. */
-      masslinie(g, xKopfL, oy-rK, xKopfL, oy+rK,
-        "e \u2248 " + z(eckenmass(m.s),1), -40);
+      /* Das Eckenmass ist erst hinter der Fase erreicht - an der
+         Stirnflaeche ist der Umriss nur die Schluesselweite breit. */
+      masslinie(g, xKopfL + kopfSk.tief, oy-rK, xKopfL + kopfSk.tief, oy+rK,
+        "e \u2248 " + z(eckenmass(m.s),1), -40 - kopfSk.tief);
     }else{
       masslinie(g, xKopfL, oy-rK, xKopfL, oy+rK,
         "dₖ ≈ " + z(kopfD,1), -46);
     }
-    masslinie(g, xKopfL, oy-rK, xKopfR, oy-rK, "k = " + z(kopfH,1), -26);
+    masslinie(g, xKopfL, oy - (form.typ === "hex" ? kopfSk.rS : rK),
+      xKopfR, oy-rK, "k = " + z(kopfH,1), -26);
   }
 
   /* Die Angabe zum Maßstab gehoert zur Erklaerebene, nicht zur Zeichnung. */
@@ -3075,7 +3088,9 @@ function zeichneGewindeprofil(){
   masslinie(g, xStart + p*0.5625, yD, xStart + p*1.5625, yD, "P = " + z(m.P,2) + " mm", -22);
 
   /* Gewindetiefe links */
-  masslinie(g, 70, yD, 70, yD3, "h = " + z(tiefe,2), 8);
+  /* Die Masshilfslinien setzen an den Durchmesserlinien an - die beginnen
+     bei 105, nicht bei 70. */
+  masslinie(g, 105, yD, 105, yD3, "h = " + z(tiefe,2), -30);
 
   /* Bruchlinie statt Mittelachse: der Ausschnitt endet hier */
   var bruch = "M40,196";
