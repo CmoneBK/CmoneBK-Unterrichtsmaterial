@@ -1279,6 +1279,17 @@ function svgText(x, y, txt, opt){
     "text-anchor": o.anchor || "start",
     fill: o.fill || "#0f172a",
     "font-weight": o.weight || 400});
+  /* In einem Schaubild laufen Kennlinien durch die Beschriftung - anders
+     als in einer Zeichnung lassen sie sich nicht einfach umgehen, weil sie
+     sich mit den Reglern bewegen. "hof" legt eine weisse Kontur hinter die
+     Schrift; die Linie verschwindet hinter ihr, statt sie zu zerschneiden.
+     In den Zeichnungen wird das nicht benutzt - dort weicht der Text aus. */
+  if(o.hof){
+    t.setAttribute("stroke", "#ffffff");
+    t.setAttribute("stroke-width", o.hof === true ? 3.5 : o.hof);
+    t.setAttribute("stroke-linejoin", "round");
+    t.setAttribute("paint-order", "stroke");
+  }
   t.textContent = txt;
   return t;
 }
@@ -1304,8 +1315,12 @@ function pfeilspitze(g, x, y, dx, dy, farbe){
   ].join(" "), fill: farbe || DUNKEL}));
 }
 
-function masslinie(g, x1, y1, x2, y2, text, versatz){
-  var v = versatz || 0;
+/* textAb verschiebt die Massszahl laengs der Masslinie aus der Mitte. Das
+   braucht man dort, wo eine Masshilfslinie eines anderen Masses genau durch
+   die Mitte laeuft - nach DIN ISO 129 darf keine Linie die Massszahl
+   kreuzen. */
+function masslinie(g, x1, y1, x2, y2, text, versatz, textAb){
+  var v = versatz || 0, ab = textAb || 0;
   /* Waagerecht oder senkrecht entscheidet die laengere Strecke - nicht die
      Frage, ob die beiden Konturpunkte genau gleich liegen. An einer Fase
      tun sie das naemlich nicht, und die Masshilfslinie muss trotzdem an der
@@ -1334,7 +1349,7 @@ function masslinie(g, x1, y1, x2, y2, text, versatz){
   if(waag){
     g.appendChild(ns("line",{x1:x1,y1:y1,x2:x1,y2:ly1+ue,stroke:DUNKEL,"stroke-width":SCHMAL}));
     g.appendChild(ns("line",{x1:x2,y1:y2,x2:x2,y2:ly2+ue,stroke:DUNKEL,"stroke-width":SCHMAL}));
-    var t = svgText((lx1+lx2)/2, ly1 - 5, text, {anchor:"middle", size:12, fill:DUNKEL, weight:600});
+    var t = svgText((lx1+lx2)/2 + ab, ly1 - 5, text, {anchor:"middle", size:12, fill:DUNKEL, weight:600});
     g.appendChild(t);
   }else{
     g.appendChild(ns("line",{x1:x1,y1:y1,x2:lx1+ue,y2:y1,stroke:DUNKEL,"stroke-width":SCHMAL}));
@@ -1507,7 +1522,7 @@ function zeichnePrinzip(){
     dreh.appendChild(ns("path", {d:"M" + (xm+30) + "," + (yP2u+4) +
       " A 22 22 0 1 1 " + (xm+26) + "," + (yP2u+21),
       fill:"none", stroke:"#b45309", "stroke-width":2.4, "marker-end":"url(#pfeilB)"}));
-    dreh.appendChild(svgText(xm+58, yP2u+16, "anziehen",
+    dreh.appendChild(svgText(xm+82, yP2u+16, "anziehen",
       {size:12, fill:"#b45309", weight:700}));
   }
 
@@ -1750,13 +1765,13 @@ function reibFlach(g, b, FV, FQ, FR, haelt, n){
   var qx = x0 - versatz;
   g.appendChild(ns("line",{x1:qx,y1:y+dicke+22,x2:qx-qLang,y2:y+dicke+22,
     stroke:"#dc2626","stroke-width":3,"marker-end":"url(#pfeilBrot)"}));
-  g.appendChild(svgText(qx-qLang/2, y+dicke+8, zLabel("querkraft","F_Q"),
+  g.appendChild(svgText(qx-qLang/2, y+dicke+62, zLabel("querkraft","F_Q"),
     {anchor:"middle", size:12, fill:"#dc2626", weight:700}));
 
   var rLang = Math.min(8 + FR * 112 / Math.max(0.001, b.querMax), 150);
   g.appendChild(ns("line",{x1:x0+40,y1:y+dicke-8,x2:x0+40+rLang,y2:y+dicke-8,
     stroke:"#16a34a","stroke-width":3,"marker-end":"url(#pfeilBgruen)"}));
-  g.appendChild(svgText(x0+40, y+dicke-20, zLabel("reibkraft","F_R"),
+  g.appendChild(svgText(x0+40, y+2*dicke+14, zLabel("reibkraft","F_R"),
     {size:12, fill:"#16a34a", weight:700}));
 
   g.appendChild(svgText(x0+breite-8, y+20, b.oben,
@@ -2018,7 +2033,11 @@ function mittellinie(g, x, y1, y2){
 function regelMarke(g, nr, x, y, tx, ty){
   var e = ns("g", {"class":"erklaer"});
   g.appendChild(e);
-  e.appendChild(ns("line", {x1:x, y1:y, x2:tx, y2:ty,
+  /* Die Linie endet am Rand des Kreises. Lief sie bis zu seinem
+     Mittelpunkt, lag sie unter der Nummer und kreuzte sie. */
+  var dx = tx - x, dy = ty - y, dl = Math.hypot(dx, dy) || 1;
+  e.appendChild(ns("line", {x1:x, y1:y,
+    x2:tx - dx / dl * 11, y2:ty - dy / dl * 11,
     stroke:"#2563eb", "stroke-width":0.9, "stroke-dasharray":"3 2"}));
   e.appendChild(ns("circle", {cx:tx, cy:ty, r:10, fill:"#eff6ff",
     stroke:"#2563eb", "stroke-width":1.4}));
@@ -2269,7 +2288,7 @@ function zeichneVerbindung(){
          das Gewindeende im Grundloch - und bei der Durchsteckschraubung
          ersatzweise auf die Kerndurchmesserlinie. */
       3: [[cx + rD*0.4, y3], [cx + rD + 62, einschraub ? yGewU - 46 : y3 - 30]],
-      4: [[cx - rDh, ySch1U + 12], [cx - rDh - 58, ySch1U - 6]],
+      4: [[cx - rDh, ySch1U + 12], [cx - rDh - 58, ySch1U - 36]],
       5: [[pl + 26, einschraub ? yP1U + 14 : yP1U], [pl - 34, yP1U + 26]],
       /* Die Marke lag genau auf der linken Pfeilspitze des Eckenmasses und
          hat sie zugedeckt. Sie steht jetzt links neben der Masslinie. */
@@ -2518,7 +2537,7 @@ function zeichneAbwickeln(){
     var achsMitte = abwickelPunkt(L / 2, L, Rt, delta, sk, cx, cy, 0, stauchung);
     achse.appendChild(ns("line", {x1:achsMitte.x, y1:cy + 16, x2:achsMitte.x, y2:cy - hoehe - 34,
       stroke:"#94a3b8", "stroke-width":1.2, "stroke-dasharray":"12 3 3 3"}));
-    achse.appendChild(svgText(achsMitte.x + 8, cy - hoehe - 24, "Schraubenachse",
+    achse.appendChild(svgText(achsMitte.x + 8, cy - hoehe - 74, "Schraubenachse",
       {size:11.5, fill:"#94a3b8", weight:600}));
   }
 
@@ -2685,7 +2704,10 @@ function zeichneVergleich(){
     /* Balken */
     g.appendChild(ns("rect", {x:bx+96, y:by-h, width:74, height:h, rx:4,
       fill: ueber ? "#dc2626" : "#2563eb"}));
-    g.appendChild(svgText(bx+180, by - h + 20, z(FV/1000,1) + " kN",
+    /* Die Zahl bleibt im Balken und ueber der Grundlinie - sonst liegt sie
+       auf der Streckgrenzlinie oder auf der Achse. */
+    g.appendChild(svgText(bx+180, Math.min(Math.max(by - h + 24, ys + 22), by - 12),
+      z(FV/1000,1) + " kN",
       {size:16, fill: ueber ? "#dc2626" : "#1d4ed8", weight:700}));
 
     /* Verschraubung daneben andeuten */
@@ -2768,12 +2790,15 @@ function zeichneStreuband(){
     fill:"#f1f5f9", opacity:0.8}));
   g.appendChild(ns("line", {x1:lx, y1:py(streck), x2:lx+bw, y2:py(streck),
     stroke:"#dc2626", "stroke-width":1.6}));
-  g.appendChild(svgText(lx+8, py(streck)-7, "Streckgrenze – darüber wird die Schraube überdehnt",
-    {size:11.5, fill:"#b91c1c", weight:700}));
+  /* Rechts an der Kennlinie: Links laeuft die Kurve genau dort hindurch. */
+  g.appendChild(svgText(lx+bw-8, py(streck)-14, "Streckgrenze – darüber wird die Schraube überdehnt",
+    {anchor:"end", size:11.5, fill:"#b91c1c", weight:700, hof:true}));
   g.appendChild(ns("line", {x1:lx, y1:py(mindest), x2:lx+bw, y2:py(mindest),
     stroke:"#64748b", "stroke-width":1.6, "stroke-dasharray":"6 4"}));
-  g.appendChild(svgText(lx+8, py(mindest)+16, "benötigte Spannkraft – darunter rutscht die Verbindung",
-    {size:11.5, fill:"#475569", weight:700}));
+  /* Unter der Kennlinie, aber ueber der Achsenbeschriftung. */
+  g.appendChild(svgText(lx+8, Math.min(py(mindest)+28, by-30),
+    "benötigte Spannkraft – darunter rutscht die Verbindung",
+    {size:11.5, fill:"#475569", weight:700, hof:true}));
 
   /* Kurve */
   var d = "";
@@ -2788,8 +2813,12 @@ function zeichneStreuband(){
   var bandVon = Math.max(myVon, myJetzt - 0.04), bandBis = Math.min(myBis, myJetzt + 0.04);
   g.appendChild(ns("rect", {x:px(bandVon), y:py(FbeiMy(bandVon)), width:px(bandBis)-px(bandVon),
     height:Math.abs(py(FbeiMy(bandBis)) - py(FbeiMy(bandVon))), fill:"#1d4ed8", opacity:0.12}));
-  g.appendChild(svgText((px(bandVon)+px(bandBis))/2, py(FbeiMy(bandBis))+16,
-    "übliche Streuung ±0,04", {anchor:"middle", size:11, fill:"#1d4ed8", weight:600}));
+  /* In die obere rechte Ecke des Bandes: Die Kurve laeuft von links oben
+     nach rechts unten hindurch, dort ist sie nicht. */
+  /* Als Legende oben rechts: Im Band selbst laeuft die Kurve hindurch, und
+     ueber und unter ihm wandern die beiden Kennlinien. */
+  g.appendChild(svgText(lx+8, py(maxF)+16,
+    "übliche Streuung ±0,04", {size:11, fill:"#1d4ed8", weight:600, hof:true}));
 
   /* Marke beim aktuellen Wert */
   var Fj = FbeiMy(myJetzt);
@@ -2797,8 +2826,15 @@ function zeichneStreuband(){
     stroke:"#1d4ed8", "stroke-width":1, "stroke-dasharray":"4 3"}));
   g.appendChild(ns("circle", {cx:px(myJetzt), cy:py(Fj), r:6, fill:"#1d4ed8",
     stroke:"#fff", "stroke-width":2}));
-  g.appendChild(svgText(px(myJetzt)+12, py(Fj)-10, z(Fj/1000,1) + " kN",
-    {size:13, fill:"#1d4ed8", weight:700}));
+  /* Die Marke wandert mit dem Regler, und an beiden Enden des Bildes steht
+     eine Zeile: links unten die benoetigte Spannkraft, rechts oben die
+     Streckgrenze. Die Zahl weicht deshalb nach der anderen Seite aus -
+     links herum nach oben, rechts herum nach unten. Dass eine Kennlinie
+     hindurchlaeuft, traegt der weisse Hof. */
+  var zahlOben = px(myJetzt) < lx + bw * 0.5;
+  g.appendChild(svgText(px(myJetzt)+14, py(Fj) + (zahlOben ? -14 : 26),
+    z(Fj/1000,1) + " kN",
+    {size:13, fill:"#1d4ed8", weight:700, hof:true}));
 
   var FoBand = FbeiMy(bandVon), FuBand = FbeiMy(bandBis);
   var t = el("bandText");
@@ -3035,7 +3071,9 @@ function zeichneSchraube(){
        aufhoert. */
     masslinie(g, (lMitKopf ? xKopfL : xKopfR), oy+rK, xEnde, oy+rD-kuppe,
       "l = " + z(l,0) + " mm", 52);
-    masslinie(g, xGewinde, oy+rD, xEnde, oy+rD-kuppe, "b = " + z(b,0) + " mm", 26);
+    /* Die Massszahl aus der Mitte geschoben: Dort laeuft die Masshilfslinie
+       des Laengenmasses hindurch. */
+    masslinie(g, xGewinde, oy+rD, xEnde, oy+rD-kuppe, "b = " + z(b,0) + " mm", 26, -34);
     masslinie(g, xEnde-kuppe, oy-rD, xEnde-kuppe, oy+rD, "d = " + z(m.d,0),
       24 + kuppe);
     if(form.typ === "hex"){
@@ -3225,9 +3263,10 @@ function zeichneVerspannung(){
     if(!klafft){
       g.appendChild(ns("line",{x1:xN, y1:py(0), x2:xN, y2:py(FKR),
         stroke:"#0f766e", "stroke-width":6, opacity:.85}));
-      g.appendChild(svgText(xN+10, py(FKR/2)+4,
+      /* Links vom Balken: Rechts faellt die Plattenkennlinie hindurch. */
+      g.appendChild(svgText(xN-10, py(FKR/2)+4,
         zLabel("restklemm","F_KR") + " = " + z(FKR,1) + " kN",
-        {size:12, fill:"#0f766e", weight:700}));
+        {anchor:"end", size:12, fill:"#0f766e", weight:700}));
     }
     g.appendChild(ns("line",{x1:xN, y1:by, x2:xN, y2:py(FSmax),
       stroke:"#94a3b8", "stroke-width":0.8, "stroke-dasharray":"3 3"}));
@@ -3239,8 +3278,12 @@ function zeichneVerspannung(){
   g.appendChild(svgText(lx-6, py(FV)+4, z(FV,0), {anchor:"end", size:11.5, fill:"#64748b"}));
   g.appendChild(svgText(lx-6, py(0)+4, "0", {anchor:"end", size:11.5, fill:"#64748b"}));
 
-  g.appendChild(svgText(px(fS*0.35), py(FV*0.42), "Schraube", {size:12.5, fill:"#2563eb", weight:700}));
-  g.appendChild(svgText(px(fS+fP*0.55), py(FV*0.42), "Bauteile", {size:12.5, fill:"#0f766e", weight:700}));
+  /* Unter die Kennlinien, nicht auf sie. */
+  /* Jeweils dreissig Einheiten unter ihrer Kennlinie. */
+  g.appendChild(svgText(px(fS*0.45), py(FV*0.45)+30, "Schraube",
+    {size:12.5, fill:"#2563eb", weight:700, hof:true}));
+  g.appendChild(svgText(px(fS+fP*0.55), py(FV*0.45)+30, "Bauteile",
+    {size:12.5, fill:"#0f766e", weight:700, hof:true}));
 
   el("ezFS").innerHTML  = z(FSmax,1) + " <span class='e'>kN</span>";
   el("ezFSA").innerHTML = z(FSA,1)   + " <span class='e'>kN</span>";

@@ -905,7 +905,9 @@ verfahren({
     if(schliessen < 1){
       pfad(g, "M"+(cx+30)+","+(y2u+4)+" A 22 22 0 1 1 "+(cx+26)+","+(y2u+21),
         "none", "#b45309", {sw:2.4, opacity:0.3 + 0.7*(1-schliessen)});
-      txt(g, cx+58, y2u+16, "anziehen", {fill:"#b45309", size:12,
+      /* Der Drehpfeil ist ein fast geschlossener Kreis von 22 Einheiten -
+         er reicht weiter nach rechts, als sein Anfangspunkt vermuten laesst. */
+      txt(g, cx+82, y2u+16, "anziehen", {fill:"#b45309", size:12,
         opacity:0.3 + 0.7*(1-schliessen)});
     }
     if(kraft > 0.02){
@@ -922,7 +924,9 @@ verfahren({
       }
       txt(g, rx+10, y1u+4, "Reibung hält", {fill:"#0f766e", size:11.5});
     }
-    txt(g, lx, oben-30, "gestrichelt: unbelasteter Zustand", {fill:C.grauS, size:11,
+    /* Unter die Zeichnung: Oben lief die Zeile durch den Kraftpfeil, der
+       auf der Schraubenachse steht. */
+    txt(g, 10, 268, "gestrichelt: unbelasteter Zustand", {fill:C.grauS, size:11,
       weight:400, opacity: kraft > 0.02 ? 1 : 0});
   }
 });
@@ -980,7 +984,9 @@ verfahren({
         pfad(g, "M"+x+","+(cy-nr-dehnung-14)+" q 6,-10 0,-20 q -6,-10 0,-20",
           "none", C.heiss, {sw:2, opacity:waerme*(1-kuehl)});
       }
-      txt(g, nabeX+80, cy-nr-30, "erwärmt", {fill:C.heiss, size:12,
+      /* Die Nabe faehrt von rechts ein. Stand die Beschriftung rechts von
+         ihr, lief sie am Anfang aus dem Bild - links ist immer Platz. */
+      txt(g, nabeX-84, cy-nr-34, "erwärmt", {anchor:"end", fill:C.heiss, size:12,
         opacity:waerme*(1-kuehl)});
     }
     if(kuehl > 0.2){
@@ -1064,8 +1070,10 @@ verfahren({
       bis:kopfAn - 14, sw:30, faseAn:"bis"});
 
     txt(g, cx+nr+14, cy-nr+16, "geschlitzte Nabe", {fill:C.bS, size:12});
-    txt(g, cx+nr+14, cy+4, "Welle", {fill:"#475569", size:12});
-    txt(g, cx+ab+12, by+4, "Klemmschraube", {fill:C.eS, size:12});
+    /* Nicht auf der Mittellinie. */
+    txt(g, cx+nr+14, cy-14, "Welle", {fill:"#475569", size:12});
+    /* Rechts neben dem Kraftpfeil, nicht auf ihm. */
+    txt(g, cx+ab+40, by+4, "Klemmschraube", {fill:C.eS, size:12});
 
     if(zieh > 0.05){
       [[-1,0],[1,0],[0,-1]].forEach(function(v){
@@ -1128,7 +1136,7 @@ verfahren({
     function kI(x){ return 58 - (xR  - x) * steig; }   /* Kegel am Innenring */
 
     rect(g, 10, cy - wr, 510, 2 * wr, "#e2e8f0", "#475569", {sw:1.6});
-    txt(g, 16, cy + 6, "Welle", {fill:"#475569", size:12});
+    txt(g, 16, cy - 8, "Welle", {fill:"#475569", size:12});
 
     [-1, 1].forEach(function(v){
       /* Nabe */
@@ -1151,11 +1159,18 @@ verfahren({
               " L" + xL + "," + (cy + v * kI(xL)) + " Z",
         "#cbd5e1", C.eS, {sw:1.8});
     });
-    txt(g, xN1 + 8, cy - rNa + 16, "Nabe", {fill:C.bS, size:12});
+    /* Links neben der Nabe: In ihr liegt die Benennung auf der Schraffur. */
+    txt(g, xN1 - 8, cy - rNa + 22, "Nabe", {anchor:"end", fill:C.bS, size:12});
     /* Die Beschriftung sitzt in der Flaeche des jeweiligen Rings, zwischen
        den beiden Pfeilpaaren. */
-    txt(g, 200, cy + 58, "Au\u00dfenring", {fill:C.eS, size:11.5});
-    txt(g, 344, cy + 46, "Innenring", {fill:C.eS, size:11.5});
+    /* Unter der Zeichnung, jede an der Stelle ihres Rings: In den Ringen
+       selbst ist zwischen Kegel und Aussenflaeche keine Zeile Platz, ohne
+       dass sie auf einer Kante liegt. */
+    /* Neben den Ringen, jede auf deren Hoehe: In den Ringen selbst liegt
+       die Benennung auf der Schraffur, unter der Zeichnung auf der
+       Bildunterschrift. */
+    txt(g, 142, cy + 58, "Au\u00dfenring", {anchor:"end", fill:C.eS, size:11.5});
+    txt(g, 480, cy + 50, "Innenring", {fill:C.eS, size:11.5});
 
     /* Die Spannschraube steckt im Flansch des Aussenrings - Kopf links an
        seiner Stirnflaeche - und laeuft durch den Flansch des Innenrings.
@@ -1190,7 +1205,8 @@ verfahren({
             "#dc2626", 2.2);
         }
       });
-      txt(g, 470, cy + 34, "radial pressen", {fill:"#dc2626", size:12});
+      /* Links unten: Rechts liegt die Mantellinie der Spannschraube. */
+      txt(g, 14, cy + 106, "radial pressen", {fill:"#dc2626", size:12});
     }
     txt(g, 12, 274,
       "Mutter anziehen \u2192 Innenring wandert in den Kegel \u2192 er presst auf Welle und Nabe",
@@ -1258,7 +1274,9 @@ verfahren({
       kraftpfeil(g, nabeX+54, cy-nr-14, nabeX-14, cy-nr-14, "#1d4ed8", 3);
       txt(g, nabeX+60, cy-nr-10, "aufschieben", {fill:"#1d4ed8", size:11.5});
       if(legen >= 1)
-        txt(g, nabeX+6, oben+16, "Nut über die ganze Nabenlänge",
+        /* Unter die Zeichnung: Ueber der Nabe steht schon der Pfeil zum
+           Aufschieben, in ihr laege der Satz auf der Schraffur. */
+        txt(g, nabeX+6, 246, "Nut über die ganze Nabenlänge",
           {fill:"#1d4ed8", size:11.5});
     }else{
       /* Das Spiel liegt ueber die ganze Nabenlaenge an, nicht nur ueber der
@@ -1285,7 +1303,8 @@ verfahren({
       rect(g, qx-kb, qy-rw-kt, 2*kb, 2*kt, C.eF, C.eS, {sw:1.6});
       kraftpfeil(g, qx-54, qy-rw+7, qx-kb-2, qy-rw+7, "#dc2626", 2.6);
       kraftpfeil(g, qx+54, qy-rw-6, qx+kb+2, qy-rw-6, "#dc2626", 2.6);
-      txt(g, qx, qy+rn+20, "Querschnitt", {anchor:"middle", fill:"#334155", size:12});
+      /* Unter das Ende der Mittellinie, nicht darauf. */
+      txt(g, qx, qy+rn+34, "Querschnitt", {anchor:"middle", fill:"#334155", size:12});
       auchVollteileSchneiden(false);
       txt(g, lx+2, cy+nr+34, "Die Flanken tragen – " + zWort("flaechenpressung") + ", kein Reibschluss",
         {fill:"#7c3aed", size:12});
@@ -1340,7 +1359,8 @@ verfahren({
     }
 
     pfad(g, kontur(cx, cy, wr, wr+zh, 0), "#e2e8f0", "#475569", {sw:1.6});
-    txt(g, cx, cy+4, "Zahnwelle", {anchor:"middle", fill:"#475569", size:12});
+    /* In der Mitte lag die Benennung auf der Zahnkontur. */
+    txt(g, cx-nr-12, cy+4, "Zahnwelle", {anchor:"end", fill:"#475569", size:12});
 
     /* Nabe als Ring: Aussenkreis plus Zahnkontur als Loch (evenodd), sonst
        deckt ihre Bohrung die Welle zu. Der Versatz von einer halben Teilung
@@ -1349,7 +1369,10 @@ verfahren({
     var ring = pfad(g, kreis(nx, cy, nr) + " " +
       kontur(nx, cy, wr+zh+spiel, wr+spiel, 0.5), C.bF, C.bS, {sw:1.8});
     ring.setAttribute("fill-rule", "evenodd");
-    txt(g, nx, cy-nr+22, "Nabe", {anchor:"middle", fill:C.bS, size:12});
+    /* Der Ring der Nabe ist nur gut zwanzig Einheiten breit - eine Zeile
+       darin liegt entweder auf dem Aussenkreis oder auf der Zahnkontur. */
+    /* Und neben der Mittellinie, nicht auf ihr. */
+    txt(g, nx+10, cy-nr-8, "Nabe", {fill:C.bS, size:12});
 
     if(schieben > 0 && schieben < 1){
       kraftpfeil(g, nx+nr+54, cy, nx+nr+8, cy, "#1d4ed8", 3);
@@ -1373,7 +1396,9 @@ verfahren({
 verfahren({
   id:"querstift",
   vollteile:["#e2e8f0","#dbeafe"],
-  achse:[[74,185,536,185],[300,113,300,257]], gruppe:"form", name:"Stiftverbindung",
+  /* Die senkrechte Mittellinie endet ueber der Bildunterschrift - sonst
+     laeuft sie mitten durch die Zeile. */
+  achse:[[74,185,536,185],[300,113,300,240]], gruppe:"form", name:"Stiftverbindung",
   prinzip:"Ein Stift geht quer durch Nabe und Welle. Er überträgt das " + wort("drehmoment") +
           " und sichert zugleich gegen axiales Verschieben.",
   phasen:[
@@ -1409,7 +1434,9 @@ verfahren({
     rect(g, cx-80, cy-nr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
     rect(g, cx-80, cy+wr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
     txt(g, lx+2, cy+wr+18, "Welle", {fill:"#475569", size:12});
-    txt(g, cx+16, cy-nr+18, "Nabe", {fill:C.bS, size:12});
+    /* Rechts neben der Nabe - in ihr liegt die Benennung auf der Schraffur. */
+    /* Ueber der Nabe: Auf ihrer Hoehe steht rechts der Abziehpfeil. */
+    txt(g, cx+88, cy-nr-16, "Nabe", {fill:C.bS, size:12});
 
     /* Die gemeinsam gebohrte Querbohrung ist ein Loch, kein Werkstoff: sie
        durchtrennt die Schraffur der Nabe und die Kontur der Welle. Zwei
@@ -1421,7 +1448,7 @@ verfahren({
     var stiftL = 2*nr, frei = cy - nr - 22;
     var stiftY = (frei - stiftL) + treiben*((cy - nr) - (frei - stiftL));
     rect(g, cx-sr, stiftY, 2*sr, stiftL, C.eF, C.eS, {sw:1.6});
-    txt(g, cx-sr-10, stiftY+16, "Stift", {anchor:"end", fill:C.eS, size:12});
+    txt(g, cx-88, stiftY+16, "Stift", {anchor:"end", fill:C.eS, size:12});
 
     if(treiben < 1){
       /* Der Treibpfeil steht neben dem Stift - ueber ihm ist am Anfang
@@ -1538,7 +1565,8 @@ verfahren({
   /* Zwei Achsen: die des Bolzens und, sobald der Splint sitzt, die seiner
      Querbohrung. */
   achse:function(t){
-    var a = [[300,36,300,272]];
+    /* Endet ueber der Bildunterschrift. */
+    var a = [[300,36,300,256]];
     if(stufe(t, 0.62, 0.82) > 0.05){
       var sy = 62 - 150 * (1 - stufe(t, 0.3, 0.58)) + 182;
       a.push([248, sy, 356, sy]);
@@ -1619,7 +1647,9 @@ verfahren({
     /* Der Bolzen wird laengs nicht geschnitten. */
     schaftSenkrecht(g, cx, r, by, by + 196, 4);
     rect(g, cx-r-10, by-19, 2*r+20, 19, C.eF, C.eS, {sw:1.8});
-    txt(g, cx+r+16, by-6, "Bolzen", {fill:C.eS, size:12});
+    /* Der Bolzen faehrt von oben ein und steht anfangs weit ueber dem
+       Bild. Seine Benennung bleibt im Bild stehen. */
+    txt(g, cx+r+16, Math.max(by-6, 28), "Bolzen", {fill:C.eS, size:12});
 
     if(splint > 0.05){
       /* Ein Splint sitzt quer zur Bolzenachse, dicht unter der Gabel - nur
@@ -1655,7 +1685,8 @@ verfahren({
       [fuge1, fuge2].forEach(function(y){
         linie(g, cx-r-14, y, cx+r+14, y, "#7c3aed", 2.4, {opacity:last});
       });
-      txt(g, cx+r+20, fuge1-6, "2 Scherflächen",
+      /* Rechts neben beiden Laschen - dazwischen liegt sie auf einer Kante. */
+      txt(g, 546, fuge1-6, "2 Scherflächen",
         {fill:"#7c3aed", size:12, opacity:last});
       txt(g, 58, gU+40, "Der Bolzen wird auf Abscheren belastet – hier zweischnittig",
         {fill:"#7c3aed", size:12, opacity:last});
@@ -1788,7 +1819,9 @@ verfahren({
     if(lauf < 1){
       linie(g, bx, cy, ende, cy, zustand.norm ? NORM_KANTE : "#94a3b8",
         zustand.norm ? NORM_SCHMAL : 1.4, {dash:"7 5"});
-      txt(g, Math.min(rx-120, bx+40), cy-6, "Spalt", {fill:"#94a3b8", size:11.5});
+      /* Nicht auf der Spaltlinie selbst - die Fuge ist nur so breit wie
+         eine Zeile hoch. */
+      txt(g, Math.min(rx-120, bx+40), cy-20, "Spalt", {fill:"#94a3b8", size:11.5});
     }
 
     /* erstarrte Naht: Band auf der Fuge, darauf die typischen Schuppen */
@@ -1814,7 +1847,7 @@ verfahren({
       linie(g, bx, cy-36, bx, cy-18, "#334155", 2);
       pfad(g, "M"+(bx-16)+","+(cy-18)+" L"+bx+","+(cy-2)+" L"+(bx+16)+","+(cy-18)+" Z",
         C.glut, "none", {opacity:0.9});
-      txt(g, bx-18, cy-98, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
+      txt(g, bx-18, cy-104, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
       kraftpfeil(g, bx+34, cy-70, bx+72, cy-70, "#334155", 2.2);
       txt(g, bx+78, cy-66, "Vorschub", {fill:"#334155", size:11.5});
     }
@@ -1962,7 +1995,7 @@ verfahren({
 verfahren({
   id:"nieten",
   vollteile:["#dbeafe"],
-  achse:[[300,48,300,182]], gruppe:"sonder", name:"Nieten",
+  achse:[[300,48,300,168]], gruppe:"sonder", name:"Nieten",
   prinzip:"Der Nietschaft wird gestaucht. Er füllt die Bohrung formschlüssig aus und zieht " +
           "die Bleche zugleich kraftschlüssig zusammen.",
   wirkt:"form- und kraftschlüssig",
@@ -1993,7 +2026,7 @@ verfahren({
     var kh = 4 + 12*stauch, kb = 16 + 20*stauch;
     pfad(g, "M"+(cx-kb)+","+y2u+" Q "+cx+","+(y2u+kh*1.8)+" "+(cx+kb)+","+y2u+" Z",
       C.eF, C.eS, {sw:1.6});
-    txt(g, cx+kb+12, y2u+12, "Schließkopf", {fill:C.eS, size:12});
+    txt(g, cx+kb+12, y2u+30, "Schließkopf", {fill:C.eS, size:12});
     txt(g, cx+34, oben-4, "Setzkopf", {fill:C.eS, size:12});
 
     if(stauch > 0 && stauch < 1){
@@ -2065,7 +2098,7 @@ verfahren({
     if(fliess > 0.2){
       kraftpfeil(g, cx-breite-40, cy+tief+8, cx-breite-10, cy+tief+8, "#7c3aed", 2.4);
       kraftpfeil(g, cx+breite+40, cy+tief+8, cx+breite+10, cy+tief+8, "#7c3aed", 2.4);
-      txt(g, cx+breite+46, cy+tief+12, "Hinterschnitt", {fill:"#7c3aed", size:12});
+      txt(g, cx+breite+150, cy+tief+12, "Hinterschnitt", {fill:"#7c3aed", size:12});
     }
   }
 });
@@ -2125,7 +2158,11 @@ verfahren({
     schaftSenkrecht(g, cx, rd, sy, sy + 66, 5);
     gewindeSenkrecht(g, cx, rd, sy + 8, sy + 66, 5);
     sechskantAnsicht(g, {achse:cx, von:sy, bis:sy-20, sw:32, faseAn:"bis"});
-    txt(g, cx+54, sy-8, "Schraube", {fill:C.eS, size:12});
+    /* Die Schraube kommt von weit oben herein - ihre Benennung bleibt im
+       Bild. */
+    /* Links von der Schraube: Rechts steht der Hinweis zur Sicherung. */
+    txt(g, cx-54, Math.max(sy-8, 26), "Schraube",
+      {anchor:"end", fill:C.eS, size:12});
 
     if(auftrag > 0){
       var f = haerten > 0.4 ? "#a78bfa" : C.kleb;
@@ -2146,7 +2183,7 @@ verfahren({
       pfad(g, "M"+(cx+70)+","+(cy-tiefe+40)+" A 34 34 0 1 0 "+(cx+70)+","+(cy-tiefe+42),
         "none", "#dc2626", {sw:2.4, opacity:haerten});
       linie(g, cx+52, cy-tiefe+26, cx+92, cy-tiefe+62, "#dc2626", 3, {opacity:haerten});
-      txt(g, cx+104, cy-tiefe+50, "kein Losdrehen mehr",
+      txt(g, cx+156, cy-tiefe+50, "kein Losdrehen mehr",
         {fill:"#dc2626", size:12, opacity:haerten});
     }
   }
