@@ -687,10 +687,10 @@ function zahl(x, n){ return x.toFixed(n === undefined ? 1 : n).replace(".", ",")
 /* ---------- Kontur ---------- */
 
 var GRUENDE = {
-  stirn_links: ["Querplandrehen",
-    "Eine Stirnfläche steht senkrecht zur Achse - die Schneide läuft quer, von "
-    + "außen nach innen. Anschließend wird zentriert, damit die Reitstockspitze "
-    + "einen Sitz hat."],
+  stirn_links: ["Abstechdrehen",
+    "Sie liegt zum Futter hin. Vom Stangenmaterial getrennt wird das Werkstück "
+    + "zuletzt, und genau dabei entsteht diese Fläche - danach hält nichts mehr. "
+    + "Ihre Zentrierbohrung kommt nach dem Umspannen dazu."],
   mantel_20: ["Längsrunddrehen, Schlichten",
     "Zylindrische Mantelfläche mit Rz 4. Geschruppt wurde sie vorher; fertig "
     + "macht sie der Schlichtgang."],
@@ -715,16 +715,18 @@ var GRUENDE = {
   gewinde: ["Gewindedrehen",
     "M20×1: Der Vorschub ist die Steigung, also 1 mm je Umdrehung. Die volle "
     + "Tiefe entsteht in sechs Zustellungen plus Leerdurchläufen."],
-  stirn_rechts: ["Abstechdrehen",
-    "Sie entsteht beim Trennen vom Stangenmaterial. Danach hält das Werkstück "
-    + "nicht mehr - Abstechen ist immer der letzte Drehvorgang."]
+  stirn_rechts: ["Querplandrehen",
+    "Das freie Ende liegt rechts, also fängt die Bearbeitung hier an: Die "
+    + "Schneide läuft quer zur Achse, von außen nach innen. Anschließend wird "
+    + "zentriert, damit die Reitstockspitze einen Sitz hat."]
 };
 
 var ABLAUF = [
   ["Rohteil prüfen, einspannen, mit der Reitstockspitze stützen",
    "Ohne geprüftes Halbzeug und feste Spannung fängt niemand an."],
-  ["Linke Stirnfläche querplandrehen und zentrieren",
-   "Schafft die Bezugsfläche für alle Längenmaße und den Sitz für die Spitze."],
+  ["Rechte Stirnfläche querplandrehen und zentrieren",
+   "Das freie Ende zuerst - es schafft die Bezugsfläche für alle Längenmaße "
+   + "und den Sitz für die Spitze."],
   ["Absätze längsrunddrehen, schruppen",
    "Erst das Volumen weg. Das Schlichtaufmaß bleibt stehen."],
   ["Kontur schlichten",
