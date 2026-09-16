@@ -1031,7 +1031,7 @@ function konturZeichnen(){
      bleibt. Ohne `masseUnten` laufen die Hinweislinien in die obere
      Masskette - siehe den Hinweis bei `wellenBezeichnungen`. */
   var o = {s:5.8, masse:true, masseUnten:true, bezeichnungen:true,
-           rauheiten:true, radien:true};
+           rauheiten:true, radien:true, zentrierbohrungen:true};
   var g = wellenGroesse(WELLE, o);
   var svg = bild("bildKontur", g.breite, g.hoehe,
     "Die Mitnehmerwelle mit allen Maßen",
