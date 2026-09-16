@@ -132,7 +132,7 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
 <header>
   <h1>Planung eines Drehprozesses</h1>
   <p class="lead">In fünf Schritten vom Werkstück zum Arbeitsplan &ndash;
-    durchgehend an der Antriebswelle.</p>
+    durchgehend an der Mitnehmerwelle.</p>
 </header>
 
 <div class="tabs" role="tablist" data-druck="weg">
@@ -172,7 +172,7 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
 
   <div class="karte">
     <h2>Das Werkstück</h2>
-    <p class="sub">Antriebswelle aus 42CrMo4, Rohteil Ø32 × 135 mm.</p>
+    <p class="sub">Mitnehmerwelle aus C45E +QT, Rohteil Ø38 × 112 mm.</p>
     <figure id="bildKontur"></figure>
     <div class="knopfreihe" id="flaechenknoepfe" data-druck="weg"></div>
     <div class="ergebnis" id="flaecheInfo">Eine Fläche wählen &ndash; dann steht
@@ -265,7 +265,8 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     <div class="hinweis"><b>Die Ausnahme, die alles entscheidet:</b> P heißt
       Stahl &ndash; aber nicht jeder Stahl ist P. Nichtrostend wird ein Stahl ab
       etwa 10,5 % Chrom, und dann trägt er ein <b>X</b> vor der Bezeichnung.
-      42CrMo4 hat rund 1 % Chrom, kein X &ndash; also P.</div>
+      C45E hat gar kein Chrom, 42CrMo4 rund 1 % &ndash; beide ohne X, beide
+      P.</div>
   </div>
 
   <div class="karte">
@@ -275,8 +276,8 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
       Stahl ist dort weicher. Deshalb hat jede Zeile mehrere Spalten:
       ≤ 16 mm, über 16 bis 40 mm, und so weiter.</p>
     <p>Man nimmt die Spalte, in die das <b>Werkstück</b> fällt, nicht die, die
-      am besten aussieht. Für die Antriebswelle mit dem größten Durchmesser 30 mm
-      ist das die Spalte „über 16 bis 40".</p>
+      am besten aussieht. Für die Mitnehmerwelle mit dem größten Durchmesser
+      36 mm ist das die Spalte „über 16 bis 40".</p>
     <div class="merk"><b>Merksatz:</b> Werkstoffname, Behandlungszustand und
       Durchmesser &ndash; erst diese drei zusammen ergeben eine
       Zugfestigkeit.</div>
@@ -314,8 +315,8 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
       <span></span>
 
       <label for="sD">Durchmesser d in mm</label>
-      <input type="range" id="sD" min="10" max="80" step="1" value="30">
-      <output id="sDaus">30 mm</output>
+      <input type="range" id="sD" min="10" max="80" step="1" value="32">
+      <output id="sDaus">32 mm</output>
     </div>
 
     <div class="ergebnis" id="schnittInfo"></div>
@@ -481,12 +482,12 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
       <div>
         <div class="regler">
           <label for="vF">Vorschub f</label>
-          <input type="range" id="vF" min="0.05" max="0.6" step="0.01" value="0.16">
-          <output id="vFaus">0,16 mm</output>
+          <input type="range" id="vF" min="0.05" max="0.6" step="0.01" value="0.14">
+          <output id="vFaus">0,14 mm</output>
 
           <label for="vR">Eckenradius r<sub>ε</sub></label>
-          <input type="range" id="vR" min="0.2" max="1.6" step="0.2" value="0.8">
-          <output id="vRaus">0,8 mm</output>
+          <input type="range" id="vR" min="0.2" max="1.6" step="0.2" value="0.6">
+          <output id="vRaus">0,6 mm</output>
         </div>
         <div class="ergebnis" id="vorschubInfo"></div>
       </div>
@@ -509,12 +510,16 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     <span class="formel">r<sub>ε</sub> &le; r<sub>w</sub> &minus; 0,1 mm</span>
     <p>r<sub>w</sub> ist die <b>kleinste</b> Innenrundung des Werkstücks
       &ndash; und die steht selten als Radius in der Zeichnung.</p>
-    <div class="hinweis"><b>Der klassische Fehler:</b> nur die
-      Durchmesserübergänge ansehen. An der Antriebswelle fällt der Blick auf die
-      <b>R1</b> am Bund, und man wählt 0,8 mm. Enger sind aber die beiden
-      Freistiche <b>DIN 509 – E 0,6 × 0,3</b>: Die erste Zahl der
-      Bezeichnung <i>ist</i> der Radius. Damit gilt r<sub>ε</sub> ≤
-      0,6 − 0,1 = 0,5 mm, genormt also <b>0,4 mm</b>.</div>
+    <div class="hinweis"><b>Der klassische Fehler:</b> nur den größten
+      Übergang ansehen. An der Mitnehmerwelle fällt der Blick auf die
+      <b>R1,6</b> am Bund, und man wählt 1,2 mm. Enger ist aber die
+      <b>R0,8</b> am ersten Absatz. Damit gilt r<sub>ε</sub> ≤
+      0,8 − 0,1 = 0,7 mm, genormt also <b>0,6 mm</b>.</div>
+    <div class="hinweis"><b>Und die engste Stelle steht oft gar nicht als
+      Radius da.</b> Trägt eine Welle <b>Freistiche nach DIN 509</b>, ist die
+      erste Zahl der Bezeichnung der Radius: Bei <b>E 0,6 × 0,3</b> sind das
+      0,6 mm, und damit ist der Freistich enger als jede sichtbare Rundung.
+      Wer nur die Durchmesserübergänge absucht, übersieht ihn.</div>
     <p>Die Regel gilt dem Werkzeug, das die Kontur <i>erzeugt</i>. Beim
       Konturdrehen auf der CNC fährt das Schlichtwerkzeug auch durch die
       Freistiche, also bindet deren Radius. Werden sie mit einem eigenen
@@ -529,8 +534,8 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
 
   <div class="karte">
     <h2>Wo kein Vorschub zu wählen ist</h2>
-    <p><b>Beim Gewindedrehen</b> ist der Vorschub die Steigung: f = P. Bei M20×1
-      also 1 mm je Umdrehung. Was bleibt, ist die Zahl der Zustellungen &ndash;
+    <p><b>Beim Gewindedrehen</b> ist der Vorschub die Steigung: f = P. Bei M24×2
+      also 2 mm je Umdrehung. Was bleibt, ist die Zahl der Zustellungen &ndash;
       sie steht im Tabellenbuch nach Steigung geordnet, dazu zwei bis vier
       Leerdurchläufe zum Glätten.</p>
     <p><b>Beim Einstechen und Abstechen</b> ist der Vorschub klein und fest:
@@ -652,7 +657,7 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
 
 <script src="assets/drehteil.js"></script>
 
-<script>var WELLE = WELLEN.antriebswelle;</script>
+<script>var WELLE = WELLEN.mitnehmerwelle;</script>
 <script>
 "use strict";
 
@@ -695,30 +700,27 @@ var GRUENDE = {
     "Sie liegt zum Futter hin. Vom Stangenmaterial getrennt wird das Werkstück "
     + "zuletzt, und genau dabei entsteht diese Fläche - danach hält nichts mehr. "
     + "Ihre Zentrierbohrung kommt nach dem Umspannen dazu."],
-  mantel_20: ["Längsrunddrehen, Schlichten",
-    "Zylindrische Mantelfläche mit Rz 4. Geschruppt wurde sie vorher; fertig "
+  mantel_26: ["Längsrunddrehen, Schlichten",
+    "Zylindrische Mantelfläche mit Rz 6,3. Geschruppt wurde sie vorher; fertig "
     + "macht sie der Schlichtgang."],
   nut_a: ["Einstechdrehen",
     "Eine 1,3 mm breite Nut entsteht durch ein Werkzeug, das quer einsticht. "
     + "Die Nutbreite ist die Schneidenbreite."],
-  schulter_22: ["Querplandrehen",
+  schulter_18: ["Querplandrehen",
     "Auch ein Absatz steht senkrecht zur Achse - dieselbe Bewegung wie bei der "
-    + "Stirnfläche. Der Freistich DIN 509 an seinem Fuß wird eingestochen."],
-  mantel_24: ["Längsrunddrehen, Schlichten",
-    "Mantelfläche mit Rz 6 - auch das verlangt einen Schlichtgang."],
-  bund_30: ["Längsrunddrehen, Schruppen",
+    + "Stirnfläche. An seinem Fuß sitzt die Rundung R0,8; sie ist die engste "
+    + "Innenrundung der ganzen Kontur."],
+  mantel_32: ["Längsrunddrehen, Schlichten",
+    "Der Lagersitz, der längste Abschnitt - und mit Rz 4 der genaueste."],
+  bund_36: ["Längsrunddrehen, Schruppen",
     "Der Bund trägt nur Rz 10, die allgemeine Rautiefe der Zeichnung. Was "
     + "geschruppt ist, reicht - ein Schlichtgang wäre verschenkte Zeit."],
-  mantel_25: ["Längsrunddrehen, Schlichten",
-    "Der längste Abschnitt und der zweite Lagersitz mit Rz 4."],
-  nut_b: ["Einstechdrehen",
-    "Wie Nut A: quer einstechen, Breite gleich Schneidenbreite."],
   freistich: ["Einstechdrehen",
     "Der Gewindefreistich DIN 76 - A wird eingestochen, damit das "
     + "Gewindewerkzeug auslaufen kann. Ohne ihn liefe es in die Schulter."],
   gewinde: ["Gewindedrehen",
-    "M20×1: Der Vorschub ist die Steigung, also 1 mm je Umdrehung. Die volle "
-    + "Tiefe entsteht in sechs Zustellungen plus Leerdurchläufen."],
+    "M24×2: Der Vorschub ist die Steigung, also 2 mm je Umdrehung. Die volle "
+    + "Tiefe entsteht in zehn Zustellungen plus Leerdurchläufen."],
   stirn_rechts: ["Querplandrehen",
     "Das freie Ende liegt rechts, also fängt die Bearbeitung hier an: Die "
     + "Schneide läuft quer zur Achse, von außen nach innen. Anschließend wird "
@@ -752,8 +754,8 @@ function konturZeichnen(){
   var o = {s:5.8, bezeichnungen:true};
   var g = wellenGroesse(WELLE, o);
   var svg = bild("bildKontur", g.breite, g.hoehe,
-    "Die Antriebswelle mit Benennungen",
-    "Antriebswelle aus 42CrMo4. Über die Schaltflächen lässt sich jede Fläche "
+    "Die Mitnehmerwelle mit Benennungen",
+    "Mitnehmerwelle aus C45E. Über die Schaltflächen lässt sich jede Fläche "
     + "hervorheben.");
   var z = {x:g.x, y:g.y, s:o.s, bezeichnungen:true};
   if(gewaehlteFlaeche) z.markiert = [gewaehlteFlaeche];
@@ -795,6 +797,10 @@ function konturZeichnen(){
 /* Werkstoffe, wie sie im Unterricht vorkommen. Die Zugfestigkeiten gelten
    für Walzdurchmesser über 16 bis 40 mm im Zustand +QT. */
 var WERKSTOFFE = [
+  {name:"C45E", nr:"1.1191", zu:"+QT", rm:"650…800", mitte:725,
+   gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &gt; 650",
+   wie:"Unlegierter Vergütungsstahl, 0,45 % Kohlenstoff - der Werkstoff der "
+     + "Mitnehmerwelle."},
   {name:"42CrMo4", nr:"1.7225", zu:"+QT", rm:"1000…1200", mitte:1100,
    gruppe:"P", zeile:"Vergütungsstahl, legiert, R<sub>m</sub> &gt; 750",
    wie:"Legierter Vergütungsstahl. Chrom im Namen, aber kein X davor - also "
@@ -802,9 +808,6 @@ var WERKSTOFFE = [
   {name:"34Cr4", nr:"1.7033", zu:"+QT", rm:"800…950", mitte:875,
    gruppe:"P", zeile:"Vergütungsstahl, legiert, R<sub>m</sub> &gt; 750",
    wie:"Legierter Vergütungsstahl, etwas weicher als 42CrMo4 - dieselbe Zeile."},
-  {name:"C45E", nr:"1.1191", zu:"+QT", rm:"650…800", mitte:725,
-   gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &gt; 650",
-   wie:"Unlegierter Vergütungsstahl, 0,45 % Kohlenstoff."},
   {name:"C25E", nr:"1.1158", zu:"+QT", rm:"500…650", mitte:575,
    gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &le; 650",
    wie:"Derselbe Stahltyp, eine Zeile tiefer - allein wegen der "
@@ -835,18 +838,18 @@ function werkstoffZeigen(){
 
 /* ---------- Schnittdaten ---------- */
 
-/* Die Zeile "P / Vergütungsstahl, legiert, Rm > 750":
+/* Die Zeile "P / Vergütungsstahl, unlegiert, Rm > 650" - die des C45E:
    [unterer Grenzwert, Startwert, oberer Grenzwert] in m/min. */
 var VERFAHREN = [
-  {id:"plan",   name:"Querplandrehen",              w:[80, 130, 180],
+  {id:"plan",   name:"Querplandrehen",              w:[110, 200, 280],
    ap:"1…2 mm", f:"0,1…0,2 mm"},
-  {id:"schrupp", name:"Längsrunddrehen, Schruppen",  w:[70, 110, 160],
+  {id:"schrupp", name:"Längsrunddrehen, Schruppen",  w:[110, 150, 200],
    ap:"2…6 mm", f:"0,25…0,6 mm"},
-  {id:"schlicht", name:"Längsrunddrehen, Schlichten", w:[100, 150, 200],
+  {id:"schlicht", name:"Längsrunddrehen, Schlichten", w:[190, 250, 310],
    ap:"0,5…2 mm", f:"0,1…0,25 mm"},
-  {id:"stech",  name:"Abstech- und Einstechdrehen", w:[95, 105, 115],
+  {id:"stech",  name:"Abstech- und Einstechdrehen", w:[110, 120, 130],
    ap:"Schneidenbreite", f:"0,05…0,15 mm"},
-  {id:"gewinde", name:"Gewindedrehen",               w:[90, 100, 110],
+  {id:"gewinde", name:"Gewindedrehen",               w:[105, 115, 125],
    ap:"Zustellungen", f:"f = P"}
 ];
 
