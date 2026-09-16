@@ -1031,7 +1031,8 @@ function konturZeichnen(){
      bleibt. Ohne `masseUnten` laufen die Hinweislinien in die obere
      Masskette - siehe den Hinweis bei `wellenBezeichnungen`. */
   var o = {s:5.8, masse:true, masseUnten:true, bezeichnungen:true,
-           rauheiten:true, radien:true, zentrierbohrungen:true};
+           rauheiten:true, radien:true, zentrierbohrungen:true,
+           einzelheiten:true};
   var g = wellenGroesse(WELLE, o);
   var svg = bild("bildKontur", g.breite, g.hoehe,
     "Die Mitnehmerwelle mit allen Maßen",
@@ -1044,12 +1045,17 @@ function konturZeichnen(){
   if(gewaehlteFlaeche) z.markiert = [gewaehlteFlaeche];
   zeichneWelle(svg, WELLE, z);
 
+  /* Zehnfach gegenueber der Ansicht - der Massstab gehoert ans Bild
+     (Tabellenbuch Seite 74). */
   var nut = WELLE.nuten[0];
-  var sn = bild("bildNut", 430, 160,
+  var vergr = 10, ge = nutEinzelheitGroesse(WELLE, {s: o.s * vergr});
+  var sn = bild("bildNut", ge.breite, ge.hoehe,
     "Einzelheit der Sicherungsringnut, stark vergrößert",
-    "<strong>Einzelheit " + nut.marke + "</strong> &ndash; Nutgrund Ø"
+    "<strong>Einzelheit " + nut.marke + "</strong> &ndash; wo sie liegt, "
+    + "sagt der Kreis in der Ansicht darüber. Nutgrund Ø"
     + (nut.d - 2 * nut.tiefe) + ", linke Flanke bei " + nut.bei + " mm.");
-  zeichneNutEinzelheit(sn, WELLE, {marke:nut.marke, s:70, x:130, y:60});
+  zeichneNutEinzelheit(sn, WELLE, {marke:nut.marke, s:ge.s, x:ge.x,
+    y:ge.y, massstab:vergr});
 }
 
 (function konturAufbauen(){
