@@ -1,1 +1,1078 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="art" content="lektion"><title>Fertigungstechnik: Zerspanung - Planung eines Drehprozesses</title><meta name="description" content="In fünf Schritten vom Werkstück zum Arbeitsplan: Kontur und Drehverfahren, Werkstoff und Schnittgeschwindigkeit, Werkzeugauswahl, Vorschub und Rautiefe, Aufmaße und Sicherheit."><style>:root{  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;  --text:#0f172a; --muted:#64748b;  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;  --s1:#1d4ed8; --s2:#0f766e; --s3:#a16207; --s4:#b45309; --s5:#9333ea;}*{box-sizing:border-box}body{  margin:0; background:var(--bg); color:var(--text); line-height:1.6;  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;}/* Oben Platz fuer den schwebenden Ruecklink. */.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}header p.lead{color:var(--muted); margin:0 0 16px}.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border);  margin-bottom:20px}.tabs button{  border:0; background:none; padding:10px 16px; cursor:pointer;  font:600 .95rem/1.4 inherit; color:var(--muted);  border-bottom:3px solid transparent; margin-bottom:-2px;}.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}.tabs button:hover{color:var(--primary)}.panel[hidden]{display:none}.karte{  background:var(--card); border:1px solid var(--border); border-radius:12px;  padding:18px 20px; margin-bottom:18px;}.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}.karte > h3{margin:18px 0 6px; font-size:1rem}.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}@media (max-width:760px){ .zwei{grid-template-columns:1fr} }figure{margin:0}figure svg{width:100%; height:auto; display:block}figcaption{font-size:.82rem; color:var(--muted); margin-top:6px}table{border-collapse:collapse; width:100%; font-size:.92rem}th,td{border:1px solid var(--border); padding:7px 10px; text-align:left;  vertical-align:top}th{background:var(--primary-light); font-weight:600}td.zahl{font-variant-numeric:tabular-nums; white-space:nowrap}.hinweis{  border-left:4px solid var(--accent); background:#fff7ed;  padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0;  font-size:.92rem;}.merk{  border-left:4px solid var(--ok); background:#f0fdf4;  padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0;  font-size:.92rem;}.formel{  display:block; margin:12px 0; padding:11px 14px; border-radius:10px;  background:var(--primary-light); border:1px solid var(--border);  font-size:1.05rem; text-align:center; font-variant-numeric:tabular-nums;}.buch{  display:block; margin:10px 0 0; padding:8px 12px; font-size:.86rem;  border-left:3px solid var(--s2); border-radius:0 8px 8px 0;  background:#f0fdfa;}/* Bedienung: Regler und Auswahl */.regler{display:grid; grid-template-columns:auto 1fr auto; gap:8px 12px;  align-items:center; margin:10px 0; font-size:.92rem}.regler output{font-variant-numeric:tabular-nums; font-weight:700;  min-width:6.5em; text-align:right}select, input[type="text"]{  font:inherit; font-size:.92rem; padding:7px 9px; border-radius:8px;  border:1px solid var(--border-strong); background:var(--card);  color:inherit;}.knopfreihe{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0}.knopfreihe button{  font:600 .9rem/1 inherit; padding:9px 14px; border-radius:999px;  border:1px solid var(--border-strong); background:var(--card);  color:inherit; cursor:pointer;}.knopfreihe button[aria-pressed="true"]{  background:var(--primary); border-color:var(--primary); color:#fff;}.ergebnis{  margin:14px 0 0; padding:12px 14px; border-radius:10px;  background:var(--primary-light); border:1px solid var(--border);  font-size:.95rem; line-height:1.9;}.ergebnis b{font-variant-numeric:tabular-nums}/* Die fuenf Schritte als Kette */ol.kette{list-style:none; counter-reset:kette; margin:0; padding:0;  display:grid; gap:10px}ol.kette li{counter-increment:kette; display:flex; gap:12px;  align-items:flex-start;  background:var(--card); border:1px solid var(--border);  border-radius:10px; padding:12px 14px}/* Titel und Erklaerung bilden einen Block - sonst rutscht die Erklaerung in   die naechste Rasterzeile und steht unter der Nummer. */ol.kette li > div{flex:1}ol.kette li::before{  flex:0 0 auto;  content:counter(kette); display:inline-flex; align-items:center;  justify-content:center; width:30px; height:30px; border-radius:8px;  background:var(--primary); color:#fff; font-weight:700; font-size:.95rem;}ol.kette b{display:block}ol.kette span{font-size:.9rem; color:var(--muted)}</style><script src="assets/thema.js"></script><link rel="stylesheet" href="assets/thema-werkzeug.css"></head><body><div class="wrap"><header>  <h1>Planung eines Drehprozesses</h1>  <p class="lead">In fünf Schritten vom Werkstück zum Arbeitsplan &ndash;    durchgehend an der Antriebswelle.</p></header><div class="tabs" role="tablist" data-druck="weg">  <button role="tab" data-tab="kontur"    aria-selected="true">Kontur</button>  <button role="tab" data-tab="werkstoff" aria-selected="false">Werkstoff</button>  <button role="tab" data-tab="schnitt"   aria-selected="false">Schnittdaten</button>  <button role="tab" data-tab="werkzeug"  aria-selected="false">Werkzeug</button>  <button role="tab" data-tab="vorschub"  aria-selected="false">Vorschub</button>  <button role="tab" data-tab="hinweise"  aria-selected="false">Aufmaße und Sicherheit</button></div><main><!-- ===================================================== KONTUR --><section class="panel" id="p-kontur">  <div class="karte">    <h2>Fünf Schritte, eine Reihenfolge</h2>    <p class="sub">Jeder Schritt braucht das Ergebnis des vorigen.</p>    <ol class="kette">      <li><div><b>Kontur analysieren und Drehverfahren wählen</b>        <span>Welche Fläche entsteht wodurch &ndash; und in welcher          Reihenfolge?</span></div></li>      <li><div><b>Schnittgeschwindigkeit v<sub>c</sub> und Schnitttiefe a<sub>p</sub>        bestimmen</b>        <span>Über Werkstoff, Werkstoffgruppe und Bearbeitungsbedingungen.</span></div></li>      <li><div><b>Werkzeuge genau auswählen</b>        <span>Plattengeometrie, Grundform, Klemmhalter &ndash; und daraus die          Normbezeichnung.</span></div></li>      <li><div><b>Vorschübe berechnen und bestimmen</b>        <span>Beim Schlichten aus der geforderten Rautiefe, sonst aus der          Tabelle.</span></div></li>      <li><div><b>Aufmaße bedenken, Sicherheitsmaßnahmen planen</b>        <span>Alles, was ins Hinweisfeld des Arbeitsplans gehört.</span></div></li>    </ol>  </div>  <div class="karte">    <h2>Das Werkstück</h2>    <p class="sub">Antriebswelle aus 42CrMo4, Rohteil Ø32 × 135 mm.</p>    <figure id="bildKontur"></figure>    <div class="knopfreihe" id="flaechenknoepfe" data-druck="weg"></div>    <div class="ergebnis" id="flaecheInfo">Eine Fläche wählen &ndash; dann steht      hier, welches Drehverfahren sie erzeugt und warum.</div>    <p class="buch"><b>Nachschlagen:</b> Die Übersicht der Drehverfahren zeigt      zu jedem Verfahren die Bewegung, das Werkzeug und die Schnittgrößen.</p>  </div>  <div class="karte">    <h2>Die sechs Drehverfahren</h2>    <table>      <thead><tr><th>Verfahren</th><th>Werkzeug</th><th>Schnittgrößen</th></tr></thead>      <tbody>        <tr><td>Querplandrehen</td>          <td>Plan- oder Schruppdrehmeißel<br>ε = 80°/90°, κ = 45°…97°,            r<sub>ε</sub> = 0,8…1,2 mm</td>          <td class="zahl">f = 0,1…0,2 mm<br>a<sub>p</sub> = 1…2 mm</td></tr>        <tr><td>Längsrunddrehen, Schruppen</td>          <td>Schruppdrehmeißel<br>ε = 80°/55°, κ = 93°…95°</td>          <td class="zahl">f = 0,25…0,6 mm<br>a<sub>p</sub> = 2…6 mm</td></tr>        <tr><td>Längsrunddrehen, Schlichten</td>          <td>Schlichtdrehmeißel<br>ε = 55°/35°, κ = 93°…107,5°,            r<sub>ε</sub> = 0,2…0,8 mm</td>          <td class="zahl">f = 0,1…0,25 mm<br>a<sub>p</sub> = 0,5…2 mm</td></tr>        <tr><td>Gewindedrehen</td>          <td>Gewindedrehmeißel<br>ε = 60° metrisch, 55° Whitworth,            30° Trapez</td>          <td class="zahl">f = P (Steigung)<br>i = Zustellungen + Leerschnitte</td></tr>        <tr><td>Abstech- und Einstechdrehen</td>          <td>Abstech-, Einstechdrehmeißel<br>Schnittbreite = Schneidenbreite</td>          <td class="zahl">f = 0,05…0,15 mm<br>a<sub>p</sub> = 0,6…6 mm</td></tr>        <tr><td>Innendrehen, Schlichten</td>          <td>Innenschlichtdrehmeißel<br>ε = 35°/55°, κ = 93°…107,5°</td>          <td class="zahl">f = 0,05…0,2 mm<br>a<sub>p</sub> = 0,5…1 mm</td></tr>      </tbody>    </table>    <div class="hinweis">Beim <b>Konturdrehen von Planflächen</b> gilt eine      kleinere Schnitttiefe: a<sub>p</sub> = 0,1 bis 0,2 mm.</div>  </div>  <div class="karte">    <h2>Die Reihenfolge und ihre Gründe</h2>    <ol id="ablaufListe"></ol>    <div class="merk"><b>Merksatz:</b> Erst die Bezugsflächen, dann das Volumen,      dann die Oberfläche, dann die Einzelheiten, zuletzt das Abstechen. Wer      davon abweicht, braucht einen Grund.</div>  </div></section><!-- ===================================================== WERKSTOFF --><section class="panel" id="p-werkstoff" hidden>  <div class="karte">    <h2>Von der Zeichnung zur Tabellenzeile</h2>    <p class="sub">Auf der Zeichnung steht ein Name. Gebraucht werden eine      Gruppe und eine Zeile.</p>    <div class="regler">      <label for="wWerkstoff">Werkstoff</label>      <select id="wWerkstoff"></select>      <span></span>    </div>    <div class="ergebnis" id="werkstoffInfo"></div>    <p class="buch"><b>Nachschlagen:</b> Die Zugfestigkeit steht in der Tabelle      der Vergütungsstähle &ndash; und zwar nach <b>Walzdurchmesser</b>      gestaffelt. Die Hauptanwendungsgruppen stehen bei den Schneidstoffen      nach DIN ISO 513 und noch einmal als Schritt 1 der Fertigungsplanung.</p>  </div>  <div class="karte">    <h2>Die sechs Hauptanwendungsgruppen</h2>    <table>      <thead><tr><th>Kennung</th><th>Werkstoff</th><th>Gilt für</th></tr></thead>      <tbody>        <tr><td><b>P</b> blau</td><td>Stahl</td>          <td>alle Arten von Stahl und Stahlguss &ndash; außer nichtrostendem            Stahl</td></tr>        <tr><td><b>M</b> gelb</td><td>Nichtrostender Stahl</td>          <td>austenitisch, ferritisch, martensitisch</td></tr>        <tr><td><b>K</b> rot</td><td>Gusseisen</td>          <td>Lamellengrafit, Kugelgrafit, Temperguss</td></tr>        <tr><td><b>N</b> grün</td><td>Nichteisenmetalle und Kunststoffe</td>          <td>Aluminium- und Kupferlegierungen, Kunststoffe</td></tr>        <tr><td><b>S</b> braun</td><td>Warmfeste Speziallegierungen und Titan</td>          <td>Basis Eisen, Nickel, Cobalt; Titanlegierungen</td></tr>        <tr><td><b>H</b> grau</td><td>Harte Werkstoffe</td>          <td>gehärteter Stahl, gehärtete Gusseisenwerkstoffe</td></tr>      </tbody>    </table>    <div class="hinweis"><b>Die Ausnahme, die alles entscheidet:</b> P heißt      Stahl &ndash; aber nicht jeder Stahl ist P. Nichtrostend wird ein Stahl ab      etwa 10,5 % Chrom, und dann trägt er ein <b>X</b> vor der Bezeichnung.      42CrMo4 hat rund 1 % Chrom, kein X &ndash; also P.</div>  </div>  <div class="karte">    <h2>Warum der Durchmesser in der Stahltabelle steht</h2>    <p>Ein Vergütungsstahl härtet beim Abschrecken von außen nach innen durch.      Im dicken Stück kommt die Wirkung nicht bis zur Mitte &ndash; derselbe      Stahl ist dort weicher. Deshalb hat jede Zeile mehrere Spalten:      ≤ 16 mm, über 16 bis 40 mm, und so weiter.</p>    <p>Man nimmt die Spalte, in die das <b>Werkstück</b> fällt, nicht die, die      am besten aussieht. Für die Antriebswelle mit dem größten Durchmesser 30 mm      ist das die Spalte „über 16 bis 40".</p>    <div class="merk"><b>Merksatz:</b> Werkstoffname, Behandlungszustand und      Durchmesser &ndash; erst diese drei zusammen ergeben eine      Zugfestigkeit.</div>  </div></section><!-- ===================================================== SCHNITTDATEN --><section class="panel" id="p-schnitt" hidden>  <div class="karte">    <h2>Der Startwert und was ihn verschiebt</h2>    <p class="sub">In jeder Zelle der Schnittdatentabelle stehen drei Zahlen.      Welche gilt, entscheidet nicht das Gefühl.</p>    <div class="regler">      <label for="sVerfahren">Verfahren</label>      <select id="sVerfahren"></select>      <span></span>      <label for="sEingriff">Schneideneingriff</label>      <select id="sEingriff">        <option value="0">glatter, gleichmäßiger Schnitt, vorbearbeitete Oberfläche</option>        <option value="1">wechselnde Schnitttiefe, Guss- oder Schmiedehaut</option>        <option value="2">ungleichmäßiger Schnitt mit Unterbrechungen</option>      </select>      <span></span>      <label for="sStabil">Stabilität von Maschine, Kühlung, Einspannung</label>      <select id="sStabil">        <option value="0">++ (stabil, gute Kühlung, kurz gespannt)</option>        <option value="1" selected>+ (üblich)</option>        <option value="2">− (ältere Maschine, weit ausgespannt, ohne Kühlung)</option>      </select>      <span></span>      <label for="sD">Durchmesser d in mm</label>      <input type="range" id="sD" min="10" max="80" step="1" value="30">      <output id="sDaus">30 mm</output>    </div>    <div class="ergebnis" id="schnittInfo"></div>    <p class="buch"><b>Nachschlagen:</b> Die Bewertung der Bedingungen steht als      kleine Tabelle in Schritt 2 der Fertigungsplanung &ndash; Zeile ist der      Schneideneingriff, Spalte die Stabilität. Die drei Werte je Zelle stehen      in den Schnittdaten beim Drehen.</p>  </div>  <div class="karte">    <h2>Die Bewertung der Bedingungen</h2>    <table>      <thead><tr><th>Art des Schneideneingriffs</th><th>++</th><th>+</th>        <th>−</th></tr></thead>      <tbody>        <tr><td>glatter, gleichmäßiger Schnitt, vorbearbeitete Oberfläche</td>          <td>günstig</td><td><b>normal</b></td><td>normal bis ungünstig</td></tr>        <tr><td>wechselnde Schnitttiefe, Guss- oder Schmiedehaut</td>          <td>günstig bis normal</td><td><b>normal</b></td><td>ungünstig</td></tr>        <tr><td>ungleichmäßiger Schnitt mit Unterbrechungen</td>          <td><b>normal</b></td><td>ungünstig</td><td>sehr ungünstig</td></tr>      </tbody>    </table>    <p style="margin-top:12px">Günstige Bedingungen erlauben den <b>oberen</b>      Grenzwert, normale den <b>Startwert</b>, ungünstige verlangen den      <b>unteren</b>.</p>  </div>  <div class="karte">    <h2>Von der Schnittgeschwindigkeit zur Drehzahl</h2>    <span class="formel">n = v<sub>c</sub> / (π · d)</span>    <p>Die Stolperstelle sind die Einheiten: v<sub>c</sub> steht in m/min, der      Durchmesser in mm. Erst umrechnen &ndash; 200 m/min sind 200 000 mm/min      &ndash;, dann teilen.</p>    <p>Die berechnete Drehzahl wird <b>abgerundet</b>, nicht aufgerundet: Der      Richtwert ist eine Obergrenze. Hat die Maschine feste Stufen, wird auf die      nächstkleinere gegangen.</p>    <div class="hinweis"><b>Beim Querplandrehen</b> wandert der Durchmesser      während des Schnitts. Ohne konstante Schnittgeschwindigkeit wird mit dem      mittleren Durchmesser gerechnet: d<sub>m</sub> = (d<sub>a</sub> +      d<sub>e</sub>) / 2.</div>    <span class="formel">i &ge; (d<sub>a</sub> &minus; d<sub>e</sub>) /      (2 · a<sub>p</sub>)</span>    <p>Die Anzahl der Schnitte beim Schruppen &ndash; immer      <b>aufgerundet</b>, denn ein halber Schnitt lässt den Rest stehen. Die 2      im Nenner ist der häufigste Fehler: a<sub>p</sub> wirkt auf den Radius,      der Durchmesser nimmt je Schnitt um das Doppelte ab.</p>  </div></section><!-- ===================================================== WERKZEUG --><section class="panel" id="p-werkzeug" hidden>  <div class="karte">    <h2>Eine Bezeichnung zerlegen</h2>    <p class="sub">Zehn Stellen nach DIN ISO 1832. Vier davon entscheiden über      die Bearbeitung.</p>    <div class="regler">      <label for="kBez">Bezeichnung</label>      <input type="text" id="kBez" value="DCMT 11 T3 04" autocomplete="off"        spellcheck="false">      <span></span>    </div>    <div class="knopfreihe" data-druck="weg" id="bezBeispiele"></div>    <div class="ergebnis" id="bezInfo"></div>    <p class="buch"><b>Nachschlagen:</b> Der Schlüssel steht vollständig in der      Tabelle „Bezeichnung von Wendeschneidplatten", mit Skizze zu jeder Form      und den Tabellen für Toleranzklasse und Befestigung.</p>  </div>  <div class="karte">    <h2>Die Form bestimmt die Anwendung</h2>    <table>      <thead><tr><th>Form</th><th>ε</th><th>Schruppen</th><th>Schlichten</th>        <th>Formdrehen</th></tr></thead>      <tbody>        <tr><td><b>C</b> Raute</td><td>80°</td><td>sehr gut</td><td>nicht</td>          <td>geeignet</td></tr>        <tr><td><b>W</b> Trigon</td><td>80°</td><td>sehr gut</td><td>nicht</td>          <td>geeignet</td></tr>        <tr><td><b>D</b> Raute</td><td>55°</td><td>nicht</td><td>sehr gut</td>          <td>sehr gut</td></tr>        <tr><td><b>V</b> Raute</td><td>35°</td><td>nicht</td><td>sehr gut</td>          <td>sehr gut</td></tr>        <tr><td><b>T</b> Dreieck</td><td>60°</td><td>sehr gut</td>          <td>geeignet</td><td>sehr gut</td></tr>        <tr><td><b>R</b> rund</td><td>–</td><td>sehr gut</td><td>geeignet</td>          <td>nicht</td></tr>      </tbody>    </table>    <div class="merk"><b>Die Regel dahinter:</b> Großer Eckenwinkel heißt      stabile Ecke &ndash; gut zum Schruppen. Kleiner Eckenwinkel heißt spitz      und zugänglich &ndash; nötig für Konturen, aber empfindlich.</div>  </div>  <div class="karte">    <h2>Positive oder negative Grundform?</h2>    <p>Stelle 2 der Bezeichnung nennt den Normal-Freiwinkel an der Platte.      <b>N</b> bedeutet 0° &ndash; die negative Grundform. Sie steht senkrecht      im Halter, der Freiwinkel entsteht erst durch dessen Neigung.</p>    <table>      <thead><tr><th>Grundform</th><th>Vorteil</th><th>Preis dafür</th></tr></thead>      <tbody>        <tr><td>positiv (α<sub>n</sub> = 3°…30°)</td>          <td>schneidet leicht, geringe Schnittkraft, wenig Antriebsleistung</td>          <td>nur eine Seite nutzbar</td></tr>        <tr><td>negativ doppelseitig (α<sub>n</sub> = 0°)</td>          <td>doppelt so viele Schneiden, stabil</td>          <td>höhere Schnittkraft</td></tr>        <tr><td>negativ einseitig</td>          <td>höchste Schnitttiefe und höchster Vorschub</td>          <td>höchste Schnittkraft</td></tr>      </tbody>    </table>    <p style="margin-top:12px">Von oben nach unten nehmen <b>Schnittkraft,      Schnitttiefe und Vorschub zu</b>. Wer eine schwache Maschine hat oder ein      dünnes Werkstück, wählt positiv.</p>  </div>  <div class="karte">    <h2>Der Klemmhalter</h2>    <p>Die Platte allein dreht nicht &ndash; sie braucht einen Halter. Auch der      trägt eine Bezeichnung, nach DIN 4984 (Vierkantschaft) oder ISO 26623      (Polygonschaft):</p>    <span class="formel">DIN 4984 &ndash; P C L N R 25 25 M 12</span>    <table>      <thead><tr><th>Stelle</th><th>Bedeutung</th><th>im Beispiel</th></tr></thead>      <tbody>        <tr><td>1</td><td>Plattenbefestigung</td><td>P &ndash; von unten über          Bohrung geklemmt</td></tr>        <tr><td>2</td><td>Plattengeometrie</td><td>C &ndash; Raute 80°</td></tr>        <tr><td>3</td><td>Einstellwinkel und Halterform</td>          <td>L &ndash; 95°, abgesetzt</td></tr>        <tr><td>4</td><td>Normalfreiwinkel der Platte</td><td>N &ndash; 0°</td></tr>        <tr><td>5</td><td>Halterausführung</td><td>R &ndash; rechter Halter</td></tr>        <tr><td>6, 7</td><td>Höhe der Schneidenecke, Schaftbreite</td>          <td>25 mm, 25 mm</td></tr>        <tr><td>8</td><td>Halterlänge</td><td>M &ndash; 150 mm</td></tr>        <tr><td>9</td><td>Größe der Wendeschneidplatte</td>          <td>12 &ndash; Schneidenlänge 12 mm</td></tr>      </tbody>    </table>    <div class="hinweis">Der <b>Einstellwinkel</b> an Stelle 3 sagt, wofür der      Halter gedacht ist: Buchstaben wie L (95°) und J (93°) gehören zum      Längsrunddrehen, K (75°) und S (45°) zum Querplandrehen.</div>  </div></section><!-- ===================================================== VORSCHUB --><section class="panel" id="p-vorschub" hidden>  <div class="karte">    <h2>Vorschub, Eckenradius, Rautiefe</h2>    <p class="sub">Drei Größen, eine Formel &ndash; und ein Quadrat, das alles      entscheidet.</p>    <span class="formel">R<sub>th</sub> = f² / (8 · r<sub>ε</sub>)      &nbsp;&nbsp;&rarr;&nbsp;&nbsp;      f = √(8 · r<sub>ε</sub> · R<sub>th</sub>)</span>    <div class="zwei">      <div>        <div class="regler">          <label for="vF">Vorschub f</label>          <input type="range" id="vF" min="0.05" max="0.6" step="0.01" value="0.16">          <output id="vFaus">0,16 mm</output>          <label for="vR">Eckenradius r<sub>ε</sub></label>          <input type="range" id="vR" min="0.2" max="1.6" step="0.2" value="0.8">          <output id="vRaus">0,8 mm</output>        </div>        <div class="ergebnis" id="vorschubInfo"></div>      </div>      <figure id="bildRillen"></figure>    </div>    <p class="buch"><b>Nachschlagen:</b> Die Tabelle „Erreichbare Rautiefe in      Abhängigkeit des Eckenradius und des Vorschubs" nimmt die Rechnung ab      &ndash; Rautiefen von 1,6 bis 16 µm, Eckenradien von 0,2 bis 0,8 mm.</p>  </div>  <div class="karte">    <h2>Das Quadrat ist die Nachricht</h2>    <p>Doppelter Vorschub heißt <b>vierfache</b> Rautiefe. Wer die      Bearbeitungszeit halbieren will, verliert zwei Qualitätsstufen. Umgekehrt      bringt ein doppelter Eckenradius nur die halbe Rautiefe &ndash; oder, bei      gleicher Rautiefe, den <b>1,41-fachen</b> Vorschub.</p>    <p>Deshalb die Reihenfolge beim Planen: <b>erst</b> den größten      Eckenradius wählen, den die Kontur zulässt, <b>dann</b> den Vorschub dazu      rechnen.</p>    <span class="formel">r<sub>ε</sub> &le; r<sub>w</sub> &minus; 0,1 mm</span>    <p>r<sub>w</sub> ist die <b>kleinste</b> Innenrundung des Werkstücks      &ndash; und die steht selten als Radius in der Zeichnung.</p>    <div class="hinweis"><b>Der klassische Fehler:</b> nur die      Durchmesserübergänge ansehen. An der Antriebswelle fällt der Blick auf die      <b>R1</b> am Bund, und man wählt 0,8 mm. Enger sind aber die beiden      Freistiche <b>DIN 509 – E 0,6 × 0,3</b>: Die erste Zahl der      Bezeichnung <i>ist</i> der Radius. Damit gilt r<sub>ε</sub> ≤      0,6 − 0,1 = 0,5 mm, genormt also <b>0,4 mm</b>.</div>    <p>Die Regel gilt dem Werkzeug, das die Kontur <i>erzeugt</i>. Beim      Konturdrehen auf der CNC fährt das Schlichtwerkzeug auch durch die      Freistiche, also bindet deren Radius. Werden sie mit einem eigenen      Formwerkzeug gestochen, bindet für den Schlichtmeißel nur die R1 &ndash;      im Zweifel gilt die engere Grenze.</p>    <div class="hinweis"><b>Nach unten gibt es auch eine Grenze.</b> Unter einer      gewissen Spandicke schneidet die Schneide nicht mehr, sondern drückt. Der      Werkstoff wird verformt statt abgetrennt, die Fläche wird schlechter statt      besser. Deshalb steht beim Schlichten f = 0,1 bis 0,25 mm und nicht      „beliebig klein".</div>  </div>  <div class="karte">    <h2>Wo kein Vorschub zu wählen ist</h2>    <p><b>Beim Gewindedrehen</b> ist der Vorschub die Steigung: f = P. Bei M20×1      also 1 mm je Umdrehung. Was bleibt, ist die Zahl der Zustellungen &ndash;      sie steht im Tabellenbuch nach Steigung geordnet, dazu zwei bis vier      Leerdurchläufe zum Glätten.</p>    <p><b>Beim Einstechen und Abstechen</b> ist der Vorschub klein und fest:      0,05 bis 0,15 mm. Die Schneidenbreite ist die Schnittbreite &ndash; eine      1,3 mm breite Nut verlangt ein 1,3 mm breites Werkzeug.</p>    <div class="merk"><b>Merksatz:</b> Geschlichtet wird nach Rautiefe,      geschruppt nach Tabelle, Gewinde nach Steigung. Nur einer der drei      Vorschübe wird gerechnet.</div>  </div></section><!-- ===================================================== HINWEISE --><section class="panel" id="p-hinweise" hidden>  <div class="karte">    <h2>Das Hinweisfeld</h2>    <p class="sub">Die Spalte, die einen guten von einem mittelmäßigen      Arbeitsplan unterscheidet.</p>    <p>Schnittdaten kann jeder nachschlagen. Ob jemand an das Aufmaß, die      Spannung und die Späne gedacht hat, steht im Hinweisfeld &ndash; und      zeigt sich spätestens an der Maschine.</p>    <table>      <thead><tr><th>Gehört hinein</th><th>Warum</th></tr></thead>      <tbody>        <tr><td>Rohteilmaß und Werkstoff</td>          <td>Steht in der ersten Zeile und gilt für alles Weitere.</td></tr>        <tr><td>Spannart und Ausspannlänge</td>          <td>Bestimmt die Stabilität &ndash; und damit die            Bearbeitungsbedingungen.</td></tr>        <tr><td>Schlichtaufmaß</td>          <td>Was der Schlichtgang wegnehmen soll, muss stehen bleiben.</td></tr>        <tr><td>Anzahl der Schnitte je Absatz</td>          <td>Ergibt sich aus Durchmesserdifferenz und Schnitttiefe.</td></tr>        <tr><td>Kühlschmierung</td>          <td>Ohne sie stimmt kein Maß, das warm gemessen wurde.</td></tr>        <tr><td>Spanbruch und Spanabfuhr</td>          <td>Lange Spiralspäne sind scharf, heiß und wickeln sich auf.</td></tr>        <tr><td>Auffangen beim Abstechen</td>          <td>Das Teil fällt. Vorher, nicht nachher, überlegen.</td></tr>      </tbody>    </table>  </div>  <div class="karte">    <h2>Das Aufmaß</h2>    <p>Geschruppt wird <b>nicht auf Fertigmaß</b>. Die Schnitttiefe beim      Schlichten liegt bei 0,5 bis 2 mm &ndash; das ist ein <i>radiales</i> Maß.      Bei a<sub>p</sub> = 0,5 mm bleibt also <b>1 mm auf den Durchmesser</b>      stehen.</p>    <span class="formel">Schruppmaß = Fertigmaß + 2 · a<sub>p,schlicht</sub></span>    <p>Zu wenig Aufmaß ist so schlecht wie zu viel: Unter einer gewissen      Spandicke drückt die Schneide nur noch.</p>    <div class="hinweis"><b>Beim Gewinde ist es umgekehrt.</b> Der      Gewindeaußendurchmesser bekommt kein Aufmaß, sondern wird ein bis zwei      Zehntel <b>kleiner</b> gedreht: Beim Schneiden wird Werkstoff nach außen      verdrängt, und die Flanken brauchen Platz.</div>  </div>  <div class="karte">    <h2>Wenn etwas schiefgeht</h2>    <p class="sub">Schritt 6 der Fertigungsplanung: Optimierungsmaßnahmen.</p>    <table>      <thead><tr><th>Problem</th><th>Abhilfe</th></tr></thead>      <tbody>        <tr><td>Hoher Verschleiß an Frei- und Spanfläche</td>          <td>v<sub>c</sub> verkleinern, f verkleinern, verschleißfestere            Hartmetallsorte</td></tr>        <tr><td>Aufbauschneiden</td>          <td>v<sub>c</sub> <b>erhöhen</b>, positive Schneidengeometrie</td></tr>        <tr><td>Ausbröckeln der Schneidkante</td>          <td>Schnitttiefe verringern, zähere Hartmetallsorte</td></tr>        <tr><td>Bruch der Wendeschneidplatte</td>          <td>f verkleinern, Schnitttiefe verringern, zähere Sorte</td></tr>        <tr><td>Lange Spiralspäne</td>          <td>Vorschub <b>erhöhen</b> &ndash; der Span bricht dann</td></tr>        <tr><td>Vibrationen</td>          <td>Schnitttiefe verringern, positive Geometrie, kürzer spannen</td></tr>      </tbody>    </table>    <div class="merk"><b>Zwei Fälle laufen gegen die Intuition:</b>      Aufbauschneiden verschwinden bei <i>höherer</i> Geschwindigkeit, und      lange Späne brechen bei <i>größerem</i> Vorschub. Wer beides kleiner      macht, macht es schlimmer.</div>  </div>  <div class="karte">    <h2>Sicherheit an der Drehmaschine</h2>    <ul>      <li><b>Schutzbrille</b> &ndash; immer. Späne fliegen, und sie sind heiß.</li>      <li><b>Keine Handschuhe, keine losen Ärmel, kein Schmuck</b> &ndash; alles,        was sich aufwickeln kann, bleibt weg.</li>      <li><b>Späne nur mit dem Haken</b>, nie mit der Hand und nie bei laufender        Maschine.</li>      <li><b>Futterschlüssel abziehen</b>, bevor eingeschaltet wird.</li>      <li><b>Beim Abstechen auffangen</b> &ndash; das Teil fällt, und es ist        heiß.</li>      <li><b>Messen nur im Stillstand</b> und mit weggefahrenem Werkzeug.</li>    </ul>  </div></section></main><p style="font-size:.82rem; color:var(--muted); margin-top:26px">  <b>Woher die Zahlen stammen:</b> Vergütungsstähle nach DIN EN ISO 683-1 und  683-2, Schneidstoffe nach DIN ISO 513, Wendeschneidplatten nach DIN ISO 1832,  Klemmhalter nach DIN 4983 und ISO 26623, Drehverfahren, Fertigungsplanung und  Schnittdaten aus dem Abschnitt „Spanende Fertigung (Drehen)" &ndash; alles  Tabellenbuch Metall (Europa-Verlag). Alle Zahlenwerte sind  Orientierungswerte für den Unterricht; maßgebend sind Norm und Tabellenbuch.</p></div><script src="assets/zeichnen.js"></script><script src="assets/wellen.js"></script><script src="assets/drehteil.js"></script><script>var WELLE = WELLEN.antriebswelle;</script><script>"use strict";/* ---------- Reiter ---------- */function reiterSetzen(name){  var knoepfe = document.querySelectorAll('.tabs button');  for(var i = 0; i < knoepfe.length; i++){    var an = knoepfe[i].dataset.tab === name;    knoepfe[i].setAttribute("aria-selected", an ? "true" : "false");  }  var teile = document.querySelectorAll('.panel');  for(var j = 0; j < teile.length; j++){    teile[j].hidden = teile[j].id !== "p-" + name;  }}document.querySelector('.tabs').addEventListener("click", function(e){  var b = e.target.closest("button[data-tab]");  if(!b) return;  reiterSetzen(b.dataset.tab);  /* Der Reiter steht in der Adresse - so laesst sich ein einzelner Schritt     verlinken, etwa aus einer Uebung heraus. */  try{ history.replaceState(null, "", "#" + b.dataset.tab); }catch(err){}});/* Kommt jemand mit einem Reiter in der Adresse, wird der geoeffnet. */function reiterAusAdresse(){  var name = String(location.hash || "").replace(/^#/, "");  return document.getElementById("p-" + name) ? name : null;}function el(id){ return document.getElementById(id); }function zahl(x, n){ return x.toFixed(n === undefined ? 1 : n).replace(".", ","); }/* ---------- Kontur ---------- */var GRUENDE = {  stirn_links: ["Abstechdrehen",    "Sie liegt zum Futter hin. Vom Stangenmaterial getrennt wird das Werkstück "    + "zuletzt, und genau dabei entsteht diese Fläche - danach hält nichts mehr. "    + "Ihre Zentrierbohrung kommt nach dem Umspannen dazu."],  mantel_20: ["Längsrunddrehen, Schlichten",    "Zylindrische Mantelfläche mit Rz 4. Geschruppt wurde sie vorher; fertig "    + "macht sie der Schlichtgang."],  nut_a: ["Einstechdrehen",    "Eine 1,3 mm breite Nut entsteht durch ein Werkzeug, das quer einsticht. "    + "Die Nutbreite ist die Schneidenbreite."],  schulter_22: ["Querplandrehen",    "Auch ein Absatz steht senkrecht zur Achse - dieselbe Bewegung wie bei der "    + "Stirnfläche. Der Freistich DIN 509 an seinem Fuß wird eingestochen."],  mantel_24: ["Längsrunddrehen, Schlichten",    "Mantelfläche mit Rz 6 - auch das verlangt einen Schlichtgang."],  bund_30: ["Längsrunddrehen, Schruppen",    "Der Bund trägt nur Rz 10, die allgemeine Rautiefe der Zeichnung. Was "    + "geschruppt ist, reicht - ein Schlichtgang wäre verschenkte Zeit."],  mantel_25: ["Längsrunddrehen, Schlichten",    "Der längste Abschnitt und der zweite Lagersitz mit Rz 4."],  nut_b: ["Einstechdrehen",    "Wie Nut A: quer einstechen, Breite gleich Schneidenbreite."],  freistich: ["Einstechdrehen",    "Der Gewindefreistich DIN 76 - A wird eingestochen, damit das "    + "Gewindewerkzeug auslaufen kann. Ohne ihn liefe es in die Schulter."],  gewinde: ["Gewindedrehen",    "M20×1: Der Vorschub ist die Steigung, also 1 mm je Umdrehung. Die volle "    + "Tiefe entsteht in sechs Zustellungen plus Leerdurchläufen."],  stirn_rechts: ["Querplandrehen",    "Das freie Ende liegt rechts, also fängt die Bearbeitung hier an: Die "    + "Schneide läuft quer zur Achse, von außen nach innen. Anschließend wird "    + "zentriert, damit die Reitstockspitze einen Sitz hat."]};var ABLAUF = [  ["Rohteil prüfen, einspannen, mit der Reitstockspitze stützen",   "Ohne geprüftes Halbzeug und feste Spannung fängt niemand an."],  ["Rechte Stirnfläche querplandrehen und zentrieren",   "Das freie Ende zuerst - es schafft die Bezugsfläche für alle Längenmaße "   + "und den Sitz für die Spitze."],  ["Absätze längsrunddrehen, schruppen",   "Erst das Volumen weg. Das Schlichtaufmaß bleibt stehen."],  ["Kontur schlichten",   "Jetzt die Oberfläche - und nur dort, wo die Zeichnung es fordert."],  ["Freistiche und Nuten einstechen",   "Nach dem Schlichten: Ein Schlichtwerkzeug, das über eine Nut läuft, "   + "schlägt auf."],  ["Gewinde drehen",   "Nach dem Gewindefreistich, damit das Werkzeug auslaufen kann."],  ["Maße prüfen",   "Solange das Teil eingespannt ist, lässt sich nachbessern."],  ["Werkstück abstechen",   "Der letzte Drehvorgang. Danach fällt das Teil ab."]];var gewaehlteFlaeche = null;function konturZeichnen(){  var o = {s:5.8, bezeichnungen:true};  var g = wellenGroesse(WELLE, o);  var svg = bild("bildKontur", g.breite, g.hoehe,    "Die Antriebswelle mit Benennungen",    "Antriebswelle aus 42CrMo4. Über die Schaltflächen lässt sich jede Fläche "    + "hervorheben.");  var z = {x:g.x, y:g.y, s:o.s, bezeichnungen:true};  if(gewaehlteFlaeche) z.markiert = [gewaehlteFlaeche];  zeichneWelle(svg, WELLE, z);}(function konturAufbauen(){  el("flaechenknoepfe").innerHTML = WELLE.flaechen.map(function(f){    return '<button type="button" data-f="' + f.id + '" aria-pressed="false">'      + f.name + '</button>';  }).join("");  el("flaechenknoepfe").addEventListener("click", function(e){    var b = e.target.closest("button[data-f]");    if(!b) return;    gewaehlteFlaeche = (gewaehlteFlaeche === b.dataset.f) ? null : b.dataset.f;    var alle = el("flaechenknoepfe").querySelectorAll("button");    for(var i = 0; i < alle.length; i++){      alle[i].setAttribute("aria-pressed",        alle[i].dataset.f === gewaehlteFlaeche ? "true" : "false");    }    konturZeichnen();    var g = GRUENDE[gewaehlteFlaeche];    el("flaecheInfo").innerHTML = g      ? "<b>" + g[0] + "</b><br>" + g[1]      : "Eine Fläche wählen &ndash; dann steht hier, welches Drehverfahren sie "        + "erzeugt und warum.";  });  el("ablaufListe").innerHTML = ABLAUF.map(function(z){    return "<li><b>" + z[0] + "</b> &ndash; " + z[1] + "</li>";  }).join("");  konturZeichnen();}());/* ---------- Werkstoff ---------- *//* Werkstoffe, wie sie im Unterricht vorkommen. Die Zugfestigkeiten gelten   für Walzdurchmesser über 16 bis 40 mm im Zustand +QT. */var WERKSTOFFE = [  {name:"42CrMo4", nr:"1.7225", zu:"+QT", rm:"1000…1200", mitte:1100,   gruppe:"P", zeile:"Vergütungsstahl, legiert, R<sub>m</sub> &gt; 750",   wie:"Legierter Vergütungsstahl. Chrom im Namen, aber kein X davor - also "     + "nicht nichtrostend."},  {name:"34Cr4", nr:"1.7033", zu:"+QT", rm:"800…950", mitte:875,   gruppe:"P", zeile:"Vergütungsstahl, legiert, R<sub>m</sub> &gt; 750",   wie:"Legierter Vergütungsstahl, etwas weicher als 42CrMo4 - dieselbe Zeile."},  {name:"C45E", nr:"1.1191", zu:"+QT", rm:"650…800", mitte:725,   gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &gt; 650",   wie:"Unlegierter Vergütungsstahl, 0,45 % Kohlenstoff."},  {name:"C25E", nr:"1.1158", zu:"+QT", rm:"500…650", mitte:575,   gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &le; 650",   wie:"Derselbe Stahltyp, eine Zeile tiefer - allein wegen der "     + "Zugfestigkeit."},  {name:"11SMnPb30", nr:"1.0718", zu:"warmgewalzt", rm:"bis 570", mitte:520,   gruppe:"P", zeile:"Automatenstahl, R<sub>m</sub> &le; 570",   wie:"Automatenstahl mit Schwefel und Blei - bricht den Span von selbst."}];(function werkstoffAufbauen(){  el("wWerkstoff").innerHTML = WERKSTOFFE.map(function(w, i){    return '<option value="' + i + '">' + w.name + '</option>';  }).join("");  el("wWerkstoff").addEventListener("change", werkstoffZeigen);  werkstoffZeigen();}());function werkstoffZeigen(){  var w = WERKSTOFFE[Number(el("wWerkstoff").value) || 0];  el("werkstoffInfo").innerHTML =    "<b>" + w.name + "</b>, Werkstoffnummer " + w.nr + ", Zustand " + w.zu    + "<br>" + w.wie    + "<br>R<sub>m</sub> = <b>" + w.rm + " N/mm²</b> (Walzdurchmesser über 16 "    + "bis 40 mm), gemittelt <b>" + w.mitte + " N/mm²</b>"    + "<br>Hauptanwendungsgruppe <b>" + w.gruppe + "</b>"    + "<br>Zeile der Schnittdatentabelle: <b>" + w.zeile + "</b>";}/* ---------- Schnittdaten ---------- *//* Die Zeile "P / Vergütungsstahl, legiert, Rm > 750":   [unterer Grenzwert, Startwert, oberer Grenzwert] in m/min. */var VERFAHREN = [  {id:"plan",   name:"Querplandrehen",              w:[80, 130, 180],   ap:"1…2 mm", f:"0,1…0,2 mm"},  {id:"schrupp", name:"Längsrunddrehen, Schruppen",  w:[70, 110, 160],   ap:"2…6 mm", f:"0,25…0,6 mm"},  {id:"schlicht", name:"Längsrunddrehen, Schlichten", w:[100, 150, 200],   ap:"0,5…2 mm", f:"0,1…0,25 mm"},  {id:"stech",  name:"Abstech- und Einstechdrehen", w:[95, 105, 115],   ap:"Schneidenbreite", f:"0,05…0,15 mm"},  {id:"gewinde", name:"Gewindedrehen",               w:[90, 100, 110],   ap:"Zustellungen", f:"f = P"}];/* Die Bewertung nach Schritt 2 der Fertigungsplanung. Zeile = Eingriff,   Spalte = Stabilität. */var BEWERTUNG = [  ["günstig", "normal", "normal bis ungünstig"],  ["günstig bis normal", "normal", "ungünstig"],  ["normal", "ungünstig", "sehr ungünstig"]];/* Welcher der drei Werte daraus folgt. Die Zwischenstufen liegen dazwischen -   dafür gibt es keinen Tabellenwert, deshalb wird der nähere genommen und   der Zwischenfall benannt. */var GRIFF = {"günstig":2, "günstig bis normal":2, "normal":1,  "normal bis ungünstig":1, "ungünstig":0, "sehr ungünstig":0};(function schnittAufbauen(){  el("sVerfahren").innerHTML = VERFAHREN.map(function(v, i){    return '<option value="' + i + '">' + v.name + '</option>';  }).join("");  ["sVerfahren", "sEingriff", "sStabil", "sD"].forEach(function(id){    el(id).addEventListener("input", schnittZeigen);    el(id).addEventListener("change", schnittZeigen);  });  schnittZeigen();}());function schnittZeigen(){  var v = VERFAHREN[Number(el("sVerfahren").value) || 0];  var e = Number(el("sEingriff").value), s = Number(el("sStabil").value);  var d = Number(el("sD").value);  el("sDaus").textContent = d + " mm";  var urteil = BEWERTUNG[e][s];  var griff = GRIFF[urteil];  var vc = v.w[griff];  var n = Math.floor(vc * 1000 / (Math.PI * d));  var zwischen = urteil.indexOf(" bis ") > 0;  el("schnittInfo").innerHTML =    "In der Zelle stehen <b>" + v.w[0] + " &ndash; " + v.w[1] + " &ndash; "      + v.w[2] + "</b> m/min."    + "<br>Bedingungen: <b>" + urteil + "</b>"    + (zwischen ? " &ndash; ein Zwischenfeld der Tabelle. Man wählt einen Wert "        + "zwischen den beiden benachbarten; hier ist der nähere genommen." : "")    + "<br>Gewählt: v<sub>c</sub> = <b>" + vc + " m/min</b>"      + " (" + (griff === 2 ? "oberer Grenzwert"              : griff === 0 ? "unterer Grenzwert" : "Startwert") + ")"    + "<br>n = " + (vc * 1000) + " / (π · " + d + ") = " + zahl(vc * 1000 / (Math.PI * d), 0)      + " &rarr; abgerundet <b>" + n + " 1/min</b>"    + "<br><span style=\"color:var(--muted)\">Schnitttiefe " + v.ap      + ", Vorschub " + v.f + "</span>";}/* ---------- Werkzeug: Bezeichnung zerlegen ---------- */var FORMEN = {S:"Quadrat, Eckenwinkel 90°", T:"Dreieck, Eckenwinkel 60°",  C:"Raute, Eckenwinkel 80°", W:"Trigon, Eckenwinkel 80°",  M:"Raute, Eckenwinkel 86°", E:"Raute, Eckenwinkel 75°",  D:"Raute, Eckenwinkel 55°", V:"Raute, Eckenwinkel 35°",  R:"rund, ohne Eckenwinkel", P:"Fünfeck", H:"Sechseck", O:"Achteck"};var FREI = {N:"0° – negative Grundform, beidseitig verwendbar", A:"3°", B:"5°",  C:"7°", P:"11°", D:"15°", E:"20°", F:"25°", G:"30°"};var SCHNEIDE = {F:"scharf", E:"gerundet", T:"gefast",  S:"gefast und gerundet", K:"doppelgefast", P:"doppelgefast und gerundet"};var RICHT = {R:"rechtsschneidend", L:"linksschneidend",  N:"rechts- und linksschneidend"};var BEISPIELE = ["DCMT 11 T3 04", "CNMG 12 04 08", "VBMT 16 04 02",  "WNMG 08 04 12", "TNMG 16 04 08"];(function bezAufbauen(){  el("bezBeispiele").innerHTML = BEISPIELE.map(function(b){    return '<button type="button" data-b="' + b + '">' + b + '</button>';  }).join("");  el("bezBeispiele").addEventListener("click", function(e){    var b = e.target.closest("button[data-b]");    if(!b) return;    el("kBez").value = b.dataset.b;    bezZeigen();  });  el("kBez").addEventListener("input", bezZeigen);  bezZeigen();}());function bezZeigen(){  var roh = String(el("kBez").value).toUpperCase().replace(/[^A-Z0-9]/g, "");  if(roh.length < 4){    el("bezInfo").innerHTML = "Mindestens vier Zeichen eingeben &ndash; die "      + "ersten vier Stellen sind Form, Freiwinkel, Toleranzklasse und "      + "Befestigung.";    return;  }  var zeilen = [];  function zeile(nr, was, wert, bedeutung){    zeilen.push("<b>" + nr + "</b> " + was + ": <b>" + wert + "</b>"      + (bedeutung ? " &ndash; " + bedeutung : ""));  }  zeile(1, "Plattengeometrie", roh[0], FORMEN[roh[0]] || "keine bekannte Form");  zeile(2, "Normal-Freiwinkel", roh[1], FREI[roh[1]] || "nicht im Auszug");  zeile(3, "Toleranzklasse", roh[2], "Grenzabmaße für Prüfmaße und Dicke");  zeile(4, "Befestigung und Spanbrecher", roh[3], "");  var rest = roh.slice(4);  var zahlen = rest.match(/^([0-9]{2})([0-9T][0-9])([0-9]{2})/);  if(zahlen){    zeile(5, "Plattengröße l", zahlen[1], zahlen[1] + " mm Schneidenlänge");    zeile(6, "Plattendicke s", zahlen[2], "");    zeile(7, "Schneidenecke", zahlen[3],      "r<sub>ε</sub> = " + zahl(Number(zahlen[3]) * 0.1, 1) + " mm "      + "(Kennzahl mal 0,1)");    var nach = rest.slice(6);    if(nach[0]) zeile(8, "Ausführung der Schneide", nach[0],      SCHNEIDE[nach[0]] || "");    if(nach[1]) zeile(9, "Schneidrichtung", nach[1], RICHT[nach[1]] || "");  }else{    zeilen.push("<span style=\"color:var(--muted)\">Für die Stellen 5 bis 7 "      + "werden sechs Ziffern erwartet, etwa <b>11 T3 04</b>.</span>");  }  el("bezInfo").innerHTML = zeilen.join("<br>");}/* ---------- Vorschub und Rautiefe ---------- */(function vorschubAufbauen(){  ["vF", "vR"].forEach(function(id){    el(id).addEventListener("input", vorschubZeigen);  });  vorschubZeigen();}());function vorschubZeigen(){  var f = Number(el("vF").value), r = Number(el("vR").value);  el("vFaus").textContent = zahl(f, 2) + " mm";  el("vRaus").textContent = zahl(r, 1) + " mm";  var rth = f * f / (8 * r) * 1000;  el("vorschubInfo").innerHTML =    "R<sub>th</sub> = " + zahl(f, 2) + "² / (8 · " + zahl(r, 1) + ") = <b>"      + zahl(rth, 1) + " µm</b>"    + "<br>Das entspricht etwa <b>Rz " + zahl(rth, 1) + "</b>."    + (f > 0.25 ? "<br><span style=\"color:var(--warn)\">Dieser Vorschub liegt "        + "über dem Schlichtbereich (0,1 bis 0,25 mm) - hier wird "        + "geschruppt.</span>" : "")    + (f < 0.1 ? "<br><span style=\"color:var(--warn)\">Unter 0,1 mm schneidet "        + "die Schneide nicht mehr, sie drückt.</span>" : "");  rillenZeichnen(f, r, rth);}/* Das Rillenprofil. Kein Massstabsbild: Waere die Hoehe so gezeichnet wie   die Breite, waere von der Rautiefe nichts zu sehen - bei f = 0,16 mm und   r_eps = 0,8 mm sind es vier Tausendstel Millimeter. Die Hoehe ist deshalb   ueberhoeht, und die Bildunterschrift sagt es.   Gerechnet wird die Kontur Punkt fuer Punkt: In der Mitte zwischen zwei   Bahnen steht der Werkstoff am hoechsten, genau unter einer Bahn am   tiefsten. */function rillenZeichnen(f, r, rth){  var breite = 420, hoehe = 200;  var svg = bild("bildRillen", breite, hoehe,    "Rillenprofil aus Eckenradius und Vorschub",    "Drei Vorschubwege nebeneinander. <b>Die Höhe ist stark überhöht</b> - "    + "sonst wäre von " + zahl(rth, 1) + " µm nichts zu sehen.");  var g = svgEl("g", {}, svg);  var perioden = 3;  var x0 = 20;  /* Rechts bleibt ein Streifen frei - dort steht das Mass der Rautiefe.     Sonst liegt die Beschriftung auf dem Profil. */  var profil = breite - 118;  var sx = profil / (perioden * f);             /* Bildpunkte je Millimeter, quer */  var hoch = 46;                                /* so hoch wird die Rautiefe */  var y0 = 72;                                  /* Hoehe der Spitzen */  var boden = y0 + hoch + 34;                   /* Unterkante des Werkstoffs */  /* Die Kontur: Abstand zur naechsten Bahnmitte -> Hoehe ueber dem tiefsten     Punkt. */  function hoeheBei(x){    var d = ((x % f) + f) % f - f / 2;           /* -f/2 ... +f/2 */    var wurzel = r * r - d * d;    if(wurzel <= 0) return rth / 1000;    return r - Math.sqrt(wurzel);  }  var punkte = [], i, x, h;  for(i = 0; i <= 240; i++){    x = perioden * f * i / 240;    h = hoeheBei(x);    punkte.push([x0 + x * sx, y0 + hoch - h / (rth / 1000) * hoch]);  }  /* Werkstoff unter der Kontur. */  var d = "M" + x0 + "," + boden;  punkte.forEach(function(p){ d += " L" + p[0].toFixed(1) + "," + p[1].toFixed(1); });  d += " L" + punkte[punkte.length - 1][0].toFixed(1) + "," + boden + " Z";  svgEl("path", {d:d, fill:"#dbeafe", stroke:"none"}, g);  svgEl("path", {d:d, fill:"none", stroke:"#1e3a8a", "stroke-width":1.8}, g);  /* Die beiden Hoehenlinien und das Mass dazwischen. */  var mx = x0 + profil + 30;  linie(g, x0, y0, mx, y0, 1, {strich:"5 4"});  linie(g, x0, y0 + hoch, mx, y0 + hoch, 1, {strich:"5 4"});  linie(g, mx, y0, mx, y0 + hoch, 1);  pfeil(g, mx, y0, 0, -1);  pfeil(g, mx, y0 + hoch, 0, 1);  txt(g, mx + 7, y0 + hoch / 2 - 2, "R_th", {anker:"start", groesse:12});  txt(g, mx + 7, y0 + hoch / 2 + 14, zahl(rth, 1) + " µm",      {anker:"start", groesse:12});  /* Der Vorschub als Mass unter dem Werkstoff. */  var fy = boden + 22;  linie(g, x0, fy, x0 + f * sx, fy, 1);  pfeil(g, x0, fy, -1, 0);  pfeil(g, x0 + f * sx, fy, 1, 0);  txt(g, x0 + f * sx / 2, fy - 7, "f = " + zahl(f, 2) + " mm", {groesse:12});}/* ---------- Start ---------- */reiterSetzen(reiterAusAdresse() || "kontur");</script><script src="assets/back-nav.js" data-ziel="../"></script><script src="assets/qr.js"></script><script src="assets/pdf.js"></script><script src="assets/lektion.js"></script><script src="assets/feedback.js"></script><script src="assets/bildungsgang.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="lektion">
+<title>Fertigungstechnik: Zerspanung - Planung eines Drehprozesses</title>
+<meta name="description" content="In fünf Schritten vom Werkstück zum Arbeitsplan: Kontur und Drehverfahren, Werkstoff und Schnittgeschwindigkeit, Werkzeugauswahl, Vorschub und Rautiefe, Aufmaße und Sicherheit.">
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+  --s1:#1d4ed8; --s2:#0f766e; --s3:#a16207; --s4:#b45309; --s5:#9333ea;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+/* Oben Platz fuer den schwebenden Ruecklink. */
+.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border);
+  margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:760px){ .zwei{grid-template-columns:1fr} }
+
+figure{margin:0}
+figure svg{width:100%; height:auto; display:block}
+figcaption{font-size:.82rem; color:var(--muted); margin-top:6px}
+
+table{border-collapse:collapse; width:100%; font-size:.92rem}
+th,td{border:1px solid var(--border); padding:7px 10px; text-align:left;
+  vertical-align:top}
+th{background:var(--primary-light); font-weight:600}
+td.zahl{font-variant-numeric:tabular-nums; white-space:nowrap}
+
+.hinweis{
+  border-left:4px solid var(--accent); background:#fff7ed;
+  padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0;
+  font-size:.92rem;
+}
+.merk{
+  border-left:4px solid var(--ok); background:#f0fdf4;
+  padding:10px 14px; border-radius:0 8px 8px 0; margin:14px 0;
+  font-size:.92rem;
+}
+.formel{
+  display:block; margin:12px 0; padding:11px 14px; border-radius:10px;
+  background:var(--primary-light); border:1px solid var(--border);
+  font-size:1.05rem; text-align:center; font-variant-numeric:tabular-nums;
+}
+.buch{
+  display:block; margin:10px 0 0; padding:8px 12px; font-size:.86rem;
+  border-left:3px solid var(--s2); border-radius:0 8px 8px 0;
+  background:#f0fdfa;
+}
+
+/* Bedienung: Regler und Auswahl */
+.regler{display:grid; grid-template-columns:auto 1fr auto; gap:8px 12px;
+  align-items:center; margin:10px 0; font-size:.92rem}
+.regler output{font-variant-numeric:tabular-nums; font-weight:700;
+  min-width:6.5em; text-align:right}
+select, input[type="text"]{
+  font:inherit; font-size:.92rem; padding:7px 9px; border-radius:8px;
+  border:1px solid var(--border-strong); background:var(--card);
+  color:inherit;
+}
+.knopfreihe{display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 0}
+.knopfreihe button{
+  font:600 .9rem/1 inherit; padding:9px 14px; border-radius:999px;
+  border:1px solid var(--border-strong); background:var(--card);
+  color:inherit; cursor:pointer;
+}
+.knopfreihe button[aria-pressed="true"]{
+  background:var(--primary); border-color:var(--primary); color:#fff;
+}
+.ergebnis{
+  margin:14px 0 0; padding:12px 14px; border-radius:10px;
+  background:var(--primary-light); border:1px solid var(--border);
+  font-size:.95rem; line-height:1.9;
+}
+.ergebnis b{font-variant-numeric:tabular-nums}
+
+/* Die fuenf Schritte als Kette */
+ol.kette{list-style:none; counter-reset:kette; margin:0; padding:0;
+  display:grid; gap:10px}
+ol.kette li{counter-increment:kette; display:flex; gap:12px;
+  align-items:flex-start;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:10px; padding:12px 14px}
+/* Titel und Erklaerung bilden einen Block - sonst rutscht die Erklaerung in
+   die naechste Rasterzeile und steht unter der Nummer. */
+ol.kette li > div{flex:1}
+ol.kette li::before{
+  flex:0 0 auto;
+  content:counter(kette); display:inline-flex; align-items:center;
+  justify-content:center; width:30px; height:30px; border-radius:8px;
+  background:var(--primary); color:#fff; font-weight:700; font-size:.95rem;
+}
+ol.kette b{display:block}
+ol.kette span{font-size:.9rem; color:var(--muted)}
+</style>
+<script src="assets/thema.js"></script>
+<link rel="stylesheet" href="assets/thema-werkzeug.css">
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Planung eines Drehprozesses</h1>
+  <p class="lead">In fünf Schritten vom Werkstück zum Arbeitsplan &ndash;
+    durchgehend an der Antriebswelle.</p>
+</header>
+
+<div class="tabs" role="tablist" data-druck="weg">
+  <button role="tab" data-tab="kontur"    aria-selected="true">Kontur</button>
+  <button role="tab" data-tab="werkstoff" aria-selected="false">Werkstoff</button>
+  <button role="tab" data-tab="schnitt"   aria-selected="false">Schnittdaten</button>
+  <button role="tab" data-tab="werkzeug"  aria-selected="false">Werkzeug</button>
+  <button role="tab" data-tab="vorschub"  aria-selected="false">Vorschub</button>
+  <button role="tab" data-tab="hinweise"  aria-selected="false">Aufmaße und Sicherheit</button>
+</div>
+
+<main>
+
+<!-- ===================================================== KONTUR -->
+<section class="panel" id="p-kontur">
+
+  <div class="karte">
+    <h2>Fünf Schritte, eine Reihenfolge</h2>
+    <p class="sub">Jeder Schritt braucht das Ergebnis des vorigen.</p>
+    <ol class="kette">
+      <li><div><b>Kontur analysieren und Drehverfahren wählen</b>
+        <span>Welche Fläche entsteht wodurch &ndash; und in welcher
+          Reihenfolge?</span></div></li>
+      <li><div><b>Schnittgeschwindigkeit v<sub>c</sub> und Schnitttiefe a<sub>p</sub>
+        bestimmen</b>
+        <span>Über Werkstoff, Werkstoffgruppe und Bearbeitungsbedingungen.</span></div></li>
+      <li><div><b>Werkzeuge genau auswählen</b>
+        <span>Plattengeometrie, Grundform, Klemmhalter &ndash; und daraus die
+          Normbezeichnung.</span></div></li>
+      <li><div><b>Vorschübe berechnen und bestimmen</b>
+        <span>Beim Schlichten aus der geforderten Rautiefe, sonst aus der
+          Tabelle.</span></div></li>
+      <li><div><b>Aufmaße bedenken, Sicherheitsmaßnahmen planen</b>
+        <span>Alles, was ins Hinweisfeld des Arbeitsplans gehört.</span></div></li>
+    </ol>
+  </div>
+
+  <div class="karte">
+    <h2>Das Werkstück</h2>
+    <p class="sub">Antriebswelle aus 42CrMo4, Rohteil Ø32 × 135 mm.</p>
+    <figure id="bildKontur"></figure>
+    <div class="knopfreihe" id="flaechenknoepfe" data-druck="weg"></div>
+    <div class="ergebnis" id="flaecheInfo">Eine Fläche wählen &ndash; dann steht
+      hier, welches Drehverfahren sie erzeugt und warum.</div>
+    <p class="buch"><b>Nachschlagen:</b> Die Übersicht der Drehverfahren zeigt
+      zu jedem Verfahren die Bewegung, das Werkzeug und die Schnittgrößen.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Die sechs Drehverfahren</h2>
+    <table>
+      <thead><tr><th>Verfahren</th><th>Werkzeug</th><th>Schnittgrößen</th></tr></thead>
+      <tbody>
+        <tr><td>Querplandrehen</td>
+          <td>Plan- oder Schruppdrehmeißel<br>ε = 80°/90°, κ = 45°…97°,
+            r<sub>ε</sub> = 0,8…1,2 mm</td>
+          <td class="zahl">f = 0,1…0,2 mm<br>a<sub>p</sub> = 1…2 mm</td></tr>
+        <tr><td>Längsrunddrehen, Schruppen</td>
+          <td>Schruppdrehmeißel<br>ε = 80°/55°, κ = 93°…95°</td>
+          <td class="zahl">f = 0,25…0,6 mm<br>a<sub>p</sub> = 2…6 mm</td></tr>
+        <tr><td>Längsrunddrehen, Schlichten</td>
+          <td>Schlichtdrehmeißel<br>ε = 55°/35°, κ = 93°…107,5°,
+            r<sub>ε</sub> = 0,2…0,8 mm</td>
+          <td class="zahl">f = 0,1…0,25 mm<br>a<sub>p</sub> = 0,5…2 mm</td></tr>
+        <tr><td>Gewindedrehen</td>
+          <td>Gewindedrehmeißel<br>ε = 60° metrisch, 55° Whitworth,
+            30° Trapez</td>
+          <td class="zahl">f = P (Steigung)<br>i = Zustellungen + Leerschnitte</td></tr>
+        <tr><td>Abstech- und Einstechdrehen</td>
+          <td>Abstech-, Einstechdrehmeißel<br>Schnittbreite = Schneidenbreite</td>
+          <td class="zahl">f = 0,05…0,15 mm<br>a<sub>p</sub> = 0,6…6 mm</td></tr>
+        <tr><td>Innendrehen, Schlichten</td>
+          <td>Innenschlichtdrehmeißel<br>ε = 35°/55°, κ = 93°…107,5°</td>
+          <td class="zahl">f = 0,05…0,2 mm<br>a<sub>p</sub> = 0,5…1 mm</td></tr>
+      </tbody>
+    </table>
+    <div class="hinweis">Beim <b>Konturdrehen von Planflächen</b> gilt eine
+      kleinere Schnitttiefe: a<sub>p</sub> = 0,1 bis 0,2 mm.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Die Reihenfolge und ihre Gründe</h2>
+    <ol id="ablaufListe"></ol>
+    <div class="merk"><b>Merksatz:</b> Erst die Bezugsflächen, dann das Volumen,
+      dann die Oberfläche, dann die Einzelheiten, zuletzt das Abstechen. Wer
+      davon abweicht, braucht einen Grund.</div>
+  </div>
+
+</section>
+
+<!-- ===================================================== WERKSTOFF -->
+<section class="panel" id="p-werkstoff" hidden>
+
+  <div class="karte">
+    <h2>Von der Zeichnung zur Tabellenzeile</h2>
+    <p class="sub">Auf der Zeichnung steht ein Name. Gebraucht werden eine
+      Gruppe und eine Zeile.</p>
+    <div class="regler">
+      <label for="wWerkstoff">Werkstoff</label>
+      <select id="wWerkstoff"></select>
+      <span></span>
+    </div>
+    <div class="ergebnis" id="werkstoffInfo"></div>
+    <p class="buch"><b>Nachschlagen:</b> Die Zugfestigkeit steht in der Tabelle
+      der Vergütungsstähle &ndash; und zwar nach <b>Walzdurchmesser</b>
+      gestaffelt. Die Hauptanwendungsgruppen stehen bei den Schneidstoffen
+      nach DIN ISO 513 und noch einmal als Schritt 1 der Fertigungsplanung.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Die sechs Hauptanwendungsgruppen</h2>
+    <table>
+      <thead><tr><th>Kennung</th><th>Werkstoff</th><th>Gilt für</th></tr></thead>
+      <tbody>
+        <tr><td><b>P</b> blau</td><td>Stahl</td>
+          <td>alle Arten von Stahl und Stahlguss &ndash; außer nichtrostendem
+            Stahl</td></tr>
+        <tr><td><b>M</b> gelb</td><td>Nichtrostender Stahl</td>
+          <td>austenitisch, ferritisch, martensitisch</td></tr>
+        <tr><td><b>K</b> rot</td><td>Gusseisen</td>
+          <td>Lamellengrafit, Kugelgrafit, Temperguss</td></tr>
+        <tr><td><b>N</b> grün</td><td>Nichteisenmetalle und Kunststoffe</td>
+          <td>Aluminium- und Kupferlegierungen, Kunststoffe</td></tr>
+        <tr><td><b>S</b> braun</td><td>Warmfeste Speziallegierungen und Titan</td>
+          <td>Basis Eisen, Nickel, Cobalt; Titanlegierungen</td></tr>
+        <tr><td><b>H</b> grau</td><td>Harte Werkstoffe</td>
+          <td>gehärteter Stahl, gehärtete Gusseisenwerkstoffe</td></tr>
+      </tbody>
+    </table>
+    <div class="hinweis"><b>Die Ausnahme, die alles entscheidet:</b> P heißt
+      Stahl &ndash; aber nicht jeder Stahl ist P. Nichtrostend wird ein Stahl ab
+      etwa 10,5 % Chrom, und dann trägt er ein <b>X</b> vor der Bezeichnung.
+      42CrMo4 hat rund 1 % Chrom, kein X &ndash; also P.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Warum der Durchmesser in der Stahltabelle steht</h2>
+    <p>Ein Vergütungsstahl härtet beim Abschrecken von außen nach innen durch.
+      Im dicken Stück kommt die Wirkung nicht bis zur Mitte &ndash; derselbe
+      Stahl ist dort weicher. Deshalb hat jede Zeile mehrere Spalten:
+      ≤ 16 mm, über 16 bis 40 mm, und so weiter.</p>
+    <p>Man nimmt die Spalte, in die das <b>Werkstück</b> fällt, nicht die, die
+      am besten aussieht. Für die Antriebswelle mit dem größten Durchmesser 30 mm
+      ist das die Spalte „über 16 bis 40".</p>
+    <div class="merk"><b>Merksatz:</b> Werkstoffname, Behandlungszustand und
+      Durchmesser &ndash; erst diese drei zusammen ergeben eine
+      Zugfestigkeit.</div>
+  </div>
+
+</section>
+
+<!-- ===================================================== SCHNITTDATEN -->
+<section class="panel" id="p-schnitt" hidden>
+
+  <div class="karte">
+    <h2>Der Startwert und was ihn verschiebt</h2>
+    <p class="sub">In jeder Zelle der Schnittdatentabelle stehen drei Zahlen.
+      Welche gilt, entscheidet nicht das Gefühl.</p>
+
+    <div class="regler">
+      <label for="sVerfahren">Verfahren</label>
+      <select id="sVerfahren"></select>
+      <span></span>
+
+      <label for="sEingriff">Schneideneingriff</label>
+      <select id="sEingriff">
+        <option value="0">glatter, gleichmäßiger Schnitt, vorbearbeitete Oberfläche</option>
+        <option value="1">wechselnde Schnitttiefe, Guss- oder Schmiedehaut</option>
+        <option value="2">ungleichmäßiger Schnitt mit Unterbrechungen</option>
+      </select>
+      <span></span>
+
+      <label for="sStabil">Stabilität von Maschine, Kühlung, Einspannung</label>
+      <select id="sStabil">
+        <option value="0">++ (stabil, gute Kühlung, kurz gespannt)</option>
+        <option value="1" selected>+ (üblich)</option>
+        <option value="2">− (ältere Maschine, weit ausgespannt, ohne Kühlung)</option>
+      </select>
+      <span></span>
+
+      <label for="sD">Durchmesser d in mm</label>
+      <input type="range" id="sD" min="10" max="80" step="1" value="30">
+      <output id="sDaus">30 mm</output>
+    </div>
+
+    <div class="ergebnis" id="schnittInfo"></div>
+    <p class="buch"><b>Nachschlagen:</b> Die Bewertung der Bedingungen steht als
+      kleine Tabelle in Schritt 2 der Fertigungsplanung &ndash; Zeile ist der
+      Schneideneingriff, Spalte die Stabilität. Die drei Werte je Zelle stehen
+      in den Schnittdaten beim Drehen.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Die Bewertung der Bedingungen</h2>
+    <table>
+      <thead><tr><th>Art des Schneideneingriffs</th><th>++</th><th>+</th>
+        <th>−</th></tr></thead>
+      <tbody>
+        <tr><td>glatter, gleichmäßiger Schnitt, vorbearbeitete Oberfläche</td>
+          <td>günstig</td><td><b>normal</b></td><td>normal bis ungünstig</td></tr>
+        <tr><td>wechselnde Schnitttiefe, Guss- oder Schmiedehaut</td>
+          <td>günstig bis normal</td><td><b>normal</b></td><td>ungünstig</td></tr>
+        <tr><td>ungleichmäßiger Schnitt mit Unterbrechungen</td>
+          <td><b>normal</b></td><td>ungünstig</td><td>sehr ungünstig</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px">Günstige Bedingungen erlauben den <b>oberen</b>
+      Grenzwert, normale den <b>Startwert</b>, ungünstige verlangen den
+      <b>unteren</b>.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Von der Schnittgeschwindigkeit zur Drehzahl</h2>
+    <span class="formel">n = v<sub>c</sub> / (π · d)</span>
+    <p>Die Stolperstelle sind die Einheiten: v<sub>c</sub> steht in m/min, der
+      Durchmesser in mm. Erst umrechnen &ndash; 200 m/min sind 200 000 mm/min
+      &ndash;, dann teilen.</p>
+    <p>Die berechnete Drehzahl wird <b>abgerundet</b>, nicht aufgerundet: Der
+      Richtwert ist eine Obergrenze. Hat die Maschine feste Stufen, wird auf die
+      nächstkleinere gegangen.</p>
+    <div class="hinweis"><b>Beim Querplandrehen</b> wandert der Durchmesser
+      während des Schnitts. Ohne konstante Schnittgeschwindigkeit wird mit dem
+      mittleren Durchmesser gerechnet: d<sub>m</sub> = (d<sub>a</sub> +
+      d<sub>e</sub>) / 2.</div>
+    <span class="formel">i &ge; (d<sub>a</sub> &minus; d<sub>e</sub>) /
+      (2 · a<sub>p</sub>)</span>
+    <p>Die Anzahl der Schnitte beim Schruppen &ndash; immer
+      <b>aufgerundet</b>, denn ein halber Schnitt lässt den Rest stehen. Die 2
+      im Nenner ist der häufigste Fehler: a<sub>p</sub> wirkt auf den Radius,
+      der Durchmesser nimmt je Schnitt um das Doppelte ab.</p>
+  </div>
+
+</section>
+
+<!-- ===================================================== WERKZEUG -->
+<section class="panel" id="p-werkzeug" hidden>
+
+  <div class="karte">
+    <h2>Eine Bezeichnung zerlegen</h2>
+    <p class="sub">Zehn Stellen nach DIN ISO 1832. Vier davon entscheiden über
+      die Bearbeitung.</p>
+    <div class="regler">
+      <label for="kBez">Bezeichnung</label>
+      <input type="text" id="kBez" value="DCMT 11 T3 04" autocomplete="off"
+        spellcheck="false">
+      <span></span>
+    </div>
+    <div class="knopfreihe" data-druck="weg" id="bezBeispiele"></div>
+    <div class="ergebnis" id="bezInfo"></div>
+    <p class="buch"><b>Nachschlagen:</b> Der Schlüssel steht vollständig in der
+      Tabelle „Bezeichnung von Wendeschneidplatten", mit Skizze zu jeder Form
+      und den Tabellen für Toleranzklasse und Befestigung.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Die Form bestimmt die Anwendung</h2>
+    <table>
+      <thead><tr><th>Form</th><th>ε</th><th>Schruppen</th><th>Schlichten</th>
+        <th>Formdrehen</th></tr></thead>
+      <tbody>
+        <tr><td><b>C</b> Raute</td><td>80°</td><td>sehr gut</td><td>nicht</td>
+          <td>geeignet</td></tr>
+        <tr><td><b>W</b> Trigon</td><td>80°</td><td>sehr gut</td><td>nicht</td>
+          <td>geeignet</td></tr>
+        <tr><td><b>D</b> Raute</td><td>55°</td><td>nicht</td><td>sehr gut</td>
+          <td>sehr gut</td></tr>
+        <tr><td><b>V</b> Raute</td><td>35°</td><td>nicht</td><td>sehr gut</td>
+          <td>sehr gut</td></tr>
+        <tr><td><b>T</b> Dreieck</td><td>60°</td><td>sehr gut</td>
+          <td>geeignet</td><td>sehr gut</td></tr>
+        <tr><td><b>R</b> rund</td><td>–</td><td>sehr gut</td><td>geeignet</td>
+          <td>nicht</td></tr>
+      </tbody>
+    </table>
+    <div class="merk"><b>Die Regel dahinter:</b> Großer Eckenwinkel heißt
+      stabile Ecke &ndash; gut zum Schruppen. Kleiner Eckenwinkel heißt spitz
+      und zugänglich &ndash; nötig für Konturen, aber empfindlich.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Positive oder negative Grundform?</h2>
+    <p>Stelle 2 der Bezeichnung nennt den Normal-Freiwinkel an der Platte.
+      <b>N</b> bedeutet 0° &ndash; die negative Grundform. Sie steht senkrecht
+      im Halter, der Freiwinkel entsteht erst durch dessen Neigung.</p>
+    <table>
+      <thead><tr><th>Grundform</th><th>Vorteil</th><th>Preis dafür</th></tr></thead>
+      <tbody>
+        <tr><td>positiv (α<sub>n</sub> = 3°…30°)</td>
+          <td>schneidet leicht, geringe Schnittkraft, wenig Antriebsleistung</td>
+          <td>nur eine Seite nutzbar</td></tr>
+        <tr><td>negativ doppelseitig (α<sub>n</sub> = 0°)</td>
+          <td>doppelt so viele Schneiden, stabil</td>
+          <td>höhere Schnittkraft</td></tr>
+        <tr><td>negativ einseitig</td>
+          <td>höchste Schnitttiefe und höchster Vorschub</td>
+          <td>höchste Schnittkraft</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:12px">Von oben nach unten nehmen <b>Schnittkraft,
+      Schnitttiefe und Vorschub zu</b>. Wer eine schwache Maschine hat oder ein
+      dünnes Werkstück, wählt positiv.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Der Klemmhalter</h2>
+    <p>Die Platte allein dreht nicht &ndash; sie braucht einen Halter. Auch der
+      trägt eine Bezeichnung, nach DIN 4984 (Vierkantschaft) oder ISO 26623
+      (Polygonschaft):</p>
+    <span class="formel">DIN 4984 &ndash; P C L N R 25 25 M 12</span>
+    <table>
+      <thead><tr><th>Stelle</th><th>Bedeutung</th><th>im Beispiel</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Plattenbefestigung</td><td>P &ndash; von unten über
+          Bohrung geklemmt</td></tr>
+        <tr><td>2</td><td>Plattengeometrie</td><td>C &ndash; Raute 80°</td></tr>
+        <tr><td>3</td><td>Einstellwinkel und Halterform</td>
+          <td>L &ndash; 95°, abgesetzt</td></tr>
+        <tr><td>4</td><td>Normalfreiwinkel der Platte</td><td>N &ndash; 0°</td></tr>
+        <tr><td>5</td><td>Halterausführung</td><td>R &ndash; rechter Halter</td></tr>
+        <tr><td>6, 7</td><td>Höhe der Schneidenecke, Schaftbreite</td>
+          <td>25 mm, 25 mm</td></tr>
+        <tr><td>8</td><td>Halterlänge</td><td>M &ndash; 150 mm</td></tr>
+        <tr><td>9</td><td>Größe der Wendeschneidplatte</td>
+          <td>12 &ndash; Schneidenlänge 12 mm</td></tr>
+      </tbody>
+    </table>
+    <div class="hinweis">Der <b>Einstellwinkel</b> an Stelle 3 sagt, wofür der
+      Halter gedacht ist: Buchstaben wie L (95°) und J (93°) gehören zum
+      Längsrunddrehen, K (75°) und S (45°) zum Querplandrehen.</div>
+  </div>
+
+</section>
+
+<!-- ===================================================== VORSCHUB -->
+<section class="panel" id="p-vorschub" hidden>
+
+  <div class="karte">
+    <h2>Vorschub, Eckenradius, Rautiefe</h2>
+    <p class="sub">Drei Größen, eine Formel &ndash; und ein Quadrat, das alles
+      entscheidet.</p>
+    <span class="formel">R<sub>th</sub> = f² / (8 · r<sub>ε</sub>)
+      &nbsp;&nbsp;&rarr;&nbsp;&nbsp;
+      f = √(8 · r<sub>ε</sub> · R<sub>th</sub>)</span>
+
+    <div class="zwei">
+      <div>
+        <div class="regler">
+          <label for="vF">Vorschub f</label>
+          <input type="range" id="vF" min="0.05" max="0.6" step="0.01" value="0.16">
+          <output id="vFaus">0,16 mm</output>
+
+          <label for="vR">Eckenradius r<sub>ε</sub></label>
+          <input type="range" id="vR" min="0.2" max="1.6" step="0.2" value="0.8">
+          <output id="vRaus">0,8 mm</output>
+        </div>
+        <div class="ergebnis" id="vorschubInfo"></div>
+      </div>
+      <figure id="bildRillen"></figure>
+    </div>
+    <p class="buch"><b>Nachschlagen:</b> Die Tabelle „Erreichbare Rautiefe in
+      Abhängigkeit des Eckenradius und des Vorschubs" nimmt die Rechnung ab
+      &ndash; Rautiefen von 1,6 bis 16 µm, Eckenradien von 0,2 bis 0,8 mm.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Das Quadrat ist die Nachricht</h2>
+    <p>Doppelter Vorschub heißt <b>vierfache</b> Rautiefe. Wer die
+      Bearbeitungszeit halbieren will, verliert zwei Qualitätsstufen. Umgekehrt
+      bringt ein doppelter Eckenradius nur die halbe Rautiefe &ndash; oder, bei
+      gleicher Rautiefe, den <b>1,41-fachen</b> Vorschub.</p>
+    <p>Deshalb die Reihenfolge beim Planen: <b>erst</b> den größten
+      Eckenradius wählen, den die Kontur zulässt, <b>dann</b> den Vorschub dazu
+      rechnen.</p>
+    <span class="formel">r<sub>ε</sub> &le; r<sub>w</sub> &minus; 0,1 mm</span>
+    <p>r<sub>w</sub> ist die <b>kleinste</b> Innenrundung des Werkstücks
+      &ndash; und die steht selten als Radius in der Zeichnung.</p>
+    <div class="hinweis"><b>Der klassische Fehler:</b> nur die
+      Durchmesserübergänge ansehen. An der Antriebswelle fällt der Blick auf die
+      <b>R1</b> am Bund, und man wählt 0,8 mm. Enger sind aber die beiden
+      Freistiche <b>DIN 509 – E 0,6 × 0,3</b>: Die erste Zahl der
+      Bezeichnung <i>ist</i> der Radius. Damit gilt r<sub>ε</sub> ≤
+      0,6 − 0,1 = 0,5 mm, genormt also <b>0,4 mm</b>.</div>
+    <p>Die Regel gilt dem Werkzeug, das die Kontur <i>erzeugt</i>. Beim
+      Konturdrehen auf der CNC fährt das Schlichtwerkzeug auch durch die
+      Freistiche, also bindet deren Radius. Werden sie mit einem eigenen
+      Formwerkzeug gestochen, bindet für den Schlichtmeißel nur die R1 &ndash;
+      im Zweifel gilt die engere Grenze.</p>
+    <div class="hinweis"><b>Nach unten gibt es auch eine Grenze.</b> Unter einer
+      gewissen Spandicke schneidet die Schneide nicht mehr, sondern drückt. Der
+      Werkstoff wird verformt statt abgetrennt, die Fläche wird schlechter statt
+      besser. Deshalb steht beim Schlichten f = 0,1 bis 0,25 mm und nicht
+      „beliebig klein".</div>
+  </div>
+
+  <div class="karte">
+    <h2>Wo kein Vorschub zu wählen ist</h2>
+    <p><b>Beim Gewindedrehen</b> ist der Vorschub die Steigung: f = P. Bei M20×1
+      also 1 mm je Umdrehung. Was bleibt, ist die Zahl der Zustellungen &ndash;
+      sie steht im Tabellenbuch nach Steigung geordnet, dazu zwei bis vier
+      Leerdurchläufe zum Glätten.</p>
+    <p><b>Beim Einstechen und Abstechen</b> ist der Vorschub klein und fest:
+      0,05 bis 0,15 mm. Die Schneidenbreite ist die Schnittbreite &ndash; eine
+      1,3 mm breite Nut verlangt ein 1,3 mm breites Werkzeug.</p>
+    <div class="merk"><b>Merksatz:</b> Geschlichtet wird nach Rautiefe,
+      geschruppt nach Tabelle, Gewinde nach Steigung. Nur einer der drei
+      Vorschübe wird gerechnet.</div>
+  </div>
+
+</section>
+
+<!-- ===================================================== HINWEISE -->
+<section class="panel" id="p-hinweise" hidden>
+
+  <div class="karte">
+    <h2>Das Hinweisfeld</h2>
+    <p class="sub">Die Spalte, die einen guten von einem mittelmäßigen
+      Arbeitsplan unterscheidet.</p>
+    <p>Schnittdaten kann jeder nachschlagen. Ob jemand an das Aufmaß, die
+      Spannung und die Späne gedacht hat, steht im Hinweisfeld &ndash; und
+      zeigt sich spätestens an der Maschine.</p>
+    <table>
+      <thead><tr><th>Gehört hinein</th><th>Warum</th></tr></thead>
+      <tbody>
+        <tr><td>Rohteilmaß und Werkstoff</td>
+          <td>Steht in der ersten Zeile und gilt für alles Weitere.</td></tr>
+        <tr><td>Spannart und Ausspannlänge</td>
+          <td>Bestimmt die Stabilität &ndash; und damit die
+            Bearbeitungsbedingungen.</td></tr>
+        <tr><td>Schlichtaufmaß</td>
+          <td>Was der Schlichtgang wegnehmen soll, muss stehen bleiben.</td></tr>
+        <tr><td>Anzahl der Schnitte je Absatz</td>
+          <td>Ergibt sich aus Durchmesserdifferenz und Schnitttiefe.</td></tr>
+        <tr><td>Kühlschmierung</td>
+          <td>Ohne sie stimmt kein Maß, das warm gemessen wurde.</td></tr>
+        <tr><td>Spanbruch und Spanabfuhr</td>
+          <td>Lange Spiralspäne sind scharf, heiß und wickeln sich auf.</td></tr>
+        <tr><td>Auffangen beim Abstechen</td>
+          <td>Das Teil fällt. Vorher, nicht nachher, überlegen.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="karte">
+    <h2>Das Aufmaß</h2>
+    <p>Geschruppt wird <b>nicht auf Fertigmaß</b>. Die Schnitttiefe beim
+      Schlichten liegt bei 0,5 bis 2 mm &ndash; das ist ein <i>radiales</i> Maß.
+      Bei a<sub>p</sub> = 0,5 mm bleibt also <b>1 mm auf den Durchmesser</b>
+      stehen.</p>
+    <span class="formel">Schruppmaß = Fertigmaß + 2 · a<sub>p,schlicht</sub></span>
+    <p>Zu wenig Aufmaß ist so schlecht wie zu viel: Unter einer gewissen
+      Spandicke drückt die Schneide nur noch.</p>
+    <div class="hinweis"><b>Beim Gewinde ist es umgekehrt.</b> Der
+      Gewindeaußendurchmesser bekommt kein Aufmaß, sondern wird ein bis zwei
+      Zehntel <b>kleiner</b> gedreht: Beim Schneiden wird Werkstoff nach außen
+      verdrängt, und die Flanken brauchen Platz.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Wenn etwas schiefgeht</h2>
+    <p class="sub">Schritt 6 der Fertigungsplanung: Optimierungsmaßnahmen.</p>
+    <table>
+      <thead><tr><th>Problem</th><th>Abhilfe</th></tr></thead>
+      <tbody>
+        <tr><td>Hoher Verschleiß an Frei- und Spanfläche</td>
+          <td>v<sub>c</sub> verkleinern, f verkleinern, verschleißfestere
+            Hartmetallsorte</td></tr>
+        <tr><td>Aufbauschneiden</td>
+          <td>v<sub>c</sub> <b>erhöhen</b>, positive Schneidengeometrie</td></tr>
+        <tr><td>Ausbröckeln der Schneidkante</td>
+          <td>Schnitttiefe verringern, zähere Hartmetallsorte</td></tr>
+        <tr><td>Bruch der Wendeschneidplatte</td>
+          <td>f verkleinern, Schnitttiefe verringern, zähere Sorte</td></tr>
+        <tr><td>Lange Spiralspäne</td>
+          <td>Vorschub <b>erhöhen</b> &ndash; der Span bricht dann</td></tr>
+        <tr><td>Vibrationen</td>
+          <td>Schnitttiefe verringern, positive Geometrie, kürzer spannen</td></tr>
+      </tbody>
+    </table>
+    <div class="merk"><b>Zwei Fälle laufen gegen die Intuition:</b>
+      Aufbauschneiden verschwinden bei <i>höherer</i> Geschwindigkeit, und
+      lange Späne brechen bei <i>größerem</i> Vorschub. Wer beides kleiner
+      macht, macht es schlimmer.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Sicherheit an der Drehmaschine</h2>
+    <ul>
+      <li><b>Schutzbrille</b> &ndash; immer. Späne fliegen, und sie sind heiß.</li>
+      <li><b>Keine Handschuhe, keine losen Ärmel, kein Schmuck</b> &ndash; alles,
+        was sich aufwickeln kann, bleibt weg.</li>
+      <li><b>Späne nur mit dem Haken</b>, nie mit der Hand und nie bei laufender
+        Maschine.</li>
+      <li><b>Futterschlüssel abziehen</b>, bevor eingeschaltet wird.</li>
+      <li><b>Beim Abstechen auffangen</b> &ndash; das Teil fällt, und es ist
+        heiß.</li>
+      <li><b>Messen nur im Stillstand</b> und mit weggefahrenem Werkzeug.</li>
+    </ul>
+  </div>
+
+</section>
+
+</main>
+
+<p style="font-size:.82rem; color:var(--muted); margin-top:26px">
+  <b>Woher die Zahlen stammen:</b> Vergütungsstähle nach DIN EN ISO 683-1 und
+  683-2, Schneidstoffe nach DIN ISO 513, Wendeschneidplatten nach DIN ISO 1832,
+  Klemmhalter nach DIN 4983 und ISO 26623, Drehverfahren, Fertigungsplanung und
+  Schnittdaten aus dem Abschnitt „Spanende Fertigung (Drehen)" &ndash; alles
+  Tabellenbuch Metall (Europa-Verlag). Alle Zahlenwerte sind
+  Orientierungswerte für den Unterricht; maßgebend sind Norm und Tabellenbuch.
+</p>
+
+</div>
+
+<script src="assets/zeichnen.js"></script>
+<script src="assets/wellen.js"></script>
+
+<script src="assets/drehteil.js"></script>
+
+<script>var WELLE = WELLEN.antriebswelle;</script>
+<script>
+"use strict";
+
+/* ---------- Reiter ---------- */
+
+function reiterSetzen(name){
+  var knoepfe = document.querySelectorAll('.tabs button');
+  for(var i = 0; i < knoepfe.length; i++){
+    var an = knoepfe[i].dataset.tab === name;
+    knoepfe[i].setAttribute("aria-selected", an ? "true" : "false");
+  }
+  var teile = document.querySelectorAll('.panel');
+  for(var j = 0; j < teile.length; j++){
+    teile[j].hidden = teile[j].id !== "p-" + name;
+  }
+}
+
+document.querySelector('.tabs').addEventListener("click", function(e){
+  var b = e.target.closest("button[data-tab]");
+  if(!b) return;
+  reiterSetzen(b.dataset.tab);
+  /* Der Reiter steht in der Adresse - so laesst sich ein einzelner Schritt
+     verlinken, etwa aus einer Uebung heraus. */
+  try{ history.replaceState(null, "", "#" + b.dataset.tab); }catch(err){}
+});
+
+/* Kommt jemand mit einem Reiter in der Adresse, wird der geoeffnet. */
+function reiterAusAdresse(){
+  var name = String(location.hash || "").replace(/^#/, "");
+  return document.getElementById("p-" + name) ? name : null;
+}
+
+function el(id){ return document.getElementById(id); }
+function zahl(x, n){ return x.toFixed(n === undefined ? 1 : n).replace(".", ","); }
+
+/* ---------- Kontur ---------- */
+
+var GRUENDE = {
+  stirn_links: ["Abstechdrehen",
+    "Sie liegt zum Futter hin. Vom Stangenmaterial getrennt wird das Werkstück "
+    + "zuletzt, und genau dabei entsteht diese Fläche - danach hält nichts mehr. "
+    + "Ihre Zentrierbohrung kommt nach dem Umspannen dazu."],
+  mantel_20: ["Längsrunddrehen, Schlichten",
+    "Zylindrische Mantelfläche mit Rz 4. Geschruppt wurde sie vorher; fertig "
+    + "macht sie der Schlichtgang."],
+  nut_a: ["Einstechdrehen",
+    "Eine 1,3 mm breite Nut entsteht durch ein Werkzeug, das quer einsticht. "
+    + "Die Nutbreite ist die Schneidenbreite."],
+  schulter_22: ["Querplandrehen",
+    "Auch ein Absatz steht senkrecht zur Achse - dieselbe Bewegung wie bei der "
+    + "Stirnfläche. Der Freistich DIN 509 an seinem Fuß wird eingestochen."],
+  mantel_24: ["Längsrunddrehen, Schlichten",
+    "Mantelfläche mit Rz 6 - auch das verlangt einen Schlichtgang."],
+  bund_30: ["Längsrunddrehen, Schruppen",
+    "Der Bund trägt nur Rz 10, die allgemeine Rautiefe der Zeichnung. Was "
+    + "geschruppt ist, reicht - ein Schlichtgang wäre verschenkte Zeit."],
+  mantel_25: ["Längsrunddrehen, Schlichten",
+    "Der längste Abschnitt und der zweite Lagersitz mit Rz 4."],
+  nut_b: ["Einstechdrehen",
+    "Wie Nut A: quer einstechen, Breite gleich Schneidenbreite."],
+  freistich: ["Einstechdrehen",
+    "Der Gewindefreistich DIN 76 - A wird eingestochen, damit das "
+    + "Gewindewerkzeug auslaufen kann. Ohne ihn liefe es in die Schulter."],
+  gewinde: ["Gewindedrehen",
+    "M20×1: Der Vorschub ist die Steigung, also 1 mm je Umdrehung. Die volle "
+    + "Tiefe entsteht in sechs Zustellungen plus Leerdurchläufen."],
+  stirn_rechts: ["Querplandrehen",
+    "Das freie Ende liegt rechts, also fängt die Bearbeitung hier an: Die "
+    + "Schneide läuft quer zur Achse, von außen nach innen. Anschließend wird "
+    + "zentriert, damit die Reitstockspitze einen Sitz hat."]
+};
+
+var ABLAUF = [
+  ["Rohteil prüfen, einspannen, mit der Reitstockspitze stützen",
+   "Ohne geprüftes Halbzeug und feste Spannung fängt niemand an."],
+  ["Rechte Stirnfläche querplandrehen und zentrieren",
+   "Das freie Ende zuerst - es schafft die Bezugsfläche für alle Längenmaße "
+   + "und den Sitz für die Spitze."],
+  ["Absätze längsrunddrehen, schruppen",
+   "Erst das Volumen weg. Das Schlichtaufmaß bleibt stehen."],
+  ["Kontur schlichten",
+   "Jetzt die Oberfläche - und nur dort, wo die Zeichnung es fordert."],
+  ["Freistiche und Nuten einstechen",
+   "Nach dem Schlichten: Ein Schlichtwerkzeug, das über eine Nut läuft, "
+   + "schlägt auf."],
+  ["Gewinde drehen",
+   "Nach dem Gewindefreistich, damit das Werkzeug auslaufen kann."],
+  ["Maße prüfen",
+   "Solange das Teil eingespannt ist, lässt sich nachbessern."],
+  ["Werkstück abstechen",
+   "Der letzte Drehvorgang. Danach fällt das Teil ab."]
+];
+
+var gewaehlteFlaeche = null;
+
+function konturZeichnen(){
+  var o = {s:5.8, bezeichnungen:true};
+  var g = wellenGroesse(WELLE, o);
+  var svg = bild("bildKontur", g.breite, g.hoehe,
+    "Die Antriebswelle mit Benennungen",
+    "Antriebswelle aus 42CrMo4. Über die Schaltflächen lässt sich jede Fläche "
+    + "hervorheben.");
+  var z = {x:g.x, y:g.y, s:o.s, bezeichnungen:true};
+  if(gewaehlteFlaeche) z.markiert = [gewaehlteFlaeche];
+  zeichneWelle(svg, WELLE, z);
+}
+
+(function konturAufbauen(){
+  el("flaechenknoepfe").innerHTML = WELLE.flaechen.map(function(f){
+    return '<button type="button" data-f="' + f.id + '" aria-pressed="false">'
+      + f.name + '</button>';
+  }).join("");
+
+  el("flaechenknoepfe").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-f]");
+    if(!b) return;
+    gewaehlteFlaeche = (gewaehlteFlaeche === b.dataset.f) ? null : b.dataset.f;
+    var alle = el("flaechenknoepfe").querySelectorAll("button");
+    for(var i = 0; i < alle.length; i++){
+      alle[i].setAttribute("aria-pressed",
+        alle[i].dataset.f === gewaehlteFlaeche ? "true" : "false");
+    }
+    konturZeichnen();
+    var g = GRUENDE[gewaehlteFlaeche];
+    el("flaecheInfo").innerHTML = g
+      ? "<b>" + g[0] + "</b><br>" + g[1]
+      : "Eine Fläche wählen &ndash; dann steht hier, welches Drehverfahren sie "
+        + "erzeugt und warum.";
+  });
+
+  el("ablaufListe").innerHTML = ABLAUF.map(function(z){
+    return "<li><b>" + z[0] + "</b> &ndash; " + z[1] + "</li>";
+  }).join("");
+
+  konturZeichnen();
+}());
+
+/* ---------- Werkstoff ---------- */
+
+/* Werkstoffe, wie sie im Unterricht vorkommen. Die Zugfestigkeiten gelten
+   für Walzdurchmesser über 16 bis 40 mm im Zustand +QT. */
+var WERKSTOFFE = [
+  {name:"42CrMo4", nr:"1.7225", zu:"+QT", rm:"1000…1200", mitte:1100,
+   gruppe:"P", zeile:"Vergütungsstahl, legiert, R<sub>m</sub> &gt; 750",
+   wie:"Legierter Vergütungsstahl. Chrom im Namen, aber kein X davor - also "
+     + "nicht nichtrostend."},
+  {name:"34Cr4", nr:"1.7033", zu:"+QT", rm:"800…950", mitte:875,
+   gruppe:"P", zeile:"Vergütungsstahl, legiert, R<sub>m</sub> &gt; 750",
+   wie:"Legierter Vergütungsstahl, etwas weicher als 42CrMo4 - dieselbe Zeile."},
+  {name:"C45E", nr:"1.1191", zu:"+QT", rm:"650…800", mitte:725,
+   gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &gt; 650",
+   wie:"Unlegierter Vergütungsstahl, 0,45 % Kohlenstoff."},
+  {name:"C25E", nr:"1.1158", zu:"+QT", rm:"500…650", mitte:575,
+   gruppe:"P", zeile:"Vergütungsstahl, unlegiert, R<sub>m</sub> &le; 650",
+   wie:"Derselbe Stahltyp, eine Zeile tiefer - allein wegen der "
+     + "Zugfestigkeit."},
+  {name:"11SMnPb30", nr:"1.0718", zu:"warmgewalzt", rm:"bis 570", mitte:520,
+   gruppe:"P", zeile:"Automatenstahl, R<sub>m</sub> &le; 570",
+   wie:"Automatenstahl mit Schwefel und Blei - bricht den Span von selbst."}
+];
+
+(function werkstoffAufbauen(){
+  el("wWerkstoff").innerHTML = WERKSTOFFE.map(function(w, i){
+    return '<option value="' + i + '">' + w.name + '</option>';
+  }).join("");
+  el("wWerkstoff").addEventListener("change", werkstoffZeigen);
+  werkstoffZeigen();
+}());
+
+function werkstoffZeigen(){
+  var w = WERKSTOFFE[Number(el("wWerkstoff").value) || 0];
+  el("werkstoffInfo").innerHTML =
+    "<b>" + w.name + "</b>, Werkstoffnummer " + w.nr + ", Zustand " + w.zu
+    + "<br>" + w.wie
+    + "<br>R<sub>m</sub> = <b>" + w.rm + " N/mm²</b> (Walzdurchmesser über 16 "
+    + "bis 40 mm), gemittelt <b>" + w.mitte + " N/mm²</b>"
+    + "<br>Hauptanwendungsgruppe <b>" + w.gruppe + "</b>"
+    + "<br>Zeile der Schnittdatentabelle: <b>" + w.zeile + "</b>";
+}
+
+/* ---------- Schnittdaten ---------- */
+
+/* Die Zeile "P / Vergütungsstahl, legiert, Rm > 750":
+   [unterer Grenzwert, Startwert, oberer Grenzwert] in m/min. */
+var VERFAHREN = [
+  {id:"plan",   name:"Querplandrehen",              w:[80, 130, 180],
+   ap:"1…2 mm", f:"0,1…0,2 mm"},
+  {id:"schrupp", name:"Längsrunddrehen, Schruppen",  w:[70, 110, 160],
+   ap:"2…6 mm", f:"0,25…0,6 mm"},
+  {id:"schlicht", name:"Längsrunddrehen, Schlichten", w:[100, 150, 200],
+   ap:"0,5…2 mm", f:"0,1…0,25 mm"},
+  {id:"stech",  name:"Abstech- und Einstechdrehen", w:[95, 105, 115],
+   ap:"Schneidenbreite", f:"0,05…0,15 mm"},
+  {id:"gewinde", name:"Gewindedrehen",               w:[90, 100, 110],
+   ap:"Zustellungen", f:"f = P"}
+];
+
+/* Die Bewertung nach Schritt 2 der Fertigungsplanung. Zeile = Eingriff,
+   Spalte = Stabilität. */
+var BEWERTUNG = [
+  ["günstig", "normal", "normal bis ungünstig"],
+  ["günstig bis normal", "normal", "ungünstig"],
+  ["normal", "ungünstig", "sehr ungünstig"]
+];
+/* Welcher der drei Werte daraus folgt. Die Zwischenstufen liegen dazwischen -
+   dafür gibt es keinen Tabellenwert, deshalb wird der nähere genommen und
+   der Zwischenfall benannt. */
+var GRIFF = {"günstig":2, "günstig bis normal":2, "normal":1,
+  "normal bis ungünstig":1, "ungünstig":0, "sehr ungünstig":0};
+
+(function schnittAufbauen(){
+  el("sVerfahren").innerHTML = VERFAHREN.map(function(v, i){
+    return '<option value="' + i + '">' + v.name + '</option>';
+  }).join("");
+  ["sVerfahren", "sEingriff", "sStabil", "sD"].forEach(function(id){
+    el(id).addEventListener("input", schnittZeigen);
+    el(id).addEventListener("change", schnittZeigen);
+  });
+  schnittZeigen();
+}());
+
+function schnittZeigen(){
+  var v = VERFAHREN[Number(el("sVerfahren").value) || 0];
+  var e = Number(el("sEingriff").value), s = Number(el("sStabil").value);
+  var d = Number(el("sD").value);
+  el("sDaus").textContent = d + " mm";
+
+  var urteil = BEWERTUNG[e][s];
+  var griff = GRIFF[urteil];
+  var vc = v.w[griff];
+  var n = Math.floor(vc * 1000 / (Math.PI * d));
+  var zwischen = urteil.indexOf(" bis ") > 0;
+
+  el("schnittInfo").innerHTML =
+    "In der Zelle stehen <b>" + v.w[0] + " &ndash; " + v.w[1] + " &ndash; "
+      + v.w[2] + "</b> m/min."
+    + "<br>Bedingungen: <b>" + urteil + "</b>"
+    + (zwischen ? " &ndash; ein Zwischenfeld der Tabelle. Man wählt einen Wert "
+        + "zwischen den beiden benachbarten; hier ist der nähere genommen." : "")
+    + "<br>Gewählt: v<sub>c</sub> = <b>" + vc + " m/min</b>"
+      + " (" + (griff === 2 ? "oberer Grenzwert"
+              : griff === 0 ? "unterer Grenzwert" : "Startwert") + ")"
+    + "<br>n = " + (vc * 1000) + " / (π · " + d + ") = " + zahl(vc * 1000 / (Math.PI * d), 0)
+      + " &rarr; abgerundet <b>" + n + " 1/min</b>"
+    + "<br><span style=\"color:var(--muted)\">Schnitttiefe " + v.ap
+      + ", Vorschub " + v.f + "</span>";
+}
+
+/* ---------- Werkzeug: Bezeichnung zerlegen ---------- */
+
+var FORMEN = {S:"Quadrat, Eckenwinkel 90°", T:"Dreieck, Eckenwinkel 60°",
+  C:"Raute, Eckenwinkel 80°", W:"Trigon, Eckenwinkel 80°",
+  M:"Raute, Eckenwinkel 86°", E:"Raute, Eckenwinkel 75°",
+  D:"Raute, Eckenwinkel 55°", V:"Raute, Eckenwinkel 35°",
+  R:"rund, ohne Eckenwinkel", P:"Fünfeck", H:"Sechseck", O:"Achteck"};
+var FREI = {N:"0° – negative Grundform, beidseitig verwendbar", A:"3°", B:"5°",
+  C:"7°", P:"11°", D:"15°", E:"20°", F:"25°", G:"30°"};
+var SCHNEIDE = {F:"scharf", E:"gerundet", T:"gefast",
+  S:"gefast und gerundet", K:"doppelgefast", P:"doppelgefast und gerundet"};
+var RICHT = {R:"rechtsschneidend", L:"linksschneidend",
+  N:"rechts- und linksschneidend"};
+
+var BEISPIELE = ["DCMT 11 T3 04", "CNMG 12 04 08", "VBMT 16 04 02",
+  "WNMG 08 04 12", "TNMG 16 04 08"];
+
+(function bezAufbauen(){
+  el("bezBeispiele").innerHTML = BEISPIELE.map(function(b){
+    return '<button type="button" data-b="' + b + '">' + b + '</button>';
+  }).join("");
+  el("bezBeispiele").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-b]");
+    if(!b) return;
+    el("kBez").value = b.dataset.b;
+    bezZeigen();
+  });
+  el("kBez").addEventListener("input", bezZeigen);
+  bezZeigen();
+}());
+
+function bezZeigen(){
+  var roh = String(el("kBez").value).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if(roh.length < 4){
+    el("bezInfo").innerHTML = "Mindestens vier Zeichen eingeben &ndash; die "
+      + "ersten vier Stellen sind Form, Freiwinkel, Toleranzklasse und "
+      + "Befestigung.";
+    return;
+  }
+  var zeilen = [];
+  function zeile(nr, was, wert, bedeutung){
+    zeilen.push("<b>" + nr + "</b> " + was + ": <b>" + wert + "</b>"
+      + (bedeutung ? " &ndash; " + bedeutung : ""));
+  }
+  zeile(1, "Plattengeometrie", roh[0], FORMEN[roh[0]] || "keine bekannte Form");
+  zeile(2, "Normal-Freiwinkel", roh[1], FREI[roh[1]] || "nicht im Auszug");
+  zeile(3, "Toleranzklasse", roh[2], "Grenzabmaße für Prüfmaße und Dicke");
+  zeile(4, "Befestigung und Spanbrecher", roh[3], "");
+
+  var rest = roh.slice(4);
+  var zahlen = rest.match(/^([0-9]{2})([0-9T][0-9])([0-9]{2})/);
+  if(zahlen){
+    zeile(5, "Plattengröße l", zahlen[1], zahlen[1] + " mm Schneidenlänge");
+    zeile(6, "Plattendicke s", zahlen[2], "");
+    zeile(7, "Schneidenecke", zahlen[3],
+      "r<sub>ε</sub> = " + zahl(Number(zahlen[3]) * 0.1, 1) + " mm "
+      + "(Kennzahl mal 0,1)");
+    var nach = rest.slice(6);
+    if(nach[0]) zeile(8, "Ausführung der Schneide", nach[0],
+      SCHNEIDE[nach[0]] || "");
+    if(nach[1]) zeile(9, "Schneidrichtung", nach[1], RICHT[nach[1]] || "");
+  }else{
+    zeilen.push("<span style=\"color:var(--muted)\">Für die Stellen 5 bis 7 "
+      + "werden sechs Ziffern erwartet, etwa <b>11 T3 04</b>.</span>");
+  }
+  el("bezInfo").innerHTML = zeilen.join("<br>");
+}
+
+/* ---------- Vorschub und Rautiefe ---------- */
+
+(function vorschubAufbauen(){
+  ["vF", "vR"].forEach(function(id){
+    el(id).addEventListener("input", vorschubZeigen);
+  });
+  vorschubZeigen();
+}());
+
+function vorschubZeigen(){
+  var f = Number(el("vF").value), r = Number(el("vR").value);
+  el("vFaus").textContent = zahl(f, 2) + " mm";
+  el("vRaus").textContent = zahl(r, 1) + " mm";
+  var rth = f * f / (8 * r) * 1000;
+
+  el("vorschubInfo").innerHTML =
+    "R<sub>th</sub> = " + zahl(f, 2) + "² / (8 · " + zahl(r, 1) + ") = <b>"
+      + zahl(rth, 1) + " µm</b>"
+    + "<br>Das entspricht etwa <b>Rz " + zahl(rth, 1) + "</b>."
+    + (f > 0.25 ? "<br><span style=\"color:var(--warn)\">Dieser Vorschub liegt "
+        + "über dem Schlichtbereich (0,1 bis 0,25 mm) - hier wird "
+        + "geschruppt.</span>" : "")
+    + (f < 0.1 ? "<br><span style=\"color:var(--warn)\">Unter 0,1 mm schneidet "
+        + "die Schneide nicht mehr, sie drückt.</span>" : "");
+
+  rillenZeichnen(f, r, rth);
+}
+
+/* Das Rillenprofil. Kein Massstabsbild: Waere die Hoehe so gezeichnet wie
+   die Breite, waere von der Rautiefe nichts zu sehen - bei f = 0,16 mm und
+   r_eps = 0,8 mm sind es vier Tausendstel Millimeter. Die Hoehe ist deshalb
+   ueberhoeht, und die Bildunterschrift sagt es.
+   Gerechnet wird die Kontur Punkt fuer Punkt: In der Mitte zwischen zwei
+   Bahnen steht der Werkstoff am hoechsten, genau unter einer Bahn am
+   tiefsten. */
+function rillenZeichnen(f, r, rth){
+  var breite = 420, hoehe = 200;
+  var svg = bild("bildRillen", breite, hoehe,
+    "Rillenprofil aus Eckenradius und Vorschub",
+    "Drei Vorschubwege nebeneinander. <b>Die Höhe ist stark überhöht</b> - "
+    + "sonst wäre von " + zahl(rth, 1) + " µm nichts zu sehen.");
+  var g = svgEl("g", {}, svg);
+
+  var perioden = 3;
+  var x0 = 20;
+  /* Rechts bleibt ein Streifen frei - dort steht das Mass der Rautiefe.
+     Sonst liegt die Beschriftung auf dem Profil. */
+  var profil = breite - 118;
+  var sx = profil / (perioden * f);             /* Bildpunkte je Millimeter, quer */
+  var hoch = 46;                                /* so hoch wird die Rautiefe */
+  var y0 = 72;                                  /* Hoehe der Spitzen */
+  var boden = y0 + hoch + 34;                   /* Unterkante des Werkstoffs */
+
+  /* Die Kontur: Abstand zur naechsten Bahnmitte -> Hoehe ueber dem tiefsten
+     Punkt. */
+  function hoeheBei(x){
+    var d = ((x % f) + f) % f - f / 2;           /* -f/2 ... +f/2 */
+    var wurzel = r * r - d * d;
+    if(wurzel <= 0) return rth / 1000;
+    return r - Math.sqrt(wurzel);
+  }
+
+  var punkte = [], i, x, h;
+  for(i = 0; i <= 240; i++){
+    x = perioden * f * i / 240;
+    h = hoeheBei(x);
+    punkte.push([x0 + x * sx, y0 + hoch - h / (rth / 1000) * hoch]);
+  }
+
+  /* Werkstoff unter der Kontur. */
+  var d = "M" + x0 + "," + boden;
+  punkte.forEach(function(p){ d += " L" + p[0].toFixed(1) + "," + p[1].toFixed(1); });
+  d += " L" + punkte[punkte.length - 1][0].toFixed(1) + "," + boden + " Z";
+  svgEl("path", {d:d, fill:"#dbeafe", stroke:"none"}, g);
+  svgEl("path", {d:d, fill:"none", stroke:"#1e3a8a", "stroke-width":1.8}, g);
+
+  /* Die beiden Hoehenlinien und das Mass dazwischen. */
+  var mx = x0 + profil + 30;
+  linie(g, x0, y0, mx, y0, 1, {strich:"5 4"});
+  linie(g, x0, y0 + hoch, mx, y0 + hoch, 1, {strich:"5 4"});
+  linie(g, mx, y0, mx, y0 + hoch, 1);
+  pfeil(g, mx, y0, 0, -1);
+  pfeil(g, mx, y0 + hoch, 0, 1);
+  txt(g, mx + 7, y0 + hoch / 2 - 2, "R_th", {anker:"start", groesse:12});
+  txt(g, mx + 7, y0 + hoch / 2 + 14, zahl(rth, 1) + " µm",
+      {anker:"start", groesse:12});
+
+  /* Der Vorschub als Mass unter dem Werkstoff. */
+  var fy = boden + 22;
+  linie(g, x0, fy, x0 + f * sx, fy, 1);
+  pfeil(g, x0, fy, -1, 0);
+  pfeil(g, x0 + f * sx, fy, 1, 0);
+  txt(g, x0 + f * sx / 2, fy - 7, "f = " + zahl(f, 2) + " mm", {groesse:12});
+}
+
+/* ---------- Start ---------- */
+
+reiterSetzen(reiterAusAdresse() || "kontur");
+</script>
+<script src="assets/back-nav.js" data-ziel="../"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
+<script src="assets/feedback.js"></script>
+<script src="assets/bildungsgang.js"></script>
+</body>
+</html>
