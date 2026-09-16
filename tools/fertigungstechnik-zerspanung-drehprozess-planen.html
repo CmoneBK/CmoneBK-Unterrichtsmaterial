@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="art" content="lektion">
 <title>Fertigungstechnik: Zerspanung - Planung eines Drehprozesses</title>
-<meta name="description" content="In fünf Schritten vom Werkstück zum Arbeitsplan: Kontur und Drehverfahren, Werkstoff und Schnittgeschwindigkeit, Werkzeugauswahl, Vorschub und Rautiefe, Aufmaße und Sicherheit.">
+<meta name="description" content="Vom Werkstück zum Arbeitsplan: Kontur und Drehverfahren, Werkstoff und Schnittgeschwindigkeit, Werkzeugauswahl, Vorschub und Rautiefe, Passungen und Toleranzmitte, Hauptnutzungszeit, Prüfmittel, Aufmaße und Sicherheit.">
 <style>
 :root{
   --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
@@ -77,6 +77,13 @@ td.zahl{font-variant-numeric:tabular-nums; white-space:nowrap}
   border-left:3px solid var(--s2); border-radius:0 8px 8px 0;
   background:#f0fdfa;
 }
+/* Verweis auf ein Werkzeug, das dieselbe Rechnung interaktiv fuehrt. */
+.tool{
+  display:block; margin:10px 0 0; padding:8px 12px; font-size:.86rem;
+  border-left:3px solid var(--s5); border-radius:0 8px 8px 0;
+  background:#faf5ff;
+}
+.tool a{color:var(--primary); font-weight:600}
 
 /* Bedienung: Regler und Auswahl */
 .regler{display:grid; grid-template-columns:auto 1fr auto; gap:8px 12px;
@@ -131,7 +138,8 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
 
 <header>
   <h1>Planung eines Drehprozesses</h1>
-  <p class="lead">In fünf Schritten vom Werkstück zum Arbeitsplan &ndash;
+  <p class="lead">Vom Werkstück zum Arbeitsplan &ndash; Kontur, Werkstoff,
+    Schnittdaten, Werkzeug, Vorschub, Passung, Zeit und Prüfung,
     durchgehend an der Mitnehmerwelle.</p>
 </header>
 
@@ -141,6 +149,9 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
   <button role="tab" data-tab="schnitt"   aria-selected="false">Schnittdaten</button>
   <button role="tab" data-tab="werkzeug"  aria-selected="false">Werkzeug</button>
   <button role="tab" data-tab="vorschub"  aria-selected="false">Vorschub</button>
+  <button role="tab" data-tab="passung"   aria-selected="false">Passung</button>
+  <button role="tab" data-tab="zeit"      aria-selected="false">Zeit</button>
+  <button role="tab" data-tab="pruefen"   aria-selected="false">Prüfen</button>
   <button role="tab" data-tab="hinweise"  aria-selected="false">Aufmaße und Sicherheit</button>
 </div>
 
@@ -324,6 +335,10 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
       kleine Tabelle in Schritt 2 der Fertigungsplanung &ndash; Zeile ist der
       Schneideneingriff, Spalte die Stabilität. Die drei Werte je Zelle stehen
       in den Schnittdaten beim Drehen.</p>
+    <p class="tool"><b>Zum Durchspielen:</b>
+      <a href="fertigungstechnik-beurteilung-bedingungen-fuer-die-fertigung.html">Bedingungen
+      für die Fertigung beurteilen</a> – mit allen Einzelfaktoren,
+      nicht nur den beiden Achsen der Tabelle.</p>
   </div>
 
   <div class="karte">
@@ -496,6 +511,9 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     <p class="buch"><b>Nachschlagen:</b> Die Tabelle „Erreichbare Rautiefe in
       Abhängigkeit des Eckenradius und des Vorschubs" nimmt die Rechnung ab
       &ndash; Rautiefen von 1,6 bis 16 µm, Eckenradien von 0,2 bis 0,8 mm.</p>
+    <p class="tool"><b>Zum Durchspielen:</b>
+      <a href="fertigungstechnik-vorschub-rautiefe-beim-schlichten.html">Vorschub
+      und Rautiefe beim Schlichten</a>.</p>
   </div>
 
   <div class="karte">
@@ -549,6 +567,240 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
 </section>
 
 <!-- ===================================================== HINWEISE -->
+<!-- ===================================================== PASSUNG -->
+<section class="panel" id="p-passung" hidden>
+
+  <div class="karte">
+    <h2>Was eine Passung vom Schlichten verlangt</h2>
+    <p class="sub">Ø32 k6 heißt nicht „32 mm". Es heißt: zwischen zwei
+      Grenzen, und die liegen dreizehn Tausendstel auseinander.</p>
+    <p>Ein Maß ohne Toleranzangabe darf um die Allgemeintoleranz abweichen.
+      Ein Maß mit ISO-Kurzzeichen nicht: Dort steht hinter dem Nennmaß ein
+      <b>Buchstabe</b> (das Grundabmaß, also die Lage der Toleranzzone) und
+      eine <b>Zahl</b> (der Grundtoleranzgrad, also ihre Weite). Großbuchstabe
+      = Bohrung, Kleinbuchstabe = Welle.</p>
+
+    <div class="zwei">
+      <div>
+        <div class="regler">
+          <label for="tN">Nennmaß in mm</label>
+          <input type="range" id="tN" min="4" max="50" step="1" value="32">
+          <output id="tNaus">32 mm</output>
+
+          <label for="tK">Toleranzklasse</label>
+          <select id="tK">
+            <option value="f7">f7</option>
+            <option value="g6">g6</option>
+            <option value="h6">h6</option>
+            <option value="j6">j6</option>
+            <option value="k6" selected>k6</option>
+            <option value="n6">n6</option>
+            <option value="r6">r6</option>
+            <option value="s6">s6</option>
+            <option value="H7">H7 (Bohrung)</option>
+          </select>
+          <output id="tKaus">Welle</output>
+        </div>
+        <div class="ergebnis" id="passungInfo"></div>
+      </div>
+      <div>
+        <div class="hinweis"><b>Die Regel, um die es geht:</b> Wird eine
+          Passung gedreht, zielt der Schlichtgang auf die <b>Mitte der
+          Toleranz</b>, nicht auf ein Grenzmaß.</div>
+        <p>Warum nicht auf das Maß, das gerade noch gut ist? Weil alles, was
+          beim Drehen schiefgeht, in <i>eine</i> Richtung geht:</p>
+        <ul>
+          <li><b>Der Schneidenverschleiß</b> lässt den Durchmesser über die
+            Schicht langsam wachsen.</li>
+          <li><b>Die Wärme</b> bläht das Werkstück auf: Was warm auf Maß ist,
+            ist kalt zu klein.</li>
+          <li><b>Die Messunsicherheit</b> kommt oben <i>und</i> unten dazu.</li>
+          <li><b>Nacharbeit gibt es nur nach unten.</b> Eine Welle, die zu klein
+            ist, ist Ausschuss.</li>
+        </ul>
+        <p>Von der Mitte aus hat jeder dieser Fehler noch die halbe
+          Toleranzweite Platz. Vom Grenzmaß aus hat er keinen.</p>
+      </div>
+    </div>
+
+    <span class="formel">Mittenmaß = (Höchstmaß + Mindestmaß) / 2</span>
+
+    <p class="buch"><b>Nachschlagen:</b> Die Grenzabmaße stehen im
+      ISO-System für Grenzmaße und Passungen, Auszug für das System
+      Einheitsbohrung. Die Grundtoleranzen IT stehen in einer eigenen Tabelle
+      nach Nennmaßbereich.</p>
+    <p class="tool"><b>Zum Durchspielen:</b>
+      <a href="fertigungstechnik-iso-toleranzen-und-passungen.html">ISO-Toleranzen
+      und Passungen</a> – dort lassen sich Bohrung und Welle zusammen ansehen
+      und die Passungsart bestimmen.</p>
+  </div>
+
+</section>
+
+<!-- ===================================================== ZEIT -->
+<section class="panel" id="p-zeit" hidden>
+
+  <div class="karte">
+    <h2>Wie lange der Vorgang dauert</h2>
+    <p class="sub">Die Hauptnutzungszeit ist die Zeit, in der die Schneide
+      wirklich schneidet.</p>
+
+    <span class="formel">t<sub>h</sub> = L · i / (n · f)</span>
+
+    <p>Drei Größen stecken darin, und nur eine davon ist neu: Die Drehzahl
+      <b>n</b> kommt aus der Schnittgeschwindigkeit, der Vorschub <b>f</b> aus
+      der Rautiefe – beides steht schon fest. Neu ist der <b>Vorschubweg
+      L</b>: Er ist länger als das Werkstück, weil das Werkzeug vor der Fläche
+      anläuft und hinter ihr überläuft.</p>
+
+    <div class="zwei">
+      <div>
+        <div class="regler">
+          <label for="zF">Fall</label>
+          <select id="zF">
+            <option value="laengs_ohne">Längsrunddrehen, ohne Ansatz</option>
+            <option value="laengs_mit" selected>Längsrunddrehen, mit Ansatz</option>
+            <option value="plan_voll">Querplandrehen, Vollzylinder</option>
+            <option value="plan_ansatz">Querplandrehen, mit Ansatz</option>
+            <option value="plan_hohl">Querplandrehen, Hohlzylinder</option>
+            <option value="stechen">Ab- und Einstechdrehen</option>
+          </select>
+          <output id="zFaus"></output>
+
+          <label for="zL">Länge l in mm</label>
+          <input type="range" id="zL" min="2" max="120" step="1" value="38">
+          <output id="zLaus">38 mm</output>
+
+          <label for="zD">Durchmesser d in mm</label>
+          <input type="range" id="zD" min="8" max="80" step="1" value="32">
+          <output id="zDaus">32 mm</output>
+
+          <label for="zD1">Ansatz d<sub>1</sub> in mm</label>
+          <input type="range" id="zD1" min="0" max="60" step="1" value="0">
+          <output id="zD1aus">0 mm</output>
+
+          <label for="zV">v<sub>c</sub> in m/min</label>
+          <input type="range" id="zV" min="40" max="400" step="5" value="250">
+          <output id="zVaus">250 m/min</output>
+
+          <label for="zVor">Vorschub f in mm</label>
+          <input type="range" id="zVor" min="0.05" max="0.6" step="0.01" value="0.14">
+          <output id="zVoraus">0,14 mm</output>
+
+          <label for="zI">Schnitte i</label>
+          <input type="range" id="zI" min="1" max="10" step="1" value="1">
+          <output id="zIaus">1</output>
+        </div>
+      </div>
+      <div class="ergebnis" id="zeitInfo"></div>
+    </div>
+
+    <div class="hinweis"><b>An- und Überlauf</b> sind je 1 bis 2 mm. Sie
+      stehen nicht auf der Zeichnung, gehören aber in jede Zeitrechnung –
+      bei einer 6 mm breiten Nut machen sie ein Drittel des Weges aus.</div>
+
+    <div class="merk"><b>Merksatz:</b> Der Schlichtvorschub ist die
+      Stellschraube der Zeit, aber die falsche. Wer ihn verdoppelt, ist halb so
+      lange dabei – und hat die vierfache Rautiefe. Zeit holt man über den
+      <i>größeren Eckenradius</i>, nicht über den größeren Vorschub.</div>
+
+    <p class="buch"><b>Nachschlagen:</b> „Hauptnutzungszeit beim Drehen mit
+      konstanter Drehzahl" – dort stehen alle Fälle mit Bild und die Formel
+      für L. Die Seite daneben rechnet dasselbe für CNC mit konstanter
+      Schnittgeschwindigkeit.</p>
+    <p class="tool"><b>Zum Durchspielen:</b>
+      <a href="fertigungstechnik-hauptnutzungszeit-beim-drehen.html">Hauptnutzungszeit
+      beim Drehen</a> – mit Bild zu jedem Fall.</p>
+  </div>
+
+</section>
+
+<!-- ===================================================== PRUEFEN -->
+<section class="panel" id="p-pruefen" hidden>
+
+  <div class="karte">
+    <h2>Womit geprüft wird</h2>
+    <p class="sub">Ein Messmittel, das die Toleranz nicht auflösen kann,
+      liefert keine Aussage – auch wenn eine Zahl im Fenster steht.</p>
+
+    <div class="zwei">
+      <div>
+        <div class="regler">
+          <label for="mN">Nennmaß in mm</label>
+          <input type="range" id="mN" min="4" max="50" step="1" value="32">
+          <output id="mNaus">32 mm</output>
+
+          <label for="mK">Toleranzklasse</label>
+          <select id="mK">
+            <option value="f7">f7</option>
+            <option value="g6">g6</option>
+            <option value="h6">h6</option>
+            <option value="k6" selected>k6</option>
+            <option value="n6">n6</option>
+            <option value="H7">H7 (Bohrung)</option>
+          </select>
+          <output id="mKaus"></output>
+        </div>
+        <div class="ergebnis" id="pruefInfo"></div>
+      </div>
+      <div>
+        <table>
+          <thead><tr><th>Messmittel</th><th>Ablesung</th>
+            <th>Toleranz in Schritten</th></tr></thead>
+          <tbody id="messmittelListe"></tbody>
+        </table>
+        <div class="hinweis"><b>Was hier sicher ist:</b> Ein Messmittel, dessen
+          Ablesung <i>größer</i> ist als die ganze Toleranz, kann über sie
+          nichts sagen. Es zeigt eine Zahl, aber keine Aussage.</div>
+        <div class="hinweis"><b>Und als Faustregel:</b> Die Ablesung soll
+          deutlich feiner sein als die Toleranz – im Betrieb gilt oft
+          „höchstens ein Zehntel". Bei den engen ISO-Toleranzen dieser
+          Welle käme damit allerdings nur ein Feinmessgerät infrage. In der
+          Werkstatt wird deshalb mit der Bügelmessschraube gemessen – und
+          genau deshalb auf die <b>Toleranzmitte</b> gezielt: Was die
+          Messunsicherheit noch verschiebt, liegt dann immer noch im
+          Feld.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Prüfschritte gehören in den Arbeitsplan</h2>
+    <p>Nicht als Randnotiz, sondern als <b>eigene Vorgangszeilen</b> – mit
+      Nummer, Prüfmittel und Prüfmaß, wie jeder andere Vorgang auch. Wer sie
+      weglässt, plant ein Teil, das niemand freigeben kann.</p>
+    <table>
+      <thead><tr><th>Wann</th><th>Was</th><th>Womit</th></tr></thead>
+      <tbody>
+        <tr><td>nach dem Schruppen</td>
+          <td>Ist das Schlichtaufmaß noch da?</td>
+          <td>Messschieber</td></tr>
+        <tr><td>nach dem Schlichten, im ersten Gang</td>
+          <td>Passungsdurchmesser, gegen das Mittenmaß</td>
+          <td>Bügelmessschraube</td></tr>
+        <tr><td>nach dem Einstechen</td>
+          <td>Nutbreite und Lage</td>
+          <td>Messschieber, Lehre</td></tr>
+        <tr><td>nach dem Gewindedrehen</td>
+          <td>Geht der Gegenpart?</td>
+          <td>Gewindelehrring</td></tr>
+        <tr><td>vor dem Abstechen</td>
+          <td>alle Längen, solange nachgearbeitet werden kann</td>
+          <td>Messschieber</td></tr>
+      </tbody>
+    </table>
+    <div class="merk"><b>Merksatz:</b> Geprüft wird, solange das Teil noch
+      gespannt ist. Danach kostet jede Abweichung ein neues Ausrichten – oder
+      das Teil.</div>
+    <p class="tool"><b>Zum Üben:</b>
+      <a href="fertigungstechnik-messmittel-messschieber.html">Messschieber</a>
+      und
+      <a href="fertigungstechnik-messmittel-buegelmessschraube.html">Bügelmessschraube</a>
+      – beide zum Ablesen üben.</p>
+  </div>
+
+</section>
+
 <section class="panel" id="p-hinweise" hidden>
 
   <div class="karte">
@@ -898,7 +1150,8 @@ function schnittZeigen(){
     + "<br>Gewählt: v<sub>c</sub> = <b>" + vc + " m/min</b>"
       + " (" + (griff === 2 ? "oberer Grenzwert"
               : griff === 0 ? "unterer Grenzwert" : "Startwert") + ")"
-    + "<br>n = " + (vc * 1000) + " / (π · " + d + ") = " + zahl(vc * 1000 / (Math.PI * d), 0)
+    + "<br>n = " + (vc * 1000) + " / (π · " + d + ") = "
+      + zahl(vc * 1000 / (Math.PI * d), 1)
       + " &rarr; abgerundet <b>" + n + " 1/min</b>"
     + "<br><span style=\"color:var(--muted)\">Schnitttiefe " + v.ap
       + ", Vorschub " + v.f + "</span>";
@@ -970,6 +1223,221 @@ function bezZeigen(){
       + "werden sechs Ziffern erwartet, etwa <b>11 T3 04</b>.</span>");
   }
   el("bezInfo").innerHTML = zeilen.join("<br>");
+}
+
+/* ---------- Passung ---------- */
+
+/* Grenzabmasse in Mikrometern, System Einheitsbohrung, nach Nennmassbereich.
+   [oberes, unteres] - bei Bohrungen ES/EI, bei Wellen es/ei. */
+var ABMASSE = [
+  {bis: 3,  w: {H7:[10,0], f7:[-6,-16],  g6:[-2,-8],  h6:[0,-6],  j6:[4,-2],
+                k6:[6,0],  n6:[10,4],  r6:[16,10], s6:[20,14]}},
+  {bis: 6,  w: {H7:[12,0], f7:[-10,-22], g6:[-4,-12], h6:[0,-8],  j6:[6,-2],
+                k6:[9,1],  n6:[16,8],  r6:[23,15], s6:[27,19]}},
+  {bis: 10, w: {H7:[15,0], f7:[-13,-28], g6:[-5,-14], h6:[0,-9],  j6:[7,-2],
+                k6:[10,1], n6:[19,10], r6:[28,19], s6:[32,23]}},
+  {bis: 18, w: {H7:[18,0], f7:[-16,-34], g6:[-6,-17], h6:[0,-11], j6:[8,-3],
+                k6:[12,1], n6:[23,12], r6:[34,23], s6:[39,28]}},
+  {bis: 30, w: {H7:[21,0], f7:[-20,-41], g6:[-7,-20], h6:[0,-13], j6:[9,-4],
+                k6:[15,2], n6:[28,15], r6:[41,28], s6:[48,35]}},
+  {bis: 50, w: {H7:[25,0], f7:[-25,-50], g6:[-9,-25], h6:[0,-16], j6:[11,-5],
+                k6:[18,2], n6:[33,17], r6:[50,34], s6:[59,43]}}
+];
+
+function abmasse(n, klasse){
+  for(var i = 0; i < ABMASSE.length; i++){
+    if(n <= ABMASSE[i].bis) return ABMASSE[i].w[klasse];
+  }
+  return null;
+}
+
+function bereichName(n){
+  var von = 0;
+  for(var i = 0; i < ABMASSE.length; i++){
+    if(n <= ABMASSE[i].bis) return (von ? "über " + von + " bis " : "bis ")
+      + ABMASSE[i].bis + " mm";
+    von = ABMASSE[i].bis;
+  }
+  return "";
+}
+
+(function passungAufbauen(){
+  ["tN", "tK"].forEach(function(id){
+    el(id).addEventListener("input", passungZeigen);
+    el(id).addEventListener("change", passungZeigen);
+  });
+  passungZeigen();
+}());
+
+function passungZeigen(){
+  var n = Number(el("tN").value), k = el("tK").value;
+  el("tNaus").textContent = n + " mm";
+  var bohrung = k[0] === k[0].toUpperCase();
+  el("tKaus").textContent = bohrung ? "Bohrung" : "Welle";
+
+  var a = abmasse(n, k);
+  if(!a){ el("passungInfo").textContent = "–"; return; }
+  var oben = a[0] / 1000, unten = a[1] / 1000;
+  var hoechst = n + oben, mindest = n + unten;
+  var weite = oben - unten;
+  var mitte = (hoechst + mindest) / 2;
+
+  el("passungInfo").innerHTML =
+    "<b>Ø" + n + " " + k + "</b>, Nennmaßbereich " + bereichName(n)
+    + "<br>" + (bohrung ? "ES" : "es") + " = " + zahl(a[0], 0) + " µm"
+    + ", &nbsp;" + (bohrung ? "EI" : "ei") + " = " + zahl(a[1], 0) + " µm"
+    + "<br>Höchstmaß = " + n + " + (" + zahl(oben, 3) + ") = <b>"
+      + zahl(hoechst, 3) + " mm</b>"
+    + "<br>Mindestmaß = " + n + " + (" + zahl(unten, 3) + ") = <b>"
+      + zahl(mindest, 3) + " mm</b>"
+    + "<br>Toleranz T = " + zahl(weite, 3) + " mm = <b>"
+      + zahl(weite * 1000, 0) + " µm</b>"
+    + "<br><b>Mittenmaß = " + zahl(mitte, 3) + " mm</b> – darauf zielt der "
+      + "Schlichtgang."
+    + "<br><span style=\"color:var(--muted)\">Nach oben und nach unten "
+      + "bleiben je " + zahl(weite / 2 * 1000, 0) + " µm Luft.</span>";
+}
+
+/* ---------- Hauptnutzungszeit ---------- */
+
+/* Die Faelle der Tabelle "Hauptnutzungszeit beim Drehen mit konstanter
+   Drehzahl". `weg` liefert den Vorschubweg L, `dm` den Durchmesser, mit dem
+   die Drehzahl gerechnet wird. la = lu = 2 mm - der obere der beiden
+   Richtwerte, damit die Rechnung auf der sicheren Seite liegt. */
+var LA = 2;
+
+var ZEITFAELLE = {
+  laengs_ohne: {name:"Längsrunddrehen, ohne Ansatz", d1: false,
+    weg: function(o){ return o.l + LA + LA; },
+    wegText: "L = l + l<sub>a</sub> + l<sub>u</sub>",
+    dm: function(o){ return o.d; },
+    dmText: "n = v<sub>c</sub> / (π · d)"},
+  laengs_mit: {name:"Längsrunddrehen, mit Ansatz", d1: false,
+    weg: function(o){ return o.l + LA; },
+    wegText: "L = l + l<sub>a</sub>",
+    dm: function(o){ return o.d; },
+    dmText: "n = v<sub>c</sub> / (π · d)"},
+  plan_voll: {name:"Querplandrehen, Vollzylinder", d1: false,
+    weg: function(o){ return o.d / 2 + LA; },
+    wegText: "L = d/2 + l<sub>a</sub>",
+    dm: function(o){ return o.d / 2; },
+    dmText: "d<sub>m</sub> = d/2, &nbsp;n = v<sub>c</sub> / (π · d<sub>m</sub>)"},
+  plan_ansatz: {name:"Querplandrehen, mit Ansatz", d1: true,
+    weg: function(o){ return (o.d - o.d1) / 2 + LA; },
+    wegText: "L = (d − d<sub>1</sub>)/2 + l<sub>a</sub>",
+    dm: function(o){ return (o.d + o.d1) / 2; },
+    dmText: "d<sub>m</sub> = (d + d<sub>1</sub>)/2"},
+  plan_hohl: {name:"Querplandrehen, Hohlzylinder", d1: true,
+    weg: function(o){ return (o.d - o.d1) / 2 + LA + LA; },
+    wegText: "L = (d − d<sub>1</sub>)/2 + l<sub>a</sub> + l<sub>u</sub>",
+    dm: function(o){ return (o.d + o.d1) / 2; },
+    dmText: "d<sub>m</sub> = (d + d<sub>1</sub>)/2"},
+  stechen: {name:"Ab- und Einstechdrehen", d1: false,
+    weg: function(o){ return o.l + LA; },
+    wegText: "L = l + l<sub>a</sub> &nbsp;(l = Ab- oder Einstechtiefe)",
+    dm: function(o){ return o.d; },
+    dmText: "n = v<sub>c</sub> / (π · d)"}
+};
+
+(function zeitAufbauen(){
+  ["zF", "zL", "zD", "zD1", "zV", "zVor", "zI"].forEach(function(id){
+    el(id).addEventListener("input", zeitZeigen);
+    el(id).addEventListener("change", zeitZeigen);
+  });
+  zeitZeigen();
+}());
+
+function zeitZeigen(){
+  var fall = ZEITFAELLE[el("zF").value];
+  var o = {l: Number(el("zL").value), d: Number(el("zD").value),
+           d1: Number(el("zD1").value)};
+  var vc = Number(el("zV").value), f = Number(el("zVor").value);
+  var i = Number(el("zI").value);
+
+  el("zFaus").textContent = fall.d1 ? "mit d₁" : "";
+  el("zLaus").textContent = o.l + " mm";
+  el("zDaus").textContent = o.d + " mm";
+  el("zD1aus").textContent = o.d1 + " mm";
+  el("zVaus").textContent = vc + " m/min";
+  el("zVoraus").textContent = zahl(f, 2) + " mm";
+  el("zIaus").textContent = String(i);
+  el("zD1").disabled = !fall.d1;
+
+  if(fall.d1 && o.d1 >= o.d){
+    el("zeitInfo").innerHTML = "d<sub>1</sub> muss kleiner sein als d.";
+    return;
+  }
+
+  var L = fall.weg(o);
+  var dm = fall.dm(o);
+  var n = Math.floor(vc * 1000 / (Math.PI * dm));
+  var th = L * i / (n * f);
+
+  el("zeitInfo").innerHTML =
+    "<b>" + fall.name + "</b>"
+    + "<br>" + fall.wegText + " = <b>" + zahl(L, 1) + " mm</b>"
+    + "<br>" + fall.dmText
+    + "<br>n = " + (vc * 1000) + " / (π · " + zahl(dm, 1) + ") = "
+      + zahl(vc * 1000 / (Math.PI * dm), 1) + " → abgerundet <b>"
+      + n + " 1/min</b>"
+    + "<br>t<sub>h</sub> = " + zahl(L, 1) + " · " + i + " / (" + n
+      + " · " + zahl(f, 2) + ") = <b>" + zahl(th, 2) + " min</b>"
+      + " = <b>" + zahl(th * 60, 0) + " s</b>"
+    + "<br><span style=\"color:var(--muted)\">l<sub>a</sub> = l<sub>u</sub> = "
+      + LA + " mm angesetzt.</span>";
+}
+
+/* ---------- Messmittel ---------- */
+
+var MESSMITTEL = [
+  {name:"Bügelmessschraube mit Nonius", ablesung: 0.001},
+  {name:"Bügelmessschraube", ablesung: 0.01},
+  {name:"Messschieber, Nonius 1/50", ablesung: 0.02},
+  {name:"Messschieber, Nonius 1/20", ablesung: 0.05}
+];
+
+(function pruefAufbauen(){
+  ["mN", "mK"].forEach(function(id){
+    el(id).addEventListener("input", pruefZeigen);
+    el(id).addEventListener("change", pruefZeigen);
+  });
+  pruefZeigen();
+}());
+
+function pruefZeigen(){
+  var n = Number(el("mN").value), k = el("mK").value;
+  el("mNaus").textContent = n + " mm";
+  el("mKaus").textContent = k[0] === k[0].toUpperCase() ? "Bohrung" : "Welle";
+
+  var a = abmasse(n, k);
+  if(!a){ el("pruefInfo").textContent = "–"; return; }
+  var weite = (a[0] - a[1]) / 1000;
+
+  /* Wie viele Ablesungsschritte die Toleranz breit ist. Das ist die Zahl,
+     die man nachrechnen kann - was daraus folgt, entscheidet der Betrieb. */
+  el("messmittelListe").innerHTML = MESSMITTEL.map(function(m){
+    var schritte = weite / m.ablesung;
+    var urteil = schritte < 1
+      ? "<span style=\"color:var(--bad)\">gröber als die ganze Toleranz</span>"
+      : zahl(schritte, 1) + " Schritte";
+    return "<tr><td>" + m.name + "</td><td>" + zahl(m.ablesung, 3)
+      + " mm</td><td>" + urteil + "</td></tr>";
+  }).join("");
+
+  var brauchbar = MESSMITTEL.filter(function(m){ return m.ablesung < weite; });
+
+  el("pruefInfo").innerHTML =
+    "<b>Ø" + n + " " + k + "</b>"
+    + "<br>Toleranzweite T = <b>" + zahl(weite * 1000, 0) + " µm</b>"
+      + " = " + zahl(weite, 3) + " mm"
+    + "<br>" + (brauchbar.length
+        ? "Gröbstes Messmittel, das die Toleranz überhaupt auflöst: <b>"
+          + brauchbar[brauchbar.length - 1].name + "</b> ("
+          + zahl(brauchbar[brauchbar.length - 1].ablesung, 3) + " mm)"
+        : "<b>Kein Handmessmittel löst diese Toleranz auf.</b> Hier wird mit "
+          + "Lehren geprüft oder auf einer Messmaschine.")
+    + "<br><span style=\"color:var(--muted)\">Je weniger Schritte die Toleranz "
+      + "breit ist, desto wichtiger wird es, auf die Mitte zu zielen.</span>";
 }
 
 /* ---------- Vorschub und Rautiefe ---------- */
