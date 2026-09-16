@@ -49,6 +49,9 @@ header p.lead{color:var(--muted); margin:0 0 16px}
 
 figure{margin:0}
 figure svg{width:100%; height:auto; display:block}
+/* Die Einzelheit ist ein kleines Bild - auf voller Breite waere die Nut
+   groesser als die Welle, zu der sie gehoert. */
+figure.schmal{max-width:360px; margin:14px 0 0}
 figcaption{font-size:.82rem; color:var(--muted); margin-top:6px}
 
 table{border-collapse:collapse; width:100%; font-size:.92rem}
@@ -185,6 +188,8 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     <h2>Das Werkstück</h2>
     <p class="sub">Mitnehmerwelle aus C45E +QT, Rohteil Ø38 × 112 mm.</p>
     <figure id="bildKontur"></figure>
+
+    <figure id="bildNut" class="schmal"></figure>
     <div class="knopfreihe" id="flaechenknoepfe" data-druck="weg"></div>
     <div class="ergebnis" id="flaecheInfo">Eine Fläche wählen &ndash; dann steht
       hier, welches Drehverfahren sie erzeugt und warum.</div>
@@ -1021,15 +1026,30 @@ var ABLAUF = [
 var gewaehlteFlaeche = null;
 
 function konturZeichnen(){
-  var o = {s:5.8, bezeichnungen:true};
+  /* Vollstaendig bemasst: alle Laengen unter dem Teil (`masseUnten`), damit
+     darueber Platz fuer Benennungen, Rundungen, Freistiche und Rautiefen
+     bleibt. Ohne `masseUnten` laufen die Hinweislinien in die obere
+     Masskette - siehe den Hinweis bei `wellenBezeichnungen`. */
+  var o = {s:5.8, masse:true, masseUnten:true, bezeichnungen:true,
+           rauheiten:true, radien:true};
   var g = wellenGroesse(WELLE, o);
   var svg = bild("bildKontur", g.breite, g.hoehe,
-    "Die Mitnehmerwelle mit Benennungen",
+    "Die Mitnehmerwelle mit allen Maßen",
     "Mitnehmerwelle aus C45E. Über die Schaltflächen lässt sich jede Fläche "
-    + "hervorheben.");
-  var z = {x:g.x, y:g.y, s:o.s, bezeichnungen:true};
+    + "hervorheben. Breite und Tiefe der Nut stehen in der Einzelheit "
+    + "darunter.");
+  var z = {};
+  for(var k in o) if(o.hasOwnProperty(k)) z[k] = o[k];
+  z.x = g.x; z.y = g.y;
   if(gewaehlteFlaeche) z.markiert = [gewaehlteFlaeche];
   zeichneWelle(svg, WELLE, z);
+
+  var nut = WELLE.nuten[0];
+  var sn = bild("bildNut", 430, 160,
+    "Einzelheit der Sicherungsringnut, stark vergrößert",
+    "<strong>Einzelheit " + nut.marke + "</strong> &ndash; Nutgrund Ø"
+    + (nut.d - 2 * nut.tiefe) + ", linke Flanke bei " + nut.bei + " mm.");
+  zeichneNutEinzelheit(sn, WELLE, {marke:nut.marke, s:70, x:130, y:60});
 }
 
 (function konturAufbauen(){
