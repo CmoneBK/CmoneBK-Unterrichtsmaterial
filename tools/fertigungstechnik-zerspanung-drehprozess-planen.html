@@ -507,8 +507,19 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
       Eckenradius wählen, den die Kontur zulässt, <b>dann</b> den Vorschub dazu
       rechnen.</p>
     <span class="formel">r<sub>ε</sub> &le; r<sub>w</sub> &minus; 0,1 mm</span>
-    <p>r<sub>w</sub> ist die kleinste Innenrundung des Werkstücks. Eine Kontur
-      mit R1 verträgt höchstens 0,9 mm &ndash; in Normgrößen also 0,8 mm.</p>
+    <p>r<sub>w</sub> ist die <b>kleinste</b> Innenrundung des Werkstücks
+      &ndash; und die steht selten als Radius in der Zeichnung.</p>
+    <div class="hinweis"><b>Der klassische Fehler:</b> nur die
+      Durchmesserübergänge ansehen. An der Welle LF5 fällt der Blick auf die
+      <b>R1</b> am Bund, und man wählt 0,8 mm. Enger sind aber die beiden
+      Freistiche <b>DIN 509 – E 0,6 × 0,3</b>: Die erste Zahl der
+      Bezeichnung <i>ist</i> der Radius. Damit gilt r<sub>ε</sub> ≤
+      0,6 − 0,1 = 0,5 mm, genormt also <b>0,4 mm</b>.</div>
+    <p>Die Regel gilt dem Werkzeug, das die Kontur <i>erzeugt</i>. Beim
+      Konturdrehen auf der CNC fährt das Schlichtwerkzeug auch durch die
+      Freistiche, also bindet deren Radius. Werden sie mit einem eigenen
+      Formwerkzeug gestochen, bindet für den Schlichtmeißel nur die R1 &ndash;
+      im Zweifel gilt die engere Grenze.</p>
     <div class="hinweis"><b>Nach unten gibt es auch eine Grenze.</b> Unter einer
       gewissen Spandicke schneidet die Schneide nicht mehr, sondern drückt. Der
       Werkstoff wird verformt statt abgetrennt, die Fläche wird schlechter statt
