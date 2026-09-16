@@ -510,7 +510,9 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     </div>
     <p class="buch"><b>Nachschlagen:</b> Die Tabelle „Erreichbare Rautiefe in
       Abhängigkeit des Eckenradius und des Vorschubs" nimmt die Rechnung ab
-      &ndash; Rautiefen von 1,6 bis 16 µm, Eckenradien von 0,2 bis 0,8 mm.</p>
+      &ndash; Rautiefen von 1,6 bis 16 µm, Eckenradien von 0,2 bis 0,8 mm.
+      Die Freistiche stehen im Abschnitt „Werkstückelemente": Formen, Radien
+      nach Reihe 1 und 2 und die Zuordnung zum Durchmesser.</p>
     <p class="tool"><b>Zum Durchspielen:</b>
       <a href="fertigungstechnik-vorschub-rautiefe-beim-schlichten.html">Vorschub
       und Rautiefe beim Schlichten</a>.</p>
@@ -528,16 +530,26 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     <span class="formel">r<sub>ε</sub> &le; r<sub>w</sub> &minus; 0,1 mm</span>
     <p>r<sub>w</sub> ist die <b>kleinste</b> Innenrundung des Werkstücks
       &ndash; und die steht selten als Radius in der Zeichnung.</p>
-    <div class="hinweis"><b>Der klassische Fehler:</b> nur den größten
-      Übergang ansehen. An der Mitnehmerwelle fällt der Blick auf die
-      <b>R1,6</b> am Bund, und man wählt 1,2 mm. Enger ist aber die
-      <b>R0,8</b> am ersten Absatz. Damit gilt r<sub>ε</sub> ≤
-      0,8 − 0,1 = 0,7 mm, genormt also <b>0,6 mm</b>.</div>
-    <div class="hinweis"><b>Und die engste Stelle steht oft gar nicht als
-      Radius da.</b> Trägt eine Welle <b>Freistiche nach DIN 509</b>, ist die
-      erste Zahl der Bezeichnung der Radius: Bei <b>E 0,6 × 0,3</b> sind das
-      0,6 mm, und damit ist der Freistich enger als jede sichtbare Rundung.
-      Wer nur die Durchmesserübergänge absucht, übersieht ihn.</div>
+    <div class="hinweis"><b>Der klassische Fehler:</b> nur die sichtbaren
+      Rundungen ansehen. An der Mitnehmerwelle fällt der Blick auf die
+      <b>R1,6</b> am Bund, und man wählt 1,2 mm.
+      <br>Die engste Stelle steht aber <b>gar nicht als Radius</b> in der
+      Zeichnung, sondern in einer Normbezeichnung: Am ersten Absatz sitzt
+      ein <b>Freistich DIN 509 – E 0,8 × 0,3</b>, und die erste Zahl
+      <i>ist</i> der Radius. Damit gilt r<sub>ε</sub> ≤ 0,8 − 0,1 = 0,7 mm,
+      genormt also <b>0,6 mm</b>.</div>
+    <div class="hinweis"><b>Wie die Bezeichnung zu lesen ist.</b>
+      <b>DIN 509 – E 0,8 × 0,3</b> heißt: Form <b>E</b>, Radius
+      <b>r = 0,8 mm</b>, Einstichtiefe <b>t<sub>1</sub> = 0,3 mm</b>. Die Form
+      sagt, was danach noch bearbeitet wird &ndash; <b>E</b> nur die
+      Zylinderfläche, <b>F</b> Plan- und Zylinderfläche, <b>G</b> der kleine
+      Übergang bei geringer Beanspruchung, <b>H</b> wie F mit flacherem
+      Auslauf.
+      <br>Die Größe folgt dem Durchmesser: Für über 18 bis 80 mm stehen
+      0,6 × 0,3 (Reihe 2) und 0,8 × 0,3 (Reihe 1) zur Wahl &ndash; und
+      <b>Reihe 1 ist zu bevorzugen</b>. Genau dieser Unterschied kostet einen
+      Schritt beim Eckenradius: 0,6 erlaubt nur 0,4 mm, 0,8 erlaubt
+      0,6 mm.</div>
     <p>Die Regel gilt dem Werkzeug, das die Kontur <i>erzeugt</i>. Beim
       Konturdrehen auf der CNC fährt das Schlichtwerkzeug auch durch die
       Freistiche, also bindet deren Radius. Werden sie mit einem eigenen
@@ -559,6 +571,11 @@ ol.kette span{font-size:.9rem; color:var(--muted)}
     <p><b>Beim Einstechen und Abstechen</b> ist der Vorschub klein und fest:
       0,05 bis 0,15 mm. Die Schneidenbreite ist die Schnittbreite &ndash; eine
       1,3 mm breite Nut verlangt ein 1,3 mm breites Werkzeug.</p>
+    <p><b>Und der Gewindefreistich hat seine eigene Länge.</b> Sie ist kein
+      freier Wert: DIN 76-1 nennt je Steigung ein Mindest- und ein Höchstmaß.
+      Bei M24×2 sind das 4,5 bis 7 mm, und der Durchmesser im Freistich ist
+      d − 3 = 21 mm. Wer ihn zu kurz macht, hat den Platz zum Auslaufen
+      nicht &ndash; und der Gewindemeißel läuft in die Schulter.</p>
     <div class="merk"><b>Merksatz:</b> Geschlichtet wird nach Rautiefe,
       geschruppt nach Tabelle, Gewinde nach Steigung. Nur einer der drei
       Vorschübe wird gerechnet.</div>
@@ -960,7 +977,8 @@ var GRUENDE = {
     + "Die Nutbreite ist die Schneidenbreite."],
   schulter_18: ["Querplandrehen",
     "Auch ein Absatz steht senkrecht zur Achse - dieselbe Bewegung wie bei der "
-    + "Stirnfläche. An seinem Fuß sitzt die Rundung R0,8; sie ist die engste "
+    + "Stirnfläche. An seinem Fuß sitzt ein Freistich DIN 509 - E 0,8 x 0,3. "
+    + "Der wird eingestochen, und sein Radius von 0,8 mm ist die engste "
     + "Innenrundung der ganzen Kontur."],
   mantel_32: ["Längsrunddrehen, Schlichten",
     "Der Lagersitz, der längste Abschnitt - und mit Rz 4 der genaueste."],
