@@ -47,6 +47,10 @@ const BACK_NAV = 'assets/back-nav.js';
    greift auf tbkQr und tbkPdf zu. */
 const LEKTION = ['assets/bildungsgang.js', 'assets/qr.js', 'assets/pdf.js',
   'assets/lektion.js'];
+/* Auf jeder Seite, Lektion wie Simulation: Wer einen Fehler findet, soll ihn
+   dort melden koennen, wo er ihn sieht. Genauso haelt es der Build im
+   Materialrepo. */
+const FEEDBACK = 'assets/feedback.js';
 const THEMA = 'assets/thema.js';
 const THEMA_CSS = 'assets/thema-werkzeug.css';
 
@@ -141,6 +145,7 @@ ${zeile}`;
     warnen(rel, `${pfad} ergänzt`);
   };
   if (art === 'lektion') LEKTION.forEach(vorBody);
+  vorBody(FEEDBACK);
 
   /* 5. Rücklink ans Dateiende, als Letztes. data-ziel="../" führt aus tools/
         heraus zur Übersicht - auf GitHub Pages wie auf t-bk.de. */
