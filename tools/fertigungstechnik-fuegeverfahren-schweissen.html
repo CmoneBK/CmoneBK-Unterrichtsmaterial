@@ -221,6 +221,7 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
   <button role="tab" data-tab="grundlagen" aria-selected="true">Grundlagen</button>
   <button role="tab" data-tab="verfahren"  aria-selected="false">Verfahren</button>
   <button role="tab" data-tab="naehte"     aria-selected="false">St&ouml;&szlig;e und N&auml;hte</button>
+  <button role="tab" data-tab="zeichnung"  aria-selected="false">In der Zeichnung</button>
 </div>
 
 <!-- ============================================================ GRUNDLAGEN -->
@@ -430,10 +431,110 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
   </div>
 </section>
 
+<!-- =========================================================== ZEICHNUNG -->
+
+<section class="panel" id="p-zeichnung" hidden>
+
+  <div class="karte">
+    <h2>Das Sinnbild und seine Linien</h2>
+    <p class="sub">Aufbau nach DIN EN ISO 2553.</p>
+    <p>Eine Naht wird in der Zeichnung nicht gemalt, sondern
+    <em>angegeben</em>. Dazu gibt es drei Linien:</p>
+    <ul>
+      <li>Die <span class="term" data-t="pfeillinie" data-cap="1"></span> zeigt schr&auml;g
+        auf den Sto&szlig;. Sie tr&auml;gt eine ausgef&uuml;llte Spitze.</li>
+      <li>Die <strong>Bezugs-Volllinie</strong> l&auml;uft waagerecht vom Knick weg.
+        Ein Symbol an ihr meint die <span class="term" data-t="pfeilseite"></span>.</li>
+      <li>Die <strong>Bezugs-Strichlinie</strong> liegt parallel dar&uuml;ber oder
+        darunter. Ein Symbol an ihr meint die <span class="term" data-t="gegenseite"></span>.</li>
+    </ul>
+    <p>Wo die Strichlinie liegt, ist gleichg&uuml;ltig &ndash; was z&auml;hlt, ist die
+    <em>Linie</em>, an der das Symbol steht. Bei symmetrischen beidseitigen
+    N&auml;hten entf&auml;llt sie ganz: Dann steht ein kombiniertes Grundsymbol
+    &uuml;ber und unter der Volllinie.</p>
+    <div class="wahl" id="wahlSeite"></div>
+    <svg class="zeichnung" id="svgSeite" viewBox="0 0 640 240" role="img"
+         aria-label="Sinnbild und Sto&szlig; im Schnitt"></svg>
+    <div id="seiteText"></div>
+    <div class="merke">
+      <b>Die Probe:</b> Steht das Symbol an der durchgezogenen Linie, liegt die
+      Naht dort, wohin der Pfeil zeigt. Steht es an der gestrichelten, liegt sie
+      auf der anderen Seite des Bauteils.
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Die Grundsymbole</h2>
+    <p class="sub">Auswahl nach DIN EN ISO 2553; Dicken und Winkel nach
+      DIN EN ISO 9692-1.</p>
+    <p>Jedes Symbol ist ein Bild des Nahtquerschnitts, auf zwei oder drei
+    Striche eingedampft. Wer den Querschnitt kennt, muss die Symbole nicht
+    auswendig lernen.</p>
+    <div class="kacheln" id="symbole"></div>
+    <div id="symbolText"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Zusatzsymbole</h2>
+    <p class="sub">Was neben dem Grundsymbol stehen kann.</p>
+    <p>Sie sagen etwas &uuml;ber die <em>Oberfl&auml;che</em> der Naht oder &uuml;ber ihren
+    <em>Verlauf</em>. Vier davon begegnen einem in der Werkstatt st&auml;ndig:
+    ringsum, Baustellennaht, <span class="term" data-t="gegenlage"></span> und konkav.</p>
+    <div class="kacheln" id="zusaetze"></div>
+    <div id="zusatzText"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Die Bema&szlig;ung einstellen</h2>
+    <p class="sub">Nahtdicke vor dem Symbol, St&uuml;ckelung dahinter.</p>
+    <p>Vor dem Symbol steht die <span class="term" data-t="nahtdicke"></span>:
+    <em>a</em> f&uuml;r die H&ouml;he des gleichschenkligen Dreiecks in der Kehlnaht,
+    <em>z</em> f&uuml;r dessen Schenkell&auml;nge, <em>s</em> f&uuml;r die Dicke einer
+    durchgehenden Stumpfnaht. Dahinter steht, wie oft und wie lang:
+    <em>n</em>&nbsp;&times;&nbsp;<em>l</em>&nbsp;(<em>e</em>).</p>
+    <div class="felder">
+      <label class="feld"><span>Nahtdicke a: <span class="ablesung" id="mAblA"></span></span>
+        <input type="range" id="mA" min="2" max="10" step="1" value="4"></label>
+      <label class="feld"><span>Anzahl n: <span class="ablesung" id="mAblN"></span></span>
+        <input type="range" id="mN" min="1" max="6" step="1" value="3"></label>
+      <label class="feld"><span>Einzell&auml;nge l: <span class="ablesung" id="mAblL"></span></span>
+        <input type="range" id="mL" min="10" max="80" step="5" value="30"></label>
+      <label class="feld"><span>Abstand e: <span class="ablesung" id="mAblE"></span></span>
+        <input type="range" id="mE" min="0" max="60" step="5" value="10"></label>
+    </div>
+    <div class="wahl" id="wahlStueck"></div>
+    <svg class="zeichnung" id="svgMass" viewBox="0 0 640 295" role="img"
+         aria-label="Sinnbild mit Bema&szlig;ung und die Naht am Bauteil"></svg>
+    <div class="werte" id="massWerte"></div>
+    <div id="massText"></div>
+    <p class="fussnote">Draht und Zeit sind Richtwerte f&uuml;r das
+      MAG-Schwei&szlig;en unlegierter St&auml;hle in Position PB, Tabellenbuch
+      &ndash; Nahtplanung, Einstell- und Leistungswerte.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Die vollst&auml;ndige Angabe</h2>
+    <p class="sub">Am Ende der Bezugslinie steht eine Gabel.</p>
+    <p>Darin steht, was &uuml;ber die Naht hinaus gefordert ist: womit geschwei&szlig;t
+    wird, wie gut es sein muss, in welcher Lage und mit welchem Zusatz. Vier
+    Angaben, vier Normen &ndash; und alle vier stehen im Tabellenbuch.</p>
+    <svg class="zeichnung" id="svgGabel" viewBox="0 0 640 150" role="img"
+         aria-label="Sinnbild mit Gabel"></svg>
+    <div class="tabellenrahmen"><table id="tabGabel"></table></div>
+    <div class="merke">
+      <b>Von hinten gelesen:</b> Die Gabel beantwortet die Fragen, die eine
+      Werkstatt stellt, bevor sie anf&auml;ngt &ndash; Verfahren, G&uuml;te, Lage, Zusatz.
+      Steht dort nichts, entscheidet der Betrieb selbst.
+    </div>
+  </div>
+
+</section>
+
 
 </main>
 </div>
 
+<script src="assets/schweissnaht.js"></script>
 <script>
 "use strict";
 
@@ -706,7 +807,14 @@ var TERME = {
   wulst:             {a:"Ring am Stoß",   f:"Wulst"},
   ordnungsnummer:    {a:"Kennzahl des Verfahrens",            f:"Ordnungsnummer"},
   grobkorn:          {a:"Zone mit groben Körnern",     f:"Grobkornzone"},
-  feinkorn:          {a:"Zone mit feinen Körnern",    f:"Feinkornzone"}
+  feinkorn:          {a:"Zone mit feinen Körnern",    f:"Feinkornzone"},
+  pfeillinie:        {a:"Linie zum Stoß",                     f:"Pfeillinie"},
+  pfeilseite:        {a:"Seite mit dem Pfeil",                f:"Pfeilseite"},
+  gegenseite:        {a:"Seite gegenüber dem Pfeil",          f:"Gegenseite"},
+  nahtdicke:         {a:"Höhe der Naht",                      f:"Nahtdicke"},
+  gegenlage:         {a:"Lage von der anderen Seite",         f:"Gegenlage"},
+  bewertungsgruppe:  {a:"Stufe für erlaubte Fehler",          f:"Bewertungsgruppe"},
+  schweissposition:  {a:"Lage beim Schweißen",                f:"Schweißposition"}
 };
 
 /* Anzeigezustand der ganzen Seite. Der Ablaufzustand der Gruppen liegt in
@@ -2162,6 +2270,475 @@ function naehteAufbauen(){
 }
 
 /* ============================================================================
+   5b  DIE NAHT IN DER ZEICHNUNG
+   ----------------------------------------------------------------------------
+   Gezeichnet wird mit assets/schweissnaht.js. Der Baustein steht fuer sich:
+   Er bringt eigene Helfer mit, weil `linie`, `txt` und `pfeil` hier oben
+   schon belegt sind.
+
+   Er zeichnet in `currentColor`. Diese Lektion arbeitet dagegen mit festen
+   Farben und ueberlaesst den dunklen Modus dem Filter ueber der ganzen
+   Seite - `currentColor` waere dort weiss und damit unsichtbar. Deshalb
+   bekommt jede Zeichenflaeche vorher die Textfarbe der Lektion gesetzt;
+   `currentColor` loest sich dann daran auf.
+
+   In den Uebungen im Materialrepo ist das nicht noetig: Dort gilt
+   `currentColor` durchgehend.
+   ========================================================================== */
+
+/* --- 1. Pfeilseite oder Gegenseite ---------------------------------------- */
+
+var SEITEN_FAELLE = [
+  {id:"pfeil", name:"an der Volllinie",
+   satz:"Das Symbol steht an der <b>Bezugs-Volllinie</b>. Die Kehlnaht liegt "
+      + "auf der <b>Pfeilseite</b> – dort, wohin der Pfeil zeigt."},
+  {id:"gegen", name:"an der Strichlinie",
+   satz:"Dasselbe Symbol, aber an der <b>Bezugs-Strichlinie</b>. Jetzt liegt "
+      + "die Naht auf der <b>Gegenseite</b>, also auf der anderen Seite des "
+      + "Stegs. Am Bauteil ist das ein Unterschied, der beim Schweißen "
+      + "zählt: Der Schweißer muss das Teil drehen."},
+  {id:"beide", name:"beidseitig",
+   satz:"Beide Seiten bekommen dieselbe Naht. Dafür gibt es das "
+      + "<b>kombinierte Grundsymbol</b>: zwei Dreiecke, eines über und eines "
+      + "unter der Volllinie. Eine Strichlinie braucht es dann nicht mehr."}
+];
+var seiteAktiv = "pfeil";
+
+/* Die Farbe, an der sich `currentColor` in den Zeichnungen dieses
+   Abschnitts aufloest - dieselbe, die --text im hellen Modus hat. */
+var SN_FARBE = "#0f172a";
+
+function seiteZeichnen(){
+  var svg = el("svgSeite");
+  svg.textContent = "";
+  svg.style.color = SN_FARBE;
+  var o = {x:250, y:70, zielX:150, zielY:120, laenge:150};
+  if(seiteAktiv === "pfeil")  o.pfeilseite = {art:"kehl", mass:"a4"};
+  if(seiteAktiv === "gegen")  o.gegenseite = {art:"kehl", mass:"a4"};
+  if(seiteAktiv === "beide"){ o.kombi = "dkehl"; o.mass = "a4"; }
+  schweissSinnbild(svg, o);
+
+  /* Rechts daneben das Bauteil: ein T-Stoss, von der Seite gesehen. Der
+     Pfeil des Sinnbilds zeigt auf die linke Flanke des Stegs. */
+  var g = ns("g", {});
+  svg.appendChild(g);
+  var x = 400, y = 150, t = 26, b = 180;
+  var m = x + b / 2;
+  g.appendChild(ns("rect", {x:x, y:y, width:b, height:t, fill:"none",
+    stroke:"currentColor", "stroke-width":2}));
+  g.appendChild(ns("rect", {x:m - t / 2, y:y - 90, width:t, height:90,
+    fill:"none", stroke:"currentColor", "stroke-width":2}));
+  function kehle(links){
+    var a = 22, vx = links ? -1 : 1;
+    g.appendChild(ns("polygon", {points:
+      (m + vx * t / 2) + "," + y + " " +
+      (m + vx * (t / 2 + a)) + "," + y + " " +
+      (m + vx * t / 2) + "," + (y - a),
+      fill:"currentColor"}));
+  }
+  if(seiteAktiv === "pfeil" || seiteAktiv === "beide") kehle(true);
+  if(seiteAktiv === "gegen" || seiteAktiv === "beide") kehle(false);
+  var be = ns("text", {x:m, y:y + t + 26, "text-anchor":"middle",
+    "font-size":13, fill:"currentColor"});
+  be.textContent = "so sieht es am Bauteil aus";
+  g.appendChild(be);
+
+  var pf = SEITEN_FAELLE.filter(function(s){ return s.id === seiteAktiv; })[0];
+  el("seiteText").innerHTML = '<p class="hinweis">' + pf.satz + '</p>';
+  begriffeZeichnen(el("seiteText"));
+}
+
+function seiteAufbauen(){
+  var w = el("wahlSeite");
+  SEITEN_FAELLE.forEach(function(s){
+    var b = document.createElement("button");
+    b.textContent = s.name;
+    b.setAttribute("data-id", s.id);
+    b.addEventListener("click", function(){ seiteAktiv = s.id; seiteNeu(); });
+    w.appendChild(b);
+  });
+}
+
+function seiteNeu(){
+  var kn = el("wahlSeite").querySelectorAll("button");
+  for(var i = 0; i < kn.length; i++){
+    kn[i].setAttribute("aria-pressed",
+      kn[i].getAttribute("data-id") === seiteAktiv ? "true" : "false");
+  }
+  seiteZeichnen();
+}
+
+/* --- 2. Die Grundsymbole --------------------------------------------------- */
+
+/* Welche Naht wozu - Dicken, Winkel und Verfahren nach DIN EN ISO 9692-1
+   (Tabellenbuch, Nahtvorbereitung fuer das Schutzgas-, Gas- und
+   Lichtbogenschweissen). Die Prozessnummern nach DIN EN ISO 4063. */
+var SYMBOL_KACHELN = [
+  {art:"i",    stoss:"i",    satz:"Ohne Nahtvorbereitung: Die Kanten bleiben, wie "
+    + "sie sind. Bis 4 mm Dicke, Spalt etwa so groß wie die Dicke. Verfahren "
+    + "3, 111 oder 141."},
+  {art:"v",    stoss:"v",    satz:"Die Kanten werden angeschrägt. 3 bis 10 mm "
+    + "Dicke, Öffnungswinkel 40° bis 60°, Steg höchstens 2 mm, Spalt "
+    + "höchstens 4 mm. Einseitig geschweißt, gegebenenfalls mit "
+    + "Schweißbadsicherung."},
+  {art:"y",    stoss:"y",    satz:"Wie die V-Naht, aber mit stehen gebliebenem "
+    + "Steg von 2 bis 4 mm. 5 bis 40 mm Dicke, Winkel etwa 60°. Der Steg "
+    + "hält die Wurzel zusammen."},
+  {art:"hv",   stoss:"hv",   satz:"Nur ein Blech wird angeschrägt, das andere "
+    + "bleibt gerade. 3 bis 10 mm, Winkel 35° bis 60°. Typisch am T-Stoß, "
+    + "wenn die Naht bündig werden soll."},
+  {art:"u",    stoss:"v",    satz:"Gerundete Fuge mit fast senkrechten Flanken. "
+    + "Braucht weniger Schweißgut als die V-Naht, aber eine teurere "
+    + "Vorbereitung – deshalb erst bei dicken Blechen."},
+  {art:"kehl", stoss:"kehl", satz:"Die Naht der Innenecke. Keine Vorbereitung, "
+    + "keine Fuge – deshalb die häufigste Naht überhaupt. Bemaßt wird sie "
+    + "mit a oder z."},
+  {art:"dv",   stoss:"dv",   satz:"Von beiden Seiten angeschrägt. Ab etwa 12 mm "
+    + "lohnt sie sich: rund die Hälfte des Schweißguts der V-Naht, und der "
+    + "Verzug bleibt klein, weil von beiden Seiten gleichmäßig "
+    + "geschweißt wird."},
+  {art:"dkehl", stoss:"dkehl", satz:"Zwei Kehlnähte am selben Stoß, eine je "
+    + "Seite. Das Symbol steht über und unter der Volllinie – eine "
+    + "Strichlinie braucht es nicht."}
+];
+var symbolAktiv = "kehl";
+
+function symboleAufbauen(){
+  var wrap = el("symbole");
+  SYMBOL_KACHELN.forEach(function(k){
+    var b = document.createElement("button");
+    b.className = "kachel";
+    b.setAttribute("data-id", k.art);
+    b.setAttribute("aria-pressed", "false");
+    var svg = ns("svg", {viewBox:"0 0 170 90", role:"img"});
+    svg.setAttribute("aria-label",
+      "Sinnbild und Nahtquerschnitt der " + schweissName(k.art));
+    b.appendChild(svg);
+    var nm = document.createElement("span");
+    nm.className = "name"; nm.textContent = schweissName(k.art);
+    b.appendChild(nm);
+    b.addEventListener("click", function(){ symbolAktiv = k.art; symboleNeu(); });
+    wrap.appendChild(b);
+  });
+}
+
+function symbolKachelZeichnen(svg, art){
+  svg.textContent = "";
+  svg.style.color = SN_FARBE;
+  var g = ns("g", {}); svg.appendChild(g);
+  /* links das Symbol auf einem Stueck Bezugslinie, rechts der Stoss */
+  var sn = ns("g", {}); g.appendChild(sn);
+  var yl = 50;
+  sn.appendChild(ns("line", {x1:8, y1:yl, x2:62, y2:yl, stroke:"currentColor",
+    "stroke-width":1}));
+  if(SN_KOMBI[art]){
+    SN_SYMBOLE[SN_KOMBI[art].teile[0]].zeichne(sn, 35, yl, 16, -1);
+    SN_SYMBOLE[SN_KOMBI[art].teile[1]].zeichne(sn, 35, yl, 16, 1);
+  }else{
+    SN_SYMBOLE[art].zeichne(sn, 35, yl, 16, -1);
+  }
+  var st = SYMBOL_KACHELN.filter(function(k){ return k.art === art; })[0];
+  schweissStoss(g, {art:st.stoss, x:78, y:38, t:16, breite:84});
+}
+
+function symboleNeu(){
+  var kn = el("symbole").querySelectorAll("button");
+  for(var i = 0; i < kn.length; i++){
+    var id = kn[i].getAttribute("data-id");
+    kn[i].setAttribute("aria-pressed", id === symbolAktiv ? "true" : "false");
+    symbolKachelZeichnen(kn[i].querySelector("svg"), id);
+  }
+  var k = SYMBOL_KACHELN.filter(function(x){ return x.art === symbolAktiv; })[0];
+  el("symbolText").innerHTML = '<p class="hinweis"><b>' + schweissName(k.art)
+    + ':</b> ' + k.satz + '</p>';
+  begriffeZeichnen(el("symbolText"));
+}
+
+/* --- 3. Zusatzsymbole ------------------------------------------------------ */
+
+var ZUSATZ_KACHELN = [
+  {id:"flach",     satz:"Die Naht wird nach dem Schweißen bündig "
+    + "abgearbeitet – dort, wo etwas darüber gleiten oder anliegen muss."},
+  {id:"konvex",    satz:"Die Naht wölbt sich nach außen. Mehr Schweißgut, "
+    + "aber ein scharfer Übergang zum Blech: eine Kerbe, an der ein Riss "
+    + "beginnen kann."},
+  {id:"konkav",    satz:"Die Naht ist hohl. Der Übergang wird weich, die Naht "
+    + "verträgt wechselnde Lasten besser – dafür trägt sie weniger."},
+  {id:"kerbfrei",  satz:"Die Übergänge werden verschliffen, bis keine Kerbe "
+    + "mehr da ist. Teuer, aber bei schwingender Belastung oft gefordert."},
+  {id:"gegenlage", satz:"Von der anderen Seite wird eine zweite Lage "
+    + "geschweißt, nachdem die Wurzel ausgearbeitet wurde. So wird die "
+    + "Wurzel sicher erfasst."},
+  {id:"wurzel",    satz:"Die Wurzel darf überstehen. Das ist eine Erlaubnis, "
+    + "keine Forderung – bei einer Rohrleitung wäre es das Gegenteil."}
+];
+var zusatzAktiv = "gegenlage";
+
+function zusaetzeAufbauen(){
+  var wrap = el("zusaetze");
+  ZUSATZ_KACHELN.forEach(function(z){
+    var b = document.createElement("button");
+    b.className = "kachel";
+    b.setAttribute("data-id", z.id);
+    b.setAttribute("aria-pressed", "false");
+    var svg = ns("svg", {viewBox:"0 0 120 80", role:"img"});
+    svg.setAttribute("aria-label",
+      "V-Naht mit dem Zusatzsymbol " + SN_ZUSATZ[z.id].name);
+    b.appendChild(svg);
+    var nm = document.createElement("span");
+    nm.className = "name"; nm.textContent = SN_ZUSATZ[z.id].name;
+    b.appendChild(nm);
+    b.addEventListener("click", function(){ zusatzAktiv = z.id; zusaetzeNeu(); });
+    wrap.appendChild(b);
+  });
+}
+
+function zusaetzeNeu(){
+  var kn = el("zusaetze").querySelectorAll("button");
+  for(var i = 0; i < kn.length; i++){
+    var id = kn[i].getAttribute("data-id");
+    kn[i].setAttribute("aria-pressed", id === zusatzAktiv ? "true" : "false");
+    var svg = kn[i].querySelector("svg");
+    svg.textContent = "";
+    svg.style.color = SN_FARBE;
+    var g = ns("g", {}); svg.appendChild(g);
+    g.appendChild(ns("line", {x1:15, y1:58, x2:105, y2:58,
+      stroke:"currentColor", "stroke-width":1}));
+    var b = SN_SYMBOLE.v.zeichne(g, 60, 58, 20, -1);
+    SN_ZUSATZ[id].zeichne(g, 60, 58, 20, -1, b);
+  }
+  var z = ZUSATZ_KACHELN.filter(function(x){ return x.id === zusatzAktiv; })[0];
+  el("zusatzText").innerHTML = '<p class="hinweis"><b>'
+    + SN_ZUSATZ[z.id].name + ':</b> ' + z.satz + '</p>';
+  begriffeZeichnen(el("zusatzText"));
+}
+
+/* --- 4. Die Bemassung ------------------------------------------------------ */
+
+/* Richtwerte fuer das MAG-Schweissen unlegierter Staehle, Position PB,
+   Drahtelektrode ISO 14341-A-G 46 4 M G 3Si1, Schutzgas M21 - Tabellenbuch,
+   Nahtplanung und Leistungswerte. Je Kehlnahtdicke a: Draht in g/m und
+   Hauptnutzungszeit in min/m. */
+var MAG_RICHTWERTE = {
+  2:{g:45, t:1.5, lagen:1}, 3:{g:90, t:1.4, lagen:1}, 4:{g:140, t:2.1, lagen:1},
+  5:{g:215, t:2.6, lagen:1}, 6:{g:300, t:3.5, lagen:1}, 7:{g:390, t:4.6, lagen:3},
+  8:{g:545, t:6.4, lagen:3}, 10:{g:805, t:9.5, lagen:4}
+};
+var stueckAktiv = "unterbrochen";
+
+function massWerteLesen(){
+  return {a: +el("mA").value, n: +el("mN").value,
+          l: +el("mL").value, e: +el("mE").value};
+}
+
+function massEintrag(w){
+  if(stueckAktiv === "durchgehend") return "a" + w.a;
+  return "a" + w.a + " " + w.n + " × " + w.l
+       + (w.e ? " (" + w.e + ")" : "");
+}
+
+function massZeichnen(){
+  var w = massWerteLesen();
+  var svg = el("svgMass");
+  svg.textContent = "";
+  svg.style.color = SN_FARBE;
+
+  /* oben das Sinnbild */
+  var o = {x:250, y:60, zielX:150, zielY:110, laenge:170,
+           pfeilseite:{art:"kehl", mass:"a" + w.a}};
+  if(stueckAktiv !== "durchgehend"){
+    o.pfeilseite.hinten = w.n + " × " + w.l + (w.e ? " (" + w.e + ")" : "");
+  }
+  schweissSinnbild(svg, o);
+
+  /* unten das Bauteil in der Ansicht: ein Steg auf einer Platte, die Naht
+     als schwarze Balken. So sieht man, was n, l und e bedeuten. */
+  var g = ns("g", {}); svg.appendChild(g);
+  var x0 = 60, y0 = 205, breite = 520, hoehe = 40;
+  g.appendChild(ns("rect", {x:x0, y:y0, width:breite, height:hoehe,
+    fill:"none", stroke:"currentColor", "stroke-width":2}));
+  var gesamt = stueckAktiv === "durchgehend"
+    ? breite : w.n * w.l + (w.n - 1) * w.e;
+  var mass = Math.min(1.9, (breite - 40) / Math.max(gesamt, 1));
+  var start = x0 + (breite - gesamt * mass) / 2;
+  var dicke = Math.max(4, w.a * 1.6);
+  if(stueckAktiv === "durchgehend"){
+    g.appendChild(ns("rect", {x:x0, y:y0 - dicke, width:breite, height:dicke,
+      fill:"currentColor"}));
+  }else{
+    for(var i = 0; i < w.n; i++){
+      var lx = start + i * (w.l + w.e) * mass;
+      g.appendChild(ns("rect", {x:lx, y:y0 - dicke, width:w.l * mass,
+        height:dicke, fill:"currentColor"}));
+      if(stueckAktiv === "versetzt"){
+        g.appendChild(ns("rect", {x:lx + (w.l + w.e) * mass / 2,
+          y:y0 + hoehe, width:w.l * mass, height:dicke, fill:"currentColor"}));
+      }
+    }
+  }
+  /* Ein Mass fuer die Einzellaenge und eines fuer den Abstand - so steht
+     es auch im Tabellenbuch neben dem Sinnbild. */
+  if(stueckAktiv !== "durchgehend" && w.n > 0){
+    /* Masslinie nach DIN ISO 129: schmale Volllinie mit ausgefuellten
+       Pfeilspitzen, Masshilfslinien senkrecht dazu, Masszahl darueber. */
+    var yM = y0 - dicke - 20;
+    var massMit = function(xa, xb, text){
+      if(xb - xa < 3) return;
+      g.appendChild(ns("line", {x1:xa, y1:yM, x2:xb, y2:yM,
+        stroke:"currentColor", "stroke-width":1}));
+      [xa, xb].forEach(function(xx){
+        g.appendChild(ns("line", {x1:xx, y1:yM - 5, x2:xx, y2:y0 - dicke - 2,
+          stroke:"currentColor", "stroke-width":1}));
+      });
+      var eng = (xb - xa) < 26;
+      [[xa, eng ? -1 : 1], [xb, eng ? 1 : -1]].forEach(function(pp){
+        var x = pp[0], ri = pp[1], L = 7, B = 1.4;
+        g.appendChild(ns("polygon", {points:
+          x + "," + yM + " " + (x + ri * L) + "," + (yM - B) + " "
+          + (x + ri * L) + "," + (yM + B), fill:"currentColor"}));
+      });
+      var tl = ns("text", {x:(xa + xb) / 2, y:yM - 6, "text-anchor":"middle",
+        "font-size":12, fill:"currentColor"});
+      tl.textContent = text;
+      g.appendChild(tl);
+    };
+    massMit(start, start + w.l * mass, String(w.l));
+    if(w.n > 1 && w.e){
+      massMit(start + w.l * mass, start + (w.l + w.e) * mass, "(" + w.e + ")");
+    }
+  }
+
+  var be = ns("text", {x:x0 + breite / 2, y:y0 + hoehe + 34,
+    "text-anchor":"middle", "font-size":13, fill:"currentColor"});
+  be.textContent = stueckAktiv === "versetzt"
+    ? "versetzte, unterbrochene Naht – die zweite Seite liegt auf Lücke"
+    : (stueckAktiv === "durchgehend"
+       ? "durchgehende Naht über die ganze Länge"
+       : "unterbrochene Naht");
+  g.appendChild(be);
+
+  /* Rechnen: wie viel Naht, wie viel Draht, wie lange. */
+  var laenge = stueckAktiv === "durchgehend" ? 300 : w.n * w.l;
+  if(stueckAktiv === "versetzt") laenge *= 2;
+  var r = MAG_RICHTWERTE[w.a];
+  var mm = laenge / 1000;
+  var kom = function(x, n){ return x.toFixed(n === undefined ? 1 : n)
+    .replace(".", ","); };
+  var zeilen = [
+    ["Eintrag in der Zeichnung", "<b>" + massEintrag(w) + "</b>"],
+    ["geschweißte Länge", kom(laenge, 0) + " mm"
+      + (stueckAktiv === "durchgehend" ? " (angenommen)" : "")],
+    ["Lagen je Naht", r ? r.lagen : "–"],
+    ["Schweißzusatz", r ? kom(r.g * mm, 0) + " g" : "–"],
+    ["Hauptnutzungszeit", r ? kom(r.t * mm, 2) + " min" : "–"]
+  ];
+  el("massWerte").innerHTML = zeilen.map(function(z){
+    return '<div class="wert"><span class="l">' + z[0]
+         + '</span><span class="z">' + z[1] + '</span></div>';
+  }).join("");
+
+  var satz;
+  if(stueckAktiv === "durchgehend"){
+    satz = "Ohne Angabe hinter dem Symbol läuft die Naht durch. Das ist "
+         + "die einfachste Angabe – und die teuerste, wenn sie nicht "
+         + "gebraucht wird.";
+  }else if(stueckAktiv === "versetzt"){
+    satz = "Beide Seiten sind unterbrochen und gegeneinander versetzt. Das "
+         + "Zeichen dafür ist ein Z am Symbol. Die Angabe steht dann "
+         + "zweimal, einmal je Seite.";
+  }else{
+    satz = "<b>" + w.n + " × " + w.l + "</b> heißt: " + w.n
+         + " Einzelnähte von je " + w.l + " mm Länge"
+         + (w.e ? ", mit " + w.e + " mm Abstand dazwischen" : "")
+         + ". Zusammen " + (w.n * w.l) + " mm Naht statt einer durchgehenden.";
+  }
+  el("massText").innerHTML = '<p class="hinweis">' + satz + '</p>';
+  begriffeZeichnen(el("massText"));
+}
+
+function massAufbauen(){
+  var w = el("wahlStueck");
+  [["durchgehend", "durchgehend"], ["unterbrochen", "unterbrochen"],
+   ["versetzt", "versetzt, beidseitig"]].forEach(function(p){
+    var b = document.createElement("button");
+    b.textContent = p[1];
+    b.setAttribute("data-id", p[0]);
+    b.addEventListener("click", function(){ stueckAktiv = p[0]; massNeu(); });
+    w.appendChild(b);
+  });
+  ["mA", "mN", "mL", "mE"].forEach(function(id){
+    el(id).addEventListener("input", massNeu);
+  });
+}
+
+function massNeu(){
+  var kn = el("wahlStueck").querySelectorAll("button");
+  for(var i = 0; i < kn.length; i++){
+    kn[i].setAttribute("aria-pressed",
+      kn[i].getAttribute("data-id") === stueckAktiv ? "true" : "false");
+  }
+  var w = massWerteLesen();
+  el("mAblA").textContent = w.a + " mm";
+  el("mAblN").textContent = w.n;
+  el("mAblL").textContent = w.l + " mm";
+  el("mAblE").textContent = w.e + " mm";
+  var aus = stueckAktiv === "durchgehend";
+  ["mN", "mL", "mE"].forEach(function(id){ el(id).disabled = aus; });
+  massZeichnen();
+}
+
+/* --- 5. Die Gabel ---------------------------------------------------------- */
+
+var GABEL_ZEILEN = [
+  ["111", "Schweißprozess", "Lichtbogenhandschweißen, Ordnungsnummer nach "
+    + "DIN EN ISO 4063. 135 wäre MAG, 141 WIG."],
+  ["ISO 5817–C", "Bewertungsgruppe", "Wie groß ein Fehler sein darf. B ist "
+    + "streng, C mittel, D mild."],
+  ["ISO 6947–PA", "Schweißposition", "PA ist die Wannenposition – die "
+    + "bequemste. PE wäre Überkopf."],
+  ["ISO 2560–A–E42 0 RR", "Zusatzwerkstoff", "Umhüllte Stabelektrode, "
+    + "Streckgrenze 420 N/mm², rutilumhüllt."]
+];
+
+function gabelZeichnen(){
+  var svg = el("svgGabel");
+  svg.textContent = "";
+  svg.style.color = SN_FARBE;
+  schweissSinnbild(svg, {x:200, y:70, zielX:90, zielY:120, laenge:130,
+    pfeilseite:{art:"v", zusatz:"gegenlage"},
+    gabel:["111 / ISO 5817–C /", "ISO 6947–PA /",
+           "ISO 2560–A–E42 0 RR"]});
+}
+
+function gabelAufbauen(){
+  var t = el("tabGabel");
+  t.innerHTML = "<thead><tr><th>Angabe</th><th>Was sie nennt</th>"
+    + "<th>Bedeutung</th></tr></thead><tbody>"
+    + GABEL_ZEILEN.map(function(z){
+        return "<tr><td><code>" + z[0] + "</code></td><td>" + z[1]
+             + "</td><td>" + z[2] + "</td></tr>";
+      }).join("") + "</tbody>";
+}
+
+/* --- Anschluss ------------------------------------------------------------- */
+
+function zeichnungAufbauen(){
+  seiteAufbauen();
+  symboleAufbauen();
+  zusaetzeAufbauen();
+  massAufbauen();
+  gabelAufbauen();
+}
+
+function zeichnungNeu(){
+  seiteNeu();
+  symboleNeu();
+  zusaetzeNeu();
+  massNeu();
+  gabelZeichnen();
+}
+
+/* ============================================================================
    6  REITER UND START
    ========================================================================== */
 function reiterSetzen(name){
@@ -2173,11 +2750,12 @@ function reiterSetzen(name){
   if(name === "verfahren" && gruppen.verfahren) zeichneVerfahren("verfahren");
   if(name === "grundlagen"){ zonenNeu(); verzugBild(); }
   if(name === "naehte") nahtNeu();
+  if(name === "zeichnung") zeichnungNeu();
 }
 
 function allesNeuZeichnen(){
   if(gruppen.verfahren && gruppen.verfahren.aktiv) zeichneVerfahren("verfahren");
-  zonenNeu(); verzugNeu(); nahtNeu();
+  zonenNeu(); verzugNeu(); nahtNeu(); zeichnungNeu();
   STOESSE.forEach(function(st, i){
     var b = el("stoesse").querySelectorAll("button")[i];
     if(b) stossSkizze(b.querySelector("svg"), st.id);
@@ -2225,6 +2803,7 @@ function start(){
   verzugAufbauen();
   stoesseAufbauen();
   naehteAufbauen();
+  zeichnungAufbauen();
   schalterAufbauen();
   begriffKlicksAktivieren();
   begriffeZeichnen();
