@@ -21,7 +21,15 @@
  *     lektion      ein Thema in Kapiteln, zum Durcharbeiten
  *
  * Gegliedert wird nach der Titelkonvention "Bereich: Unterkategorie - Name",
- * die Reihenfolge steht in daten/kategorien.csv.
+ * die Reihenfolge der Bereiche und Kategorien steht in daten/kategorien.csv.
+ *
+ * Innerhalb eines Blocks zaehlt <meta name="reihenfolge">: eine Zahl, kleine
+ * zuerst. Alphabetisch sortiert waere der Ueberblick zu den Fuegeverfahren
+ * hinter dem Schweissen gelandet - erst das Einzelverfahren, dann die
+ * Einordnung. Seiten ohne Zahl stehen hinten, unter sich alphabetisch.
+ *
+ * <meta name="description"> ist der Untertitel auf der Karte. Er fehlt
+ * nirgends gern: Der Name allein sagt selten, was einen erwartet.
  */
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -166,9 +174,20 @@ ${zeile}`;
     return t ? normWs(t[1]) : '';
   };
 
+  const beschreibung = meta('description');
+  if (!beschreibung) {
+    warnen(rel, 'ohne <meta name="description"> - die Karte bleibt ohne Untertitel');
+  }
+  const reihe = meta('reihenfolge');
+  if (reihe && !/^[0-9]+$/.test(reihe)) {
+    warnen(rel, 'reihenfolge "' + reihe + '" ist keine Zahl - Seite steht hinten');
+  }
+
   return {
     datei: relative(TOOLS, datei).split('\\').join('/'),
-    titel, art, beschreibung: meta('description'),
+    titel, art, beschreibung,
+    /* Kleine Zahl zuerst, ohne Angabe ans Ende. */
+    reihenfolge: /^[0-9]+$/.test(reihe) ? Number(reihe) : Infinity,
     /* Bildungsgaenge, fuer die diese Seite nicht vorgesehen ist. Die
        Uebersicht blendet sie dann aus. */
     bgOhne: meta('bg-ohne'), geaendert,
@@ -183,6 +202,14 @@ async function kategorienLesen() {
   const zeilen = (await readFile(pfad, 'utf8')).split(/\r?\n/).slice(1);
   return zeilen.map((z) => z.split(',').map((s) => s.trim()))
     .filter((s) => s[0]).map(([bereich, kategorie = '']) => ({ bereich, kategorie }));
+}
+
+/* Innerhalb eines Blocks: erst die Zahl aus <meta name="reihenfolge">, dann
+   der Name. */
+function nachReihenfolge(a, b) {
+  return a.reihenfolge !== b.reihenfolge
+    ? a.reihenfolge - b.reihenfolge
+    : a.name.localeCompare(b.name, 'de');
 }
 
 function sortiertNach(vorgabe, werte, feld) {
@@ -203,7 +230,12 @@ function karten(eintraege) {
       ? `\n            <span class="sub">${escHtml(e.beschreibung)}</span>`
       : '';
     const bg = e.bgOhne ? ` data-bg-ohne="${escHtml(e.bgOhne)}"` : '';
-    return `          <a class="card" href="tools/${escHtml(e.datei)}"${bg}>\n`
+    /* Wonach gesucht werden kann: Bereich und Kategorie stehen ueber den
+       Karten, nicht darauf - ohne das hier faende "Fügeverfahren" nichts. */
+    const suche = escHtml([e.bereich, e.kategorie, e.name, e.beschreibung]
+      .filter(Boolean).join(' ').toLowerCase());
+    return `          <a class="card" href="tools/${escHtml(e.datei)}"${bg}`
+      + ` data-suche="${suche}">\n`
       + `            <span>${escHtml(e.name)}</span>${sub}\n          </a>`;
   }).join('\n');
 }
@@ -221,8 +253,7 @@ function abschnitt(eintraege, kats) {
     teile.push(`      <h2 class="bereich">${escHtml(b)}</h2>`);
 
     /* Erst, was keine Unterkategorie hat - dann je Kategorie ein Block. */
-    const ohne = imBereich.filter((e) => !e.kategorie)
-      .sort((a, b2) => a.name.localeCompare(b2.name, 'de'));
+    const ohne = imBereich.filter((e) => !e.kategorie).sort(nachReihenfolge);
     if (ohne.length) teile.push('      <div class="grid">\n' + karten(ohne) + '\n      </div>');
 
     const kategorien = sortiertNach(
@@ -230,8 +261,7 @@ function abschnitt(eintraege, kats) {
       new Set(imBereich.filter((e) => e.kategorie).map((e) => e.kategorie)));
 
     for (const k of kategorien) {
-      const block = imBereich.filter((e) => e.kategorie === k)
-        .sort((a, b2) => a.name.localeCompare(b2.name, 'de'));
+      const block = imBereich.filter((e) => e.kategorie === k).sort(nachReihenfolge);
       if (!block.length) continue;
       teile.push(`      <h3 class="cat">${escHtml(k)}</h3>`);
       teile.push('      <div class="grid">\n' + karten(block) + '\n      </div>');
