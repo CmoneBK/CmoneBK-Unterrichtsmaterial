@@ -412,7 +412,7 @@ body:not(.zeigt-norm) .nur-norm{display:none !important}
         <input type="range" id="nB" min="0" max="6" step="1" value="2"></label>
     </div>
     <svg class="zeichnung" id="svgNaht" viewBox="0 0 640 300" role="img"
-         aria-label="Nahtquerschnitt"></svg>
+         aria-label="Nahtquerschnitt der gew&auml;hlten Fugenform mit Dicke, Spalt und &Ouml;ffnungswinkel"></svg>
     <div class="werte" id="nahtWerte"></div>
     <div id="nahtText"></div>
     <p class="fussnote nur-norm">Normdarstellung: Schnittfl&auml;chen schraffiert,
@@ -565,7 +565,11 @@ var NORM_HINTEN = {"#eafcf8":1, "#d5faf3":1, "#f1f5f9":1};
    ganz geschwaerzt. In der Zeichnung sind sie ueberhoeht, damit man sie sieht;
    geschwaerzt bleiben sie trotzdem, denn das sagt: hier ist die Schicht duenn. */
 var NORM_DUENN = {"#fde68a":1, "#ddd6fe":1, "#c4b5fd":1, "#a78bfa":1};
-var NORM_KANTE = "#111827", NORM_BREIT = 2.2, NORM_SCHMAL = 0.8;
+var NORM_KANTE = "#111827", NORM_BREIT = 2.0, NORM_SCHMAL = 1.0;
+/* Genau zwei Breiten im Verhaeltnis 2:1 - in beiden Darstellungen.
+   Wer keine angibt, zeichnet eine Koerperkante. */
+function breit(){ return zustand.norm ? NORM_BREIT : 1.8; }
+function schmal(){ return zustand.norm ? NORM_SCHMAL : 0.9; }
 
 /* DIN ISO 128-50: Vollteile - Wellen, Schrauben, Muttern, Bolzen, Niete,
    Stifte, Passfedern - werden in Laengsrichtung nicht geschnitten dargestellt
@@ -660,7 +664,8 @@ function txt(g, x, y, s, opt){
 function rect(g, x, y, w, h, fill, stroke, opt){
   var o = opt || {};
   var e = ns("rect", {x:x, y:y, width:Math.max(0,w), height:Math.max(0,h),
-    fill:fill, stroke:stroke || "none", "stroke-width":o.sw || 1.6});
+    fill:fill, stroke:stroke || "none", "stroke-width":o.sw || breit()});
+  if(o.erklaer) e.setAttribute("class", "erklaer");
   if(o.rx) e.setAttribute("rx", o.rx);
   if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
   g.appendChild(e);
@@ -669,7 +674,10 @@ function rect(g, x, y, w, h, fill, stroke, opt){
 function pfad(g, d, fill, stroke, opt){
   var o = opt || {};
   var e = ns("path", {d:d, fill:fill || "none", stroke:stroke || "none",
-    "stroke-width":o.sw || 1.6});
+    "stroke-width":o.sw || breit()});
+  /* Waerme, Glut und farbige Merklinien treten zurueck und gehoeren damit
+     zur Erklaerebene - eine halbdurchsichtige Linie ist keine Koerperkante. */
+  if(o.erklaer) e.setAttribute("class", "erklaer");
   if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
   if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
   g.appendChild(e);
@@ -677,7 +685,8 @@ function pfad(g, d, fill, stroke, opt){
 }
 function linie(g, x1, y1, x2, y2, farbe, sw, opt){
   var o = opt || {};
-  var e = ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe, "stroke-width":sw || 1.4});
+  var e = ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe, "stroke-width":sw || breit()});
+  if(o.erklaer) e.setAttribute("class", "erklaer");
   if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
   if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
   g.appendChild(e);
@@ -733,7 +742,7 @@ function spitzen(svg, farben){
        Zeichnungen gleich gross, unabhaengig von der Strichstaerke. */
     var m = ns("marker", {id:MARKER_PRAEFIX + f.replace("#",""), viewBox:"0 0 7 6",
       markerWidth:10, markerHeight:8.6, refX:7, refY:3,
-      orient:"auto", markerUnits:"userSpaceOnUse"});
+      orient:"auto-start-reverse", markerUnits:"userSpaceOnUse"});
     m.appendChild(ns("path", {d:"M0,0 L0,6 L7,3 z", fill:f}));
     defs.appendChild(m);
   });
@@ -742,7 +751,12 @@ function spitzen(svg, farben){
 var FARBEN = ["#dc2626","#1d4ed8","#16a34a","#c2410c","#7c3aed","#0f766e","#64748b",
               "#b45309","#334155","#111827"];
 function kraftpfeil(g, x1, y1, x2, y2, farbe, sw){
-  g.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
+  /* Ein Kraftpfeil gehoert zur Erklaerebene, nicht zur Zeichnung: farbig,
+     mit genau einer Spitze und ohne Linienbreite nach DIN ISO 128-20. */
+  var e = ns("g", {"class":"erklaer"});
+  e.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
+  g.appendChild(e);
+  return e;
 }
 
 /* Farbwelt: Bauteil A, Bauteil B, Verbindungselement, Waerme, Lot/Kleber */
@@ -951,18 +965,18 @@ function verfahren(o){ VERFAHREN.push(o); return o; }
    senkrecht, und die Raupe lief trotzdem waagerecht ueber die Oberflaeche.
    Das ergibt keine Naht, sondern eine Auftragschweissung quer zum Stoss. */
 function bleche(g, cy, dick, lx, rx, fuge){
-  rect(g, lx, cy-dick, rx-lx, dick-fuge/2, C.aF, C.aS, {sw:1.8});
-  rect(g, lx, cy+fuge/2, rx-lx, dick-fuge/2, C.bF, C.bS, {sw:1.8});
+  rect(g, lx, cy-dick, rx-lx, dick-fuge/2, C.aF, C.aS, {sw:breit()});
+  rect(g, lx, cy+fuge/2, rx-lx, dick-fuge/2, C.bF, C.bS, {sw:breit()});
 }
 
 /* Raupe mit Schuppen - das Bild einer erstarrten Naht. */
 function raupe(g, vonX, bisX, cy, hoch){
   if(bisX <= vonX) return;
   rect(g, vonX, cy-hoch, bisX-vonX, 2*hoch, "#cbd5e1",
-    zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
+    zustand.norm ? NORM_KANTE : "#64748b", {sw:breit()});
   for(var x = vonX+7; x < bisX-4; x += 12){
     pfad(g, "M"+(x-8)+","+(cy+hoch-1)+" Q "+x+","+(cy-hoch+2)+" "+(x+8)+","+(cy+hoch-1),
-      "none", zustand.norm ? NORM_KANTE : "#94a3b8", {sw:zustand.norm ? NORM_SCHMAL : 1});
+      "none", zustand.norm ? NORM_KANTE : "#94a3b8", {sw:schmal()});
   }
 }
 
@@ -971,7 +985,7 @@ function hitze(g, mx, y, staerke){
   for(var i=0;i<3;i++){
     var x = mx - 34 + i*34;
     pfad(g, "M"+x+","+y+" q 6,-10 0,-20 q -6,-10 0,-20",
-      "none", C.heiss, {sw:2, opacity:staerke});
+      "none", C.heiss, {erklaer:true, sw:2, opacity:staerke});
   }
 }
 
@@ -1018,7 +1032,7 @@ verfahren({
          Rand die Zeile zurueck ins Bild - auf die Flamme. */
       txt(g, bx+36, cy-118, "Flammengase schützen", {fill:"#b45309", size:11.5});
 
-      rect(g, bx-11, cy-138, 22, 56, "#94a3b8", "#334155", {sw:1.4});
+      rect(g, bx-11, cy-138, 22, 56, "#94a3b8", "#334155", {sw:breit()});
       txt(g, bx-16, cy-130, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
 
       /* Der Zusatzstab kommt erst dazu, wenn das Bad steht. */
@@ -1027,7 +1041,7 @@ verfahren({
         linie(g, sx+56, cy-96, sx, cy-14, C.eS, 5);
         txt(g, sx+62, cy-100, "Zusatzstab", {fill:C.eS, size:11.5});
         g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:22, ry:10,
-          fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+          fill:C.glut, stroke:"#b45309", "stroke-width":1.4, "class":"erklaer"}));
         txt(g, bx+28, cy+dick+20, "Schmelzbad", {fill:"#b45309", size:11.5});
       }
     }
@@ -1070,7 +1084,7 @@ verfahren({
     if(bx > start+8 && putz < 1){
       var bis = putz > 0 ? start + (bx-6-start)*(1-putz) : bx-6;
       if(bis > start)
-        rect(g, start, cy-13, bis-start, 6, C.lot, C.lotS, {sw:1});
+        rect(g, start, cy-13, bis-start, 6, C.lot, C.lotS, {sw:breit()});
       if(putz > 0.05)
         txt(g, start, cy-24, "Schlacke abklopfen", {fill:C.lotS, size:11.5});
     }
@@ -1078,8 +1092,8 @@ verfahren({
       /* Elektrode mit Umhuellung, wird kuerzer */
       var laenge = 96 - 40*lauf;
       var ey = cy-22-laenge;
-      rect(g, bx-8, ey, 16, laenge-12, "#94a3b8", "#334155", {sw:1.3});
-      rect(g, bx-4, ey+6, 8, laenge-12, C.eF, C.eS, {sw:1});
+      rect(g, bx-8, ey, 16, laenge-12, "#94a3b8", "#334155", {sw:breit()});
+      rect(g, bx-4, ey+6, 8, laenge-12, C.eF, C.eS, {sw:breit()});
       txt(g, bx+22, ey+16, "Umhüllung", {fill:"#334155", size:11.5});
       txt(g, bx+22, ey+32, "Kernstab", {fill:C.eS, size:11.5});
 
@@ -1091,9 +1105,9 @@ verfahren({
         txt(g, bx+20, cy-dick-10, "Lichtbogen", {fill:"#b45309", size:11.5});
         var tp = (t*6) % 1;
         g.appendChild(ns("circle", {cx:bx, cy:cy-20+tp*18, r:4,
-          fill:C.glut, stroke:"#b45309", "stroke-width":1}));
+          fill:C.glut, stroke:"#b45309", "stroke-width":1, "class":"erklaer"}));
         g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:20, ry:9,
-          fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+          fill:C.glut, stroke:"#b45309", "stroke-width":1.4, "class":"erklaer"}));
       }else{
         txt(g, bx+20, cy-dick-10, "ansetzen und zünden", {fill:"#b45309", size:11.5});
       }
@@ -1144,7 +1158,7 @@ verfahren({
     }
     pfad(g, "M"+(px-22)+","+(cy-96)+" L"+(px+22)+","+(cy-96)+
             " L"+(px+15)+","+(cy-40)+" L"+(px-15)+","+(cy-40)+" Z",
-      "#94a3b8", "#334155", {sw:1.4});
+      "#94a3b8", "#334155", {sw:breit()});
     txt(g, px-28, cy-92, "Gasdüse", {anchor:"end", fill:"#334155", size:11.5});
 
     /* Draht laeuft durch die Duese ins Bad */
@@ -1158,7 +1172,7 @@ verfahren({
               " L"+(bx+12)+","+(cy-2)+" L"+(bx-12)+","+(cy-2)+" Z",
         C.glut, "none", {opacity:0.85});
       g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:20, ry:9,
-        fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+        fill:C.glut, stroke:"#b45309", "stroke-width":1.4, "class":"erklaer"}));
       txt(g, bx+26, cy+dick+20, "Schmelzbad", {fill:"#b45309", size:11.5});
     }
     if(lauf >= 1){
@@ -1206,11 +1220,11 @@ verfahren({
     }
     pfad(g, "M"+(bx-22)+","+(cy-96)+" L"+(bx+22)+","+(cy-96)+
             " L"+(bx+15)+","+(cy-42)+" L"+(bx-15)+","+(cy-42)+" Z",
-      "#94a3b8", "#334155", {sw:1.4});
+      "#94a3b8", "#334155", {sw:breit()});
     /* Wolframelektrode: bleibt immer gleich lang */
     pfad(g, "M"+(bx-4)+","+(cy-96)+" L"+(bx+4)+","+(cy-96)+
             " L"+(bx+4)+","+(cy-26)+" L"+bx+","+(cy-18)+
-            " L"+(bx-4)+","+(cy-26)+" Z", "#cbd5e1", "#334155", {sw:1.3});
+            " L"+(bx-4)+","+(cy-26)+" Z", "#cbd5e1", "#334155", {sw:breit()});
     txt(g, bx-28, cy-92, "Wolfram,", {anchor:"end", fill:"#334155", size:11.5});
     txt(g, bx-28, cy-112, "schmilzt nicht ab", {anchor:"end", fill:"#334155", size:11.5});
 
@@ -1222,7 +1236,7 @@ verfahren({
       linie(g, sx+58, cy-92, sx, cy-12, C.eS, 5);
       txt(g, sx+64, cy-96, "Zusatzstab, von Hand", {fill:C.eS, size:11.5});
       g.appendChild(ns("ellipse", {cx:bx, cy:cy-dick+2, rx:17, ry:8,
-        fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+        fill:C.glut, stroke:"#b45309", "stroke-width":1.4, "class":"erklaer"}));
     }
     if(nach >= 1){
       txt(g, lx+2, cy-30, "Sehr saubere Naht – kaum Spritzer, kein Abklopfen",
@@ -1260,24 +1274,24 @@ verfahren({
     /* tiefer Einbrand: die Naht reicht weit ins Blech */
     if(bx > start)
       rect(g, start, cy-dick, (bx-6)-start, dick+8, "#cbd5e1",
-        zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
+        zustand.norm ? NORM_KANTE : "#64748b", {sw:breit()});
 
     /* Pulverschuettung */
     var pvBis = saug > 0 ? start + ((ende)-start)*saug : ende;
     pfad(g, "M"+pvBis+","+(cy-dick)+" L"+(rx-10)+","+(cy-dick)+
             " L"+(rx-10)+","+(cy-26)+" L"+pvBis+","+(cy-26)+" Z",
-      "#fde68a", "#b45309", {sw:1});
+      "#fde68a", "#b45309", {sw:breit()});
     if(saug < 0.5) txt(g, pvBis+16, cy-52, "Pulverschüttung", {fill:C.lotS, size:11.5});
     /* erstarrte Schlackenkruste hinter dem Kopf */
     if(bx > start)
-      rect(g, start, cy-12, (bx-10)-start, 12, C.lot, C.lotS, {sw:1});
+      rect(g, start, cy-12, (bx-10)-start, 12, C.lot, C.lotS, {sw:breit()});
     if(saug > 0.1){
       kraftpfeil(g, pvBis+20, cy-64, pvBis+20, cy-34, "#0f766e", 2.4);
       txt(g, pvBis+28, cy-76, "Pulver absaugen und wiederverwenden",
         {fill:"#0f766e", size:11.5});
     }
     if(lauf < 1){
-      rect(g, bx-10, cy-130, 20, 100, "#94a3b8", "#334155", {sw:1.4});
+      rect(g, bx-10, cy-130, 20, 100, "#94a3b8", "#334155", {sw:breit()});
       linie(g, bx, cy-34, bx, cy-10, C.eS, 3.4);
       txt(g, bx+16, cy-126, "Drahtvorschub", {fill:"#334155", size:11.5});
       txt(g, bx+16, cy-38, "Lichtbogen unsichtbar", {fill:"#b45309", size:11.5});
@@ -1318,13 +1332,13 @@ verfahren({
     /* schmale, tiefe Naht */
     if(bx > start)
       rect(g, start, cy-dick, (bx-5)-start, 2*dick, "#cbd5e1",
-        zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2});
+        zustand.norm ? NORM_KANTE : "#64748b", {sw:breit()});
 
     /* Strahlkegel */
     pfad(g, "M"+(bx-26)+","+(cy-112)+" L"+(bx+26)+","+(cy-112)+
             " L"+(bx+3)+","+(cy-dick)+" L"+(bx-3)+","+(cy-dick)+" Z",
       "#fca5a5", "none", {opacity:0.55});
-    rect(g, bx-30, cy-146, 60, 34, "#94a3b8", "#334155", {sw:1.4});
+    rect(g, bx-30, cy-146, 60, 34, "#94a3b8", "#334155", {sw:breit()});
     txt(g, bx-36, cy-124, "Optik", {anchor:"end", fill:"#334155", size:11.5});
 
     if(auf > 0.05){
@@ -1332,13 +1346,13 @@ verfahren({
       var tief = (2*dick-6) * auf;
       pfad(g, "M"+(bx-5)+","+(cy-dick)+" L"+(bx+5)+","+(cy-dick)+
               " L"+(bx+2)+","+(cy-dick+tief)+" L"+(bx-2)+","+(cy-dick+tief)+" Z",
-        C.glut, "#b45309", {sw:1});
+        C.glut, "#b45309", {erklaer:true, sw:1});
       txt(g, bx+16, cy+dick+20, "Dampfkapillare", {fill:"#b45309", size:11.5});
     }
     if(lauf >= 1){
       /* Vergleichsbild: was eine Lichtbogennaht hier braeuchte */
       pfad(g, "M"+(320-44)+","+(cy-14)+" Q 320,"+(cy-40)+" "+(320+44)+","+(cy-14),
-        "none", "#94a3b8", {sw:1.4, dash:"5 4"});
+        "none", "#94a3b8", {erklaer:true, sw:1.4, dash:"5 4"});
       txt(g, 320+52, cy-46, "so breit wäre eine Lichtbogennaht",
         {fill:"#64748b", size:11.5, weight:400});
       txt(g, lx+2, cy-56, "Schmale Naht, winzige Wärmeeinflusszone, kaum Verzug",
@@ -1375,8 +1389,8 @@ verfahren({
     var weg = 26 * (1 - zu);
 
     /* zwei ueberlappende Bleche */
-    rect(g, 110, cy-dick, 420, dick, C.aF, C.aS, {sw:1.8});
-    rect(g, 110, cy, 420, dick, C.bF, C.bS, {sw:1.8});
+    rect(g, 110, cy-dick, 420, dick, C.aF, C.aS, {sw:breit()});
+    rect(g, 110, cy, 420, dick, C.bF, C.bS, {sw:breit()});
     /* Die Bleche sind sechzehn Einheiten dick, eine Zeile elf - in ihnen ist
        kein Platz fuer eine Benennung, ohne dass sie auf einer Kante liegt.
        Sie stehen deshalb links daneben, jede auf der Hoehe ihres Blechs. */
@@ -1386,10 +1400,10 @@ verfahren({
     /* Elektroden */
     pfad(g, "M"+(cx-22)+","+(cy-86-weg)+" L"+(cx+22)+","+(cy-86-weg)+
             " L"+(cx+13)+","+(cy-2-weg)+" L"+(cx-13)+","+(cy-2-weg)+" Z",
-      C.eF, C.eS, {sw:1.6});
+      C.eF, C.eS, {sw:breit()});
     pfad(g, "M"+(cx-22)+","+(cy+dick+86+weg)+" L"+(cx+22)+","+(cy+dick+86+weg)+
             " L"+(cx+13)+","+(cy+dick+2+weg)+" L"+(cx-13)+","+(cy+dick+2+weg)+" Z",
-      C.eF, C.eS, {sw:1.6});
+      C.eF, C.eS, {sw:breit()});
     txt(g, cx+30, cy-60-weg, "Elektrode", {fill:C.eS, size:12});
 
     if(zu > 0.1 || halten > 0.05){
@@ -1406,7 +1420,7 @@ verfahren({
       var r = 4 + 16*strom;
       g.appendChild(ns("ellipse", {cx:cx, cy:cy, rx:r, ry:r*0.55,
         fill:halten > 0.5 ? "#cbd5e1" : C.glut,
-        stroke:halten > 0.5 ? "#64748b" : "#b45309", "stroke-width":1.4}));
+        stroke:halten > 0.5 ? "#64748b" : "#b45309", "stroke-width":breit()}));
       /* Unter den Blechen: In der Fuge selbst laege der Text auf der Naht
          zwischen beiden. */
       txt(g, cx+40, cy+dick+24, halten > 0.5 ? "Linse erstarrt" : "Schweißlinse wächst",
@@ -1447,13 +1461,13 @@ verfahren({
 
     var linksBis  = cx - luecke/2;
     var rechtsAb  = cx + luecke/2;
-    rect(g, 90 + kurz, cy-r, linksBis-(90+kurz), 2*r, C.aF, C.aS, {sw:1.8});
-    rect(g, rechtsAb, cy-r, (550-kurz)-rechtsAb, 2*r, C.bF, C.bS, {sw:1.8});
+    rect(g, 90 + kurz, cy-r, linksBis-(90+kurz), 2*r, C.aF, C.aS, {sw:breit()});
+    rect(g, rechtsAb, cy-r, (550-kurz)-rechtsAb, 2*r, C.bF, C.bS, {sw:breit()});
     txt(g, 96+kurz, cy-r-12, "steht still", {fill:C.aS, size:12});
     txt(g, 544-kurz, cy+r+22, "dreht sich", {anchor:"end", fill:C.bS, size:12});
 
     /* Drehsinn: ueber dem rechten Teil, damit er keine Beschriftung kreuzt */
-    pfad(g, "M536,64 a 20 20 0 1 1 -14,-6", "none", "#1d4ed8", {sw:2.4});
+    pfad(g, "M536,64 a 20 20 0 1 1 -14,-6", "none", "#1d4ed8", {erklaer:true, sw:2.4});
     pfad(g, "M518,52 l 5,-7 l 8,5 z", "#1d4ed8", "none");
 
     if(press > 0.05){
@@ -1470,9 +1484,9 @@ verfahren({
       /* Der verdraengte Werkstoff quillt am Stoss nach aussen. */
       var w = 20*stauch, h = 13*stauch;
       pfad(g, "M"+(cx-w)+","+(cy-r)+" Q "+cx+","+(cy-r-2*h)+" "+(cx+w)+","+(cy-r)+" Z",
-        C.bF, C.bS, {sw:1.4});
+        C.bF, C.bS, {sw:breit()});
       pfad(g, "M"+(cx-w)+","+(cy+r)+" Q "+cx+","+(cy+r+2*h)+" "+(cx+w)+","+(cy+r)+" Z",
-        C.bF, C.bS, {sw:1.4});
+        C.bF, C.bS, {sw:breit()});
       txt(g, cx-w-18, cy-r-2*h-4, "Wulst – wird später abgedreht",
         {anchor:"end", fill:C.bS, size:11.5});
       linie(g, cx-w-14, cy-r-2*h-8, cx-w+4, cy-r-h, C.bS, 1);
@@ -1662,7 +1676,7 @@ function zonenBild(anteil){
     });
   });
   /* Blechkontur und Trennlinien */
-  rect(g, cx-halb, cy-dick, 2*halb, 2*dick, "none", C.aS, {sw:1.8});
+  rect(g, cx-halb, cy-dick, 2*halb, 2*dick, "none", C.aS, {sw:breit()});
   ZONEN.forEach(function(z, i){
     if(i === ZONEN.length-1) return;
     [-1, 1].forEach(function(v){
@@ -1873,9 +1887,9 @@ function verzugBild(){
   var cy = 120, dick = 22, cx = 320;
 
   if(verzugAktiv === "quer"){
-    rect(g, 90, cy-dick, 200, 2*dick, C.aF, C.aS, {sw:1.8});
-    rect(g, 350, cy-dick, 200, 2*dick, C.bF, C.bS, {sw:1.8});
-    rect(g, 290, cy-dick, 60, 2*dick, "#cbd5e1", "#64748b", {sw:1.4});
+    rect(g, 90, cy-dick, 200, 2*dick, C.aF, C.aS, {sw:breit()});
+    rect(g, 350, cy-dick, 200, 2*dick, C.bF, C.bS, {sw:breit()});
+    rect(g, 290, cy-dick, 60, 2*dick, "#cbd5e1", "#64748b", {sw:breit()});
     kraftpfeil(g, 200, cy-dick-26, 268, cy-dick-26, "#dc2626", 3);
     kraftpfeil(g, 440, cy-dick-26, 372, cy-dick-26, "#dc2626", 3);
     txt(g, 320, cy-dick-36, "die Naht zieht die Bleche zusammen",
@@ -1894,7 +1908,7 @@ function verzugBild(){
       var x2 = 80 + i*12, f2 = Math.sin(Math.PI*i/40)*22;
       d += " L" + x2 + "," + (cy + dick + f2).toFixed(1);
     }
-    pfad(g, d + " Z", C.aF, C.aS, {sw:1.8});
+    pfad(g, d + " Z", C.aF, C.aS, {sw:breit()});
     var dn = "", j;
     for(j=0;j<=40;j++){
       var x3 = 80 + j*12, f3 = Math.sin(Math.PI*j/40)*22;
@@ -1909,11 +1923,11 @@ function verzugBild(){
     /* Winkelschrumpfung: zwei Bleche klappen zueinander */
     var w = 9;
     pfad(g, "M100,"+(cy+40)+" L"+cx+","+(cy-6)+" L"+cx+","+(cy+18)+" L100,"+(cy+64)+" Z",
-      C.aF, C.aS, {sw:1.8});
+      C.aF, C.aS, {sw:breit()});
     pfad(g, "M540,"+(cy+40)+" L"+cx+","+(cy-6)+" L"+cx+","+(cy+18)+" L540,"+(cy+64)+" Z",
-      C.bF, C.bS, {sw:1.8});
+      C.bF, C.bS, {sw:breit()});
     pfad(g, "M"+(cx-30)+","+(cy-2)+" L"+(cx+30)+","+(cy-2)+" L"+(cx+24)+","+(cy-20)+
-            " L"+(cx-24)+","+(cy-20)+" Z", "#cbd5e1", "#64748b", {sw:1.4});
+            " L"+(cx-24)+","+(cy-20)+" Z", "#cbd5e1", "#64748b", {sw:breit()});
     linie(g, 100, cy+52, 540, cy+52, "#94a3b8", 1.4, {dash:"7 5"});
     txt(g, 104, cy+92, "ohne Verzug lägen die Bleche hier",
       {fill:"#64748b", size:11.5, weight:400});
@@ -1977,8 +1991,8 @@ function stossSkizze(svg, id){
   leeren(svg);
   var g = ns("g", {}); svg.appendChild(g);
   var A = "#99f6e4", B = "#5eead4", S = "#0f766e", n = "#c2410c";
-  function bl(x, y, w, h, f){ rect(g, x, y, w, h, f, S, {sw:1.4}); }
-  function naht(d){ pfad(g, d, n, n, {sw:1}); }
+  function bl(x, y, w, h, f){ rect(g, x, y, w, h, f, S, {sw:breit()}); }
+  function naht(d){ pfad(g, d, n, n, {sw:breit()}); }
   if(id === "stumpf"){
     bl(10, 44, 72, 18, A); bl(88, 44, 72, 18, B);
     naht("M82,44 L88,44 L88,62 L82,62 Z");
@@ -2005,8 +2019,8 @@ function stossSkizze(svg, id){
     naht("M76,44 L64,44 L76,32 Z"); naht("M94,44 L106,44 L94,32 Z");
     naht("M76,62 L64,62 L76,74 Z"); naht("M94,62 L106,62 L94,74 Z");
   }else{
-    pfad(g, "M10,44 L74,44 L96,62 L10,62 Z", A, S, {sw:1.4});
-    pfad(g, "M84,44 L160,44 L160,62 L106,62 Z", B, S, {sw:1.4});
+    pfad(g, "M10,44 L74,44 L96,62 L10,62 Z", A, S, {sw:breit()});
+    pfad(g, "M84,44 L160,44 L160,62 L106,62 Z", B, S, {sw:breit()});
     naht("M74,44 L84,44 L106,62 L96,62 Z");
   }
 }
@@ -2030,7 +2044,8 @@ function stoesseAufbauen(){
     b.setAttribute("data-id", st.id);
     b.setAttribute("aria-pressed", "false");
     var svg = ns("svg", {viewBox:"0 0 170 106", role:"img"});
-    svg.setAttribute("aria-label", st.name);
+    svg.setAttribute("aria-label",
+      st.name + " im Schnitt: wie die Bleche liegen und wo die Naht sitzt");
     b.appendChild(svg);
     var nm = document.createElement("span");
     nm.className = "name"; nm.textContent = st.name;
@@ -2132,7 +2147,7 @@ function nahtBild(t, a, c, b){
       d = "M"+x0+","+(cy+T/2-Cc)+" L"+o+","+(cy-T/2)+" L"+(cx+v*halb)+","+(cy-T/2)+
           " L"+(cx+v*halb)+","+(cy+T/2)+" L"+x0+","+(cy+T/2)+" Z";
     }
-    pfad(g, d, fuell, farbe, {sw:zustand.norm ? NORM_BREIT : 1.8});
+    pfad(g, d, fuell, farbe, {sw:breit()});
   }
   seite(-1, f, zustand.norm ? NORM_KANTE : C.aS);
   seite(+1, f2, zustand.norm ? NORM_KANTE : C.bS);
@@ -2141,12 +2156,16 @@ function nahtBild(t, a, c, b){
   function mass(x1, y1, x2, y2, beschriftung, wo){
     var farbe = zustand.norm ? NORM_KANTE : "#1d4ed8";
     var laenge = Math.abs(x2-x1) + Math.abs(y2-y1);
-    linie(g, x1, y1, x2, y2, farbe, zustand.norm ? NORM_SCHMAL : 1.2);
-    /* Unter etwa 26 Einheiten ueberdecken sich die beiden Spitzen zu einem
-       Klecks - dann bleibt es bei der blossen Masslinie. */
+    var ml = linie(g, x1, y1, x2, y2, farbe, schmal());
+    /* Eine Masslinie traegt an beiden Enden einen Masspfeil, und beide sitzen
+       auf dem Massepunkt. Hier standen frueher zwei einzelne Pfeile von der
+       Mitte nach aussen - zwei Hinweislinien, keine Masslinie.
+       Unter etwa 26 Einheiten ueberdecken sich die Spitzen zu einem Klecks;
+       dann bleibt es bei der blossen Linie. */
     if(laenge > 26){
-      kraftpfeil(g, x1 + (x2-x1)*0.25, y1 + (y2-y1)*0.25, x1, y1, farbe, 1.6);
-      kraftpfeil(g, x1 + (x2-x1)*0.75, y1 + (y2-y1)*0.75, x2, y2, farbe, 1.6);
+      var sp = "url(#" + MARKER_PRAEFIX + farbe.replace("#","") + ")";
+      ml.setAttribute("marker-start", sp);
+      ml.setAttribute("marker-end", sp);
     }
     txt(g, wo[0], wo[1], beschriftung,
       {fill:zustand.norm ? NORM_KANTE : "#1d4ed8", size:11.5, anchor:"middle"});
@@ -2158,7 +2177,7 @@ function nahtBild(t, a, c, b){
     var r = Math.min(52, T*0.7);
     pfad(g, "M"+(cx - r*Math.sin(rad))+","+(cy-T/2+r*Math.cos(rad))+
             " A "+r+" "+r+" 0 0 1 "+(cx + r*Math.sin(rad))+","+(cy-T/2+r*Math.cos(rad)),
-      "none", zustand.norm ? NORM_KANTE : "#1d4ed8", {sw:zustand.norm ? NORM_SCHMAL : 1.2});
+      "none", zustand.norm ? NORM_KANTE : "#1d4ed8", {sw:schmal()});
     /* Ueber der Fugenoeffnung: Im Keil ist der Winkel oft breiter als der
        Platz zwischen den Flanken - die Zeile lag dann auf ihnen. */
     txt(g, cx, cy-T/2-8, "α = " + a + "°",

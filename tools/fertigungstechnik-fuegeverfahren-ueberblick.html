@@ -476,7 +476,7 @@ var NORM_HINTEN = {"#eafcf8":1, "#d5faf3":1, "#f1f5f9":1};
    ganz geschwaerzt. In der Zeichnung sind sie ueberhoeht, damit man sie sieht;
    geschwaerzt bleiben sie trotzdem, denn das sagt: hier ist die Schicht duenn. */
 var NORM_DUENN = {"#fde68a":1, "#ddd6fe":1, "#c4b5fd":1, "#a78bfa":1};
-var NORM_KANTE = "#111827", NORM_BREIT = 2.2, NORM_SCHMAL = 0.8;
+var NORM_KANTE = "#111827", NORM_BREIT = 2.0, NORM_SCHMAL = 1.0;
 
 /* DIN ISO 128-50: Vollteile - Wellen, Schrauben, Muttern, Bolzen, Niete,
    Stifte, Passfedern - werden in Laengsrichtung nicht geschnitten dargestellt
@@ -545,7 +545,7 @@ function eckenmass(s){ return s * 2 / Math.sqrt(3); }
    normFassung() vorbei - die greift nur, wo eine Flaeche gefuellt wird. */
 function kante(farbe){ return normModus() ? NORM_KANTE : farbe; }
 function breit(){ return normModus() ? NORM_BREIT : 1.8; }
-function schmal(){ return normModus() ? NORM_SCHMAL : 1; }
+function schmal(){ return normModus() ? NORM_SCHMAL : 0.9; }
 
 /* Sechskant in Ansicht, ueber Ecke gesehen - so wird er normgerecht
    dargestellt. Sichtbar sind drei Flaechen, getrennt durch zwei Kanten bei
@@ -574,7 +574,7 @@ function sechskantAnsicht(g, o){
   pfad(g, "M" + pt(anFase, -rS) + " L" + pt(anFase, rS) +
     " L" + pt(qT, rE) + " L" + pt(anderes, rE) +
     " L" + pt(anderes, -rE) + " L" + pt(qT, -rE) + " Z",
-    o.fuell || C.eF, o.strich || C.eS, {sw:1.8});
+    o.fuell || C.eF, o.strich || C.eS, {sw:breit()});
   /* Die zwei Kanten zwischen den drei sichtbaren Flaechen. */
   [-1, 1].forEach(function(v){
     pfad(g, "M" + pt(qT, v * rE / 2) + " L" + pt(anderes, v * rE / 2),
@@ -606,7 +606,7 @@ function sechskantMutter(g, o){
   pfad(g, "M" + pt(a, -rS) + " L" + pt(a, rS) + " L" + pt(a2, rE) +
     " L" + pt(b2, rE) + " L" + pt(b, rS) + " L" + pt(b, -rS) +
     " L" + pt(b2, -rE) + " L" + pt(a2, -rE) + " Z",
-    o.fuell || C.eF, o.strich || C.eS, {sw:1.8});
+    o.fuell || C.eF, o.strich || C.eS, {sw:breit()});
   /* Die zwei Kanten zwischen den drei sichtbaren Flaechen - sie laufen nur
      durch den ungefasten Teil. */
   [-1, 1].forEach(function(w){
@@ -692,7 +692,8 @@ function txt(g, x, y, s, opt){
 function rect(g, x, y, w, h, fill, stroke, opt){
   var o = opt || {};
   var e = ns("rect", {x:x, y:y, width:Math.max(0,w), height:Math.max(0,h),
-    fill:fill, stroke:stroke || "none", "stroke-width":o.sw || 1.6});
+    fill:fill, stroke:stroke || "none", "stroke-width":o.sw || breit()});
+  if(o.erklaer) e.setAttribute("class", "erklaer");
   if(o.rx) e.setAttribute("rx", o.rx);
   if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
   g.appendChild(e);
@@ -701,7 +702,10 @@ function rect(g, x, y, w, h, fill, stroke, opt){
 function pfad(g, d, fill, stroke, opt){
   var o = opt || {};
   var e = ns("path", {d:d, fill:fill || "none", stroke:stroke || "none",
-    "stroke-width":o.sw || 1.6});
+    "stroke-width":o.sw || breit()});
+  /* Waerme, Glut und Vorschauraster treten zurueck und gehoeren damit zur
+     Erklaerebene - eine halbdurchsichtige Linie ist keine Koerperkante. */
+  if(o.erklaer) e.setAttribute("class", "erklaer");
   if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
   if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
   g.appendChild(e);
@@ -709,7 +713,8 @@ function pfad(g, d, fill, stroke, opt){
 }
 function linie(g, x1, y1, x2, y2, farbe, sw, opt){
   var o = opt || {};
-  var e = ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe, "stroke-width":sw || 1.4});
+  var e = ns("line", {x1:x1, y1:y1, x2:x2, y2:y2, stroke:farbe, "stroke-width":sw || breit()});
+  if(o.erklaer) e.setAttribute("class", "erklaer");
   if(o.dash) e.setAttribute("stroke-dasharray", o.dash);
   if(o.opacity !== undefined) e.setAttribute("opacity", o.opacity);
   g.appendChild(e);
@@ -774,7 +779,14 @@ function spitzen(svg, farben){
 var FARBEN = ["#dc2626","#1d4ed8","#16a34a","#c2410c","#7c3aed","#0f766e","#64748b",
               "#b45309","#334155","#111827"];
 function kraftpfeil(g, x1, y1, x2, y2, farbe, sw){
-  g.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
+  /* Ein Kraftpfeil gehoert zur Erklaerebene, nicht zur Zeichnung: farbig,
+     mit genau einer Spitze und ohne Linienbreite nach DIN ISO 128-20.
+     Die Gruppe "erklaer" sagt das - test-zeichnungen.js zaehlt sie nicht
+     mit und meldet den einseitigen Pfeil deshalb nicht als halbes Mass. */
+  var e = ns("g", {"class":"erklaer"});
+  e.appendChild(pfeil(g, x1, y1, x2, y2, farbe, sw));
+  g.appendChild(e);
+  return e;
 }
 
 /* Farbwelt: Bauteil A, Bauteil B, Verbindungselement, Waerme, Lot/Kleber */
@@ -887,9 +899,9 @@ verfahren({
     var lx = cx - breite/2, rx = cx + breite/2;
 
     if(kraft > 0.02){
-      rect(g, lx, oben, breite, 2*dicke, "none", C.grauS, {sw:1.2, opacity:0.5});
+      rect(g, lx, oben, breite, 2*dicke, "none", C.grauS, {erklaer:true, sw:1.2, opacity:0.5});
       linie(g, cx-12, oben + 2*dicke + 34, cx+12, oben + 2*dicke + 34, C.grauS, 1.2,
-        {dash:"5 4", opacity:0.5});
+        {erklaer:true, dash:"5 4", opacity:0.5});
     }
     rect(g, lx, y1o, breite, y1u-y1o, C.aF, C.aS);
     rect(g, lx, y2o, breite, y2u-y2o, C.bF, C.bS);
@@ -906,7 +918,7 @@ verfahren({
 
     if(schliessen < 1){
       pfad(g, "M"+(cx+30)+","+(y2u+4)+" A 22 22 0 1 1 "+(cx+26)+","+(y2u+21),
-        "none", "#b45309", {sw:2.4, opacity:0.3 + 0.7*(1-schliessen)});
+        "none", "#b45309", {erklaer:true, sw:2.4, opacity:0.3 + 0.7*(1-schliessen)});
       /* Der Drehpfeil ist ein fast geschlossener Kreis von 22 Einheiten -
          er reicht weiter nach rechts, als sein Anfangspunkt vermuten laesst. */
       txt(g, cx+82, y2u+16, "anziehen", {fill:"#b45309", size:12,
@@ -963,7 +975,7 @@ verfahren({
 
     rect(g, wl, cy-wr, wrx-wl, 2*wr, "#e2e8f0", "#475569");
     txt(g, wl+6, cy-wr-8, "Welle", {fill:"#475569", size:12});
-    if(!zustand.norm) linie(g, wl-16, cy, wrx+16, cy, "#94a3b8", 1, {dash:"14 3 3 3"});
+    if(!zustand.norm) linie(g, wl-16, cy, wrx+16, cy, "#94a3b8", schmal(), {dash:"12 2 2 2"});
 
     var farbe = waerme > 0 && kuehl < 1
       ? (waerme > 0.5 ? C.heiss : C.warm) : C.bF;
@@ -971,20 +983,20 @@ verfahren({
        Welle. Ein durchgehendes Rechteck mit weisser Bohrung wuerde die Welle
        verdecken. */
     var band = (nr + dehnung) - (wr + dehnung);
-    rect(g, nabeX-70, cy-nr-dehnung, 140, band, farbe, C.bS, {sw:1.8});
-    rect(g, nabeX-70, cy+wr+dehnung, 140, band, farbe, C.bS, {sw:1.8});
+    rect(g, nabeX-70, cy-nr-dehnung, 140, band, farbe, C.bS, {sw:breit()});
+    rect(g, nabeX-70, cy+wr+dehnung, 140, band, farbe, C.bS, {sw:breit()});
     txt(g, nabeX-70, cy-nr-dehnung-10, "Nabe", {fill:C.bS, size:12});
 
     if(t < 0.28){
       txt(g, wl, cy+wr+34, "Bohrung kleiner als die Welle: " + zWort("uebermass"),
         {fill:"#b45309", size:12});
-      linie(g, nabeX-70, cy-wr, nabeX+70, cy-wr, "#b45309", 1.4, {dash:"4 3"});
+      linie(g, nabeX-70, cy-wr, nabeX+70, cy-wr, "#b45309", 1.4, {erklaer:true, dash:"4 3"});
     }
     if(waerme > 0 && kuehl < 1){
       for(var i=0;i<3;i++){
         var x = nabeX - 40 + i*40;
         pfad(g, "M"+x+","+(cy-nr-dehnung-14)+" q 6,-10 0,-20 q -6,-10 0,-20",
-          "none", C.heiss, {sw:2, opacity:waerme*(1-kuehl)});
+          "none", C.heiss, {erklaer:true, sw:2, opacity:waerme*(1-kuehl)});
       }
       /* Die Nabe faehrt von rechts ein. Stand die Beschriftung rechts von
          ihr, lief sie am Anfang aus dem Bild - links ist immer Platz. */
@@ -1032,8 +1044,8 @@ verfahren({
     pfad(g, "M" + (cx-ab) + "," + (cy+yk) + " L" + (cx-ab) + "," + by2 +
       " L" + (cx+ab) + "," + by2 + " L" + (cx+ab) + "," + (cy+yk) +
       " A " + nr + " " + nr + " 0 1 0 " + (cx-ab) + "," + (cy+yk) + " Z",
-      C.bF, C.bS, {sw:1.8});
-    g.appendChild(ns("circle", {cx:cx, cy:cy, r:wr, fill:"#e2e8f0", stroke:"#475569", "stroke-width":1.6}));
+      C.bF, C.bS, {sw:breit()});
+    g.appendChild(ns("circle", {cx:cx, cy:cy, r:wr, fill:"#e2e8f0", stroke:"#475569", "stroke-width":breit()}));
     /* Der Schlitz laeuft von der Bohrung durch das Auge nach aussen. Er macht
        die Nabe federnd - ohne ihn klemmt nichts. */
     rect(g, cx-spalt/2, cy+wr-4, spalt, by2-(cy+wr-4), "#ffffff", "none");
@@ -1137,13 +1149,13 @@ verfahren({
     function kA(x){ return 58 - (xO2 - x) * steig; }   /* Kegel am Aussenring */
     function kI(x){ return 58 - (xR  - x) * steig; }   /* Kegel am Innenring */
 
-    rect(g, 10, cy - wr, 510, 2 * wr, "#e2e8f0", "#475569", {sw:1.6});
+    rect(g, 10, cy - wr, 510, 2 * wr, "#e2e8f0", "#475569", {sw:breit()});
     txt(g, 16, cy - 8, "Welle", {fill:"#475569", size:12});
 
     [-1, 1].forEach(function(v){
       /* Nabe */
       rect(g, xN1, cy + (v < 0 ? -rNa : rNi), xN2 - xN1, rNa - rNi,
-        C.bF, C.bS, {sw:1.8});
+        C.bF, C.bS, {sw:breit()});
       /* Aussenring: Kegelbohrung innen, Flansch rechts aus der Nabe heraus. */
       pfad(g, "M" + xO1 + "," + (cy + v * kA(xO1)) +
               " L" + xO2 + "," + (cy + v * kA(xO2)) +
@@ -1151,7 +1163,7 @@ verfahren({
               " L" + xFo + "," + (cy + v * rF) +
               " L" + xFo + "," + (cy + v * (rNi - luft)) +
               " L" + xO1 + "," + (cy + v * (rNi - luft)) + " Z",
-        "#bfdbfe", C.eS, {sw:1.8});
+        "#bfdbfe", C.eS, {sw:breit()});
       /* Innenring: sitzt auf der Welle, Kegelmantel aussen, Flansch rechts. */
       pfad(g, "M" + xL + "," + (cy + v * (wr + luft)) +
               " L" + (xR + fd) + "," + (cy + v * (wr + luft)) +
@@ -1159,7 +1171,7 @@ verfahren({
               " L" + xR + "," + (cy + v * rF) +
               " L" + xR + "," + (cy + v * kI(xR)) +
               " L" + xL + "," + (cy + v * kI(xL)) + " Z",
-        "#cbd5e1", C.eS, {sw:1.8});
+        "#cbd5e1", C.eS, {sw:breit()});
     });
     /* Links neben der Nabe: In ihr liegt die Benennung auf der Schraffur. */
     txt(g, xN1 - 8, cy - rNa + 22, "Nabe", {anchor:"end", fill:C.bS, size:12});
@@ -1254,21 +1266,21 @@ verfahren({
        deshalb laesst sich die Nabe ueber die Feder schieben. Eine Tasche in
        der Nabenmitte, wie sie naheliegt, waere nicht montierbar. */
     var nabeX = 450 - schieben*(450-150), nb = 160;
-    rect(g, nabeX, cy-nr, nb, oben-(cy-nr), C.bF, C.bS, {sw:1.8});
-    rect(g, nabeX, cy+wr, nb, nr-wr, C.bF, C.bS, {sw:1.8});
+    rect(g, nabeX, cy-nr, nb, oben-(cy-nr), C.bF, C.bS, {sw:breit()});
+    rect(g, nabeX, cy+wr, nb, nr-wr, C.bF, C.bS, {sw:breit()});
     /* Der Schnitt laeuft mitten durch die Nut. Dahinter ist kein Hohlraum,
        sondern die hintere Nutwand - dieselbe Nabe, nur nicht geschnitten und
        deshalb heller. Frueher stand hier Weiss, das las sich wie Luft. */
-    rect(g, nabeX, oben, nb, (cy-wr)-oben, C.bH, C.bS, {sw:1.4});
+    rect(g, nabeX, oben, nb, (cy-wr)-oben, C.bH, C.bS, {sw:breit()});
 
     rect(g, lx, cy-wr, rx-lx, 2*wr, "#e2e8f0", "#475569");
     /* Genauso in der Welle: hinter der Nut steht Werkstoff, nicht nichts. */
-    rect(g, nutX, cy-wr, nutB, nutT, C.grauH, "#475569", {sw:1.3});
+    rect(g, nutX, cy-wr, nutB, nutT, C.grauH, "#475569", {sw:breit()});
     txt(g, lx+2, cy+wr+22, "Welle mit Nut", {fill:"#475569", size:12});
 
     /* Die Feder faellt in die Wellennut und ragt zur Haelfte heraus. */
     var fedY = cy - wr - nutT - 62 + legen*62;
-    rect(g, nutX+2, fedY, nutB-4, 2*nutT, C.eF, C.eS, {sw:1.6, rx:2});
+    rect(g, nutX+2, fedY, nutB-4, 2*nutT, C.eF, C.eS, {sw:breit(), rx:2});
     txt(g, nutX+nutB+14, fedY+40, "Passfeder", {fill:C.eS, size:12});
     txt(g, nabeX-8, cy-nr+14, "Nabe", {anchor:"end", fill:C.bS, size:12});
 
@@ -1283,7 +1295,7 @@ verfahren({
     }else{
       /* Das Spiel liegt ueber die ganze Nabenlaenge an, nicht nur ueber der
          Feder - die Linie zeigt das, die Beschriftung steht links daneben. */
-      linie(g, nabeX+4, oben, nabeX+nb-4, oben, "#b45309", 2);
+      linie(g, nabeX+4, oben, nabeX+nb-4, oben, "#b45309", 2, {erklaer:true});
       txt(g, nabeX-8, oben+4, "Spiel über der Feder",
         {anchor:"end", fill:"#b45309", size:11.5});
     }
@@ -1297,12 +1309,12 @@ verfahren({
       auchVollteileSchneiden(true);
       var qx = 540, qy = 150, rw = 30, rn = 56, kb = 11, kt = 11;
       g.appendChild(ns("circle", {cx:qx, cy:qy, r:rn, fill:C.bF, stroke:C.bS,
-        "stroke-width":1.8}));
-      rect(g, qx-kb, qy-rw-kt-4, 2*kb, kt+4, C.bH, C.bS, {sw:1.2});
+        "stroke-width":breit()}));
+      rect(g, qx-kb, qy-rw-kt-4, 2*kb, kt+4, C.bH, C.bS, {sw:breit()});
       g.appendChild(ns("circle", {cx:qx, cy:qy, r:rw, fill:"#e2e8f0",
-        stroke:"#475569", "stroke-width":1.4}));
-      rect(g, qx-kb, qy-rw, 2*kb, kt, "#ffffff", "#475569", {sw:1.2});
-      rect(g, qx-kb, qy-rw-kt, 2*kb, 2*kt, C.eF, C.eS, {sw:1.6});
+        stroke:"#475569", "stroke-width":breit()}));
+      rect(g, qx-kb, qy-rw, 2*kb, kt, "#ffffff", "#475569", {sw:breit()});
+      rect(g, qx-kb, qy-rw-kt, 2*kb, 2*kt, C.eF, C.eS, {sw:breit()});
       kraftpfeil(g, qx-54, qy-rw+7, qx-kb-2, qy-rw+7, "#dc2626", 2.6);
       kraftpfeil(g, qx+54, qy-rw-6, qx+kb+2, qy-rw-6, "#dc2626", 2.6);
       /* Unter das Ende der Mittellinie, nicht darauf. */
@@ -1360,7 +1372,7 @@ verfahren({
              r+","+r+" 0 1,0 "+(-2*r)+",0 Z";
     }
 
-    pfad(g, kontur(cx, cy, wr, wr+zh, 0), "#e2e8f0", "#475569", {sw:1.6});
+    pfad(g, kontur(cx, cy, wr, wr+zh, 0), "#e2e8f0", "#475569", {sw:breit()});
     /* In der Mitte lag die Benennung auf der Zahnkontur. */
     txt(g, cx-nr-12, cy+4, "Zahnwelle", {anchor:"end", fill:"#475569", size:12});
 
@@ -1369,7 +1381,7 @@ verfahren({
        laesst Zahn und Luecke ineinandergreifen. */
     var nx = 500 - schieben*(500-cx);
     var ring = pfad(g, kreis(nx, cy, nr) + " " +
-      kontur(nx, cy, wr+zh+spiel, wr+spiel, 0.5), C.bF, C.bS, {sw:1.8});
+      kontur(nx, cy, wr+zh+spiel, wr+spiel, 0.5), C.bF, C.bS, {sw:breit()});
     ring.setAttribute("fill-rule", "evenodd");
     /* Der Ring der Nabe ist nur gut zwanzig Einheiten breit - eine Zeile
        darin liegt entweder auf dem Aussenkreis oder auf der Zahnkontur. */
@@ -1433,8 +1445,8 @@ verfahren({
       bruchlinie(g, bis, cy-wr, cy+wr);
     }
 
-    rect(g, cx-80, cy-nr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
-    rect(g, cx-80, cy+wr, 160, nr-wr, C.bF, C.bS, {sw:1.8});
+    rect(g, cx-80, cy-nr, 160, nr-wr, C.bF, C.bS, {sw:breit()});
+    rect(g, cx-80, cy+wr, 160, nr-wr, C.bF, C.bS, {sw:breit()});
     txt(g, lx+2, cy+wr+18, "Welle", {fill:"#475569", size:12});
     /* Rechts neben der Nabe - in ihr liegt die Benennung auf der Schraffur. */
     /* Ueber der Nabe: Auf ihrer Hoehe steht rechts der Abziehpfeil. */
@@ -1443,13 +1455,13 @@ verfahren({
     /* Die gemeinsam gebohrte Querbohrung ist ein Loch, kein Werkstoff: sie
        durchtrennt die Schraffur der Nabe und die Kontur der Welle. Zwei
        gestrichelte Hilfslinien, wie sie hier frueher standen, taten das nicht. */
-    rect(g, cx-sr, cy-nr, 2*sr, 2*nr, "#ffffff", "#475569", {sw:1.3});
+    rect(g, cx-sr, cy-nr, 2*sr, 2*nr, "#ffffff", "#475569", {sw:breit()});
 
     /* Der Stift steht am Anfang vollstaendig ausserhalb der Nabe und faehrt
        erst waehrend der Animation ein. */
     var stiftL = 2*nr, frei = cy - nr - 22;
     var stiftY = (frei - stiftL) + treiben*((cy - nr) - (frei - stiftL));
-    rect(g, cx-sr, stiftY, 2*sr, stiftL, C.eF, C.eS, {sw:1.6});
+    rect(g, cx-sr, stiftY, 2*sr, stiftL, C.eF, C.eS, {sw:breit()});
     txt(g, cx-88, stiftY+16, "Stift", {anchor:"end", fill:C.eS, size:12});
 
     if(treiben < 1){
@@ -1459,8 +1471,8 @@ verfahren({
       txt(g, cx+54, stiftY+30, "eintreiben", {fill:"#b45309", size:11.5});
     }
     if(last > 0.05){
-      linie(g, cx-18, cy-wr, cx+18, cy-wr, "#dc2626", 2.6, {opacity:last});
-      linie(g, cx-18, cy+wr, cx+18, cy+wr, "#dc2626", 2.6, {opacity:last});
+      linie(g, cx-18, cy-wr, cx+18, cy-wr, "#dc2626", 2.6, {erklaer:true, opacity:last});
+      linie(g, cx-18, cy+wr, cx+18, cy+wr, "#dc2626", 2.6, {erklaer:true, opacity:last});
       kraftpfeil(g, cx+92, cy-nr+18, cx+144, cy-nr+18, "#7c3aed", 3);
       txt(g, cx+96, cy-nr+10, "Nabe wird abgezogen", {fill:"#7c3aed", size:11.5});
       kraftpfeil(g, cx-96, cy, cx-148, cy, "#7c3aed", 3);
@@ -1494,8 +1506,8 @@ verfahren({
     var armL = 84, schaft = 20, armD = 11, nasenH = 34, frei = 38, eng = lochB/2;
 
     /* Gehaeuseplatte mit Rastoeffnung */
-    rect(g, 70, py, (cx-lochB/2)-70, pd, C.bF, C.bS, {sw:1.8});
-    rect(g, cx+lochB/2, py, 570-(cx+lochB/2), pd, C.bF, C.bS, {sw:1.8});
+    rect(g, 70, py, (cx-lochB/2)-70, pd, C.bF, C.bS, {sw:breit()});
+    rect(g, cx+lochB/2, py, 570-(cx+lochB/2), pd, C.bF, C.bS, {sw:breit()});
     txt(g, 76, py+pd+18, "Gehäuse mit Rastöffnung", {fill:C.bS, size:12});
 
     /* Der Haken faehrt von unten durch das Loch, schiesst acht Einheiten
@@ -1520,21 +1532,21 @@ verfahren({
     pfad(g, "M"+(cx-schaft)+","+(hy+armL)+" Q "+(cx-schaft)+","+(hy+armL*0.45)+
             " "+aussenL.toFixed(1)+","+hy+" L "+innenL.toFixed(1)+","+hy+
             " Q "+(cx-schaft+armD)+","+(hy+armL*0.45)+" "+(cx-schaft+armD)+","+(hy+armL)+" Z",
-      C.eF, C.eS, {sw:1.8});
+      C.eF, C.eS, {sw:breit()});
     pfad(g, "M"+(cx+schaft)+","+(hy+armL)+" Q "+(cx+schaft)+","+(hy+armL*0.45)+
             " "+aussenR.toFixed(1)+","+hy+" L "+innenR.toFixed(1)+","+hy+
             " Q "+(cx+schaft-armD)+","+(hy+armL*0.45)+" "+(cx+schaft-armD)+","+(hy+armL)+" Z",
-      C.eF, C.eS, {sw:1.8});
+      C.eF, C.eS, {sw:breit()});
 
     /* Rastnasen: schraege Einfuehrflaeche oben, waagerechte Rastflaeche unten */
     pfad(g, "M"+innenL.toFixed(1)+","+hy+" L "+spitzeL.toFixed(1)+","+(hy+nasenH-8)+
             " L "+spitzeL.toFixed(1)+","+(hy+nasenH)+" L "+innenL.toFixed(1)+","+
-            (hy+nasenH)+" Z", C.eF, C.eS, {sw:1.6});
+            (hy+nasenH)+" Z", C.eF, C.eS, {sw:breit()});
     pfad(g, "M"+innenR.toFixed(1)+","+hy+" L "+spitzeR.toFixed(1)+","+(hy+nasenH-8)+
             " L "+spitzeR.toFixed(1)+","+(hy+nasenH)+" L "+innenR.toFixed(1)+","+
-            (hy+nasenH)+" Z", C.eF, C.eS, {sw:1.6});
+            (hy+nasenH)+" Z", C.eF, C.eS, {sw:breit()});
 
-    rect(g, cx-46, hy+armL, 92, 26, C.eF, C.eS, {sw:1.8, rx:3});
+    rect(g, cx-46, hy+armL, 92, 26, C.eF, C.eS, {sw:breit(), rx:3});
     txt(g, cx+54, hy+armL+18, "Bauteil mit Rasthaken", {fill:C.eS, size:12});
 
     if(ein < 1){
@@ -1551,8 +1563,8 @@ verfahren({
       txt(g, spitzeR+16, hy+18, "federt zurück", {fill:"#16a34a", size:12});
     }
     if(fest > 0.05){
-      linie(g, spitzeL, hy+nasenH, innenL, hy+nasenH, "#7c3aed", 3.4);
-      linie(g, innenR, hy+nasenH, spitzeR, hy+nasenH, "#7c3aed", 3.4);
+      linie(g, spitzeL, hy+nasenH, innenL, hy+nasenH, "#7c3aed", 3.4, {erklaer:true});
+      linie(g, innenR, hy+nasenH, spitzeR, hy+nasenH, "#7c3aed", 3.4, {erklaer:true});
       kraftpfeil(g, cx, hy+armL+34, cx, hy+armL+62, "#7c3aed", 3);
       txt(g, cx+10, hy+armL+58, "Last", {fill:"#7c3aed", size:11.5});
       txt(g, spitzeR+16, py+pd+26, "Rastfläche stützt sich auf der Platte ab",
@@ -1648,7 +1660,7 @@ verfahren({
 
     /* Der Bolzen wird laengs nicht geschnitten. */
     schaftSenkrecht(g, cx, r, by, by + 196, 4);
-    rect(g, cx-r-10, by-19, 2*r+20, 19, C.eF, C.eS, {sw:1.8});
+    rect(g, cx-r-10, by-19, 2*r+20, 19, C.eF, C.eS, {sw:breit()});
     /* Der Bolzen faehrt von oben ein und steht anfangs weit ueber dem
        Bild. Seine Benennung bleibt im Bild stehen. */
     txt(g, cx+r+16, Math.max(by-6, 28), "Bolzen", {fill:C.eS, size:12});
@@ -1685,7 +1697,7 @@ verfahren({
       kraftpfeil(g, 560, (fuge1+fuge2)/2, 534, (fuge1+fuge2)/2, "#7c3aed", 3);
       /* Die beiden Fugen sind die Scherflaechen. */
       [fuge1, fuge2].forEach(function(y){
-        linie(g, cx-r-14, y, cx+r+14, y, "#7c3aed", 2.4, {opacity:last});
+        linie(g, cx-r-14, y, cx+r+14, y, "#7c3aed", 2.4, {erklaer:true, opacity:last});
       });
       /* Rechts neben beiden Laschen - dazwischen liegt sie auf einer Kante. */
       txt(g, 546, fuge1-6, "2 Scherflächen",
@@ -1728,7 +1740,7 @@ verfahren({
       var dd = "M";
       for(var i = 0; i < pts.length; i++)
         dd += (i ? " L" : "") + pts[i][0].toFixed(1) + "," + pts[i][1].toFixed(1);
-      return pfad(g, dd + " Z", fill, stroke, {sw:1.6, opacity:op});
+      return pfad(g, dd + " Z", fill, stroke, {sw:breit(), opacity:op});
     }
     /* Blech A: kommt oben herein, Bug nach unten, Schenkel zurueck nach links.
        Blech B: kommt unten herein, Bug nach oben, Schenkel zurueck nach rechts.
@@ -1760,14 +1772,14 @@ verfahren({
       /* Das Zeichen fuer "in die Zeichenebene hinein" */
       var zx = 130, zy = y1 - s - 40;
       g.appendChild(ns("circle", {cx:zx, cy:zy, r:9, fill:"#ffffff",
-        stroke:"#1d4ed8", "stroke-width":1.6}));
-      linie(g, zx-6.4, zy-6.4, zx+6.4, zy+6.4, "#1d4ed8", 1.6);
-      linie(g, zx+6.4, zy-6.4, zx-6.4, zy+6.4, "#1d4ed8", 1.6);
+        stroke:"#1d4ed8", "stroke-width":1.6, "class":"erklaer"}));
+      linie(g, zx-6.4, zy-6.4, zx+6.4, zy+6.4, "#1d4ed8", 1.6, {erklaer:true});
+      linie(g, zx+6.4, zy-6.4, zx-6.4, zy+6.4, "#1d4ed8", 1.6, {erklaer:true});
       txt(g, zx+16, zy+5, "längs der Falzkante ineinander schieben",
         {fill:"#1d4ed8", size:11.5});
     }else if(pressen < 1){
-      rect(g, lB-30, y1-s-32, (rA+s+30)-(lB-30), 15, "#94a3b8", "#334155", {sw:1.4, rx:2});
-      rect(g, lB-30, y4+s+17, (rA+s+30)-(lB-30), 15, "#94a3b8", "#334155", {sw:1.4, rx:2});
+      rect(g, lB-30, y1-s-32, (rA+s+30)-(lB-30), 15, "#94a3b8", "#334155", {sw:breit(), rx:2});
+      rect(g, lB-30, y4+s+17, (rA+s+30)-(lB-30), 15, "#94a3b8", "#334155", {sw:breit(), rx:2});
       var mx = (lA + rB) / 2;
       kraftpfeil(g, mx, y1-s-56, mx, y1-s-36, "#b45309", 3);
       kraftpfeil(g, mx, y4+s+56, mx, y4+s+36, "#b45309", 3);
@@ -1777,8 +1789,8 @@ verfahren({
       kraftpfeil(g, rx-44, y4, rx-4, y4, "#7c3aed", 3);
       /* Hier stossen die Buege gegen das Schenkelende des anderen Blechs -
          das ist die eigentliche Sperre. */
-      linie(g, rB, y2-s, rB, y2+s, "#dc2626", 3.6, {opacity:halten});
-      linie(g, lA, y3-s, lA, y3+s, "#dc2626", 3.6, {opacity:halten});
+      linie(g, rB, y2-s, rB, y2+s, "#dc2626", 3.6, {erklaer:true, opacity:halten});
+      linie(g, lA, y3-s, lA, y3+s, "#dc2626", 3.6, {erklaer:true, opacity:halten});
       txt(g, lx+4, y4+s+42,
         "Vier Blechlagen greifen ineinander – jeder Bug stößt gegen das Schenkelende des anderen",
         {fill:"#7c3aed", size:12});
@@ -1812,15 +1824,15 @@ verfahren({
 
     /* Draufsicht auf die Naht: So laesst sich zeigen, wie der Brenner
        entlangwandert. Im Querschnitt liefe die Naht in die Zeichenebene. */
-    rect(g, lx, cy-96, rx-lx, 84, C.aF, C.aS, {sw:1.8});
-    rect(g, lx, cy+12, rx-lx, 84, C.bF, C.bS, {sw:1.8});
+    rect(g, lx, cy-96, rx-lx, 84, C.aF, C.aS, {sw:breit()});
+    rect(g, lx, cy+12, rx-lx, 84, C.bF, C.bS, {sw:breit()});
     txt(g, lx+6, cy-104, "Blech A, Draufsicht", {fill:C.aS, size:12});
     txt(g, lx+6, cy+112, "Blech B", {fill:C.bS, size:12});
 
     /* noch offener Spalt vor dem Brenner - am Ende bleibt keiner uebrig */
     if(lauf < 1){
       linie(g, bx, cy, ende, cy, zustand.norm ? NORM_KANTE : "#94a3b8",
-        zustand.norm ? NORM_SCHMAL : 1.4, {dash:"7 5"});
+        schmal(), {erklaer:true, dash:"7 5"});
       /* Nicht auf der Spaltlinie selbst - die Fuge ist nur so breit wie
          eine Zeile hoch. */
       txt(g, Math.min(rx-120, bx+40), cy-20, "Spalt", {fill:"#94a3b8", size:11.5});
@@ -1829,7 +1841,7 @@ verfahren({
     /* erstarrte Naht: Band auf der Fuge, darauf die typischen Schuppen */
     if(bx > start){
       rect(g, start-6, cy-14, (bx-start)+6, 28, "#cbd5e1",
-        zustand.norm ? NORM_KANTE : "#64748b", {sw:1.2, rx:zustand.norm ? 0 : 3});
+        zustand.norm ? NORM_KANTE : "#64748b", {sw:breit(), rx:zustand.norm ? 0 : 3});
       for(var x = start+6; x < bx - 6; x += 13){
         pfad(g, "M"+(x-9)+","+(cy+13)+" Q "+x+","+(cy-13)+" "+(x+9)+","+(cy+13),
           "none", zustand.norm ? NORM_KANTE : "#94a3b8",
@@ -1843,10 +1855,10 @@ verfahren({
     /* Schmelzbad und Brenner */
     if(lauf > 0 && lauf < 1){
       g.appendChild(ns("ellipse", {cx:bx, cy:cy, rx:24, ry:15,
-        fill:C.glut, stroke:"#b45309", "stroke-width":1.4}));
+        fill:C.glut, stroke:"#b45309", "stroke-width":1.4, "class":"erklaer"}));
       txt(g, bx+30, cy+36, "Schmelzbad", {fill:"#b45309", size:11.5});
-      rect(g, bx-12, cy-92, 24, 56, "#94a3b8", "#334155", {sw:1.4, rx:3});
-      linie(g, bx, cy-36, bx, cy-18, "#334155", 2);
+      rect(g, bx-12, cy-92, 24, 56, "#94a3b8", "#334155", {sw:breit(), rx:3});
+      linie(g, bx, cy-36, bx, cy-18, "#334155", breit());
       pfad(g, "M"+(bx-16)+","+(cy-18)+" L"+bx+","+(cy-2)+" L"+(bx+16)+","+(cy-18)+" Z",
         C.glut, "none", {opacity:0.9});
       txt(g, bx-18, cy-104, "Brenner", {anchor:"end", fill:"#334155", size:11.5});
@@ -1906,13 +1918,13 @@ verfahren({
        in eine Zeichnung; dort tragen die Bleche ihre eigenen Farben. */
     var fA = zustand.norm ? C.aF : warmF;
     var fB = zustand.norm ? C.bF : warmF;
-    rect(g, lx, cy-dick, (mitte-spalt/2)-lx, 2*dick, fA, C.aS, {sw:1.8});
-    rect(g, mitte+spalt/2, cy-dick, rx-(mitte+spalt/2), 2*dick, fB, C.bS, {sw:1.8});
+    rect(g, lx, cy-dick, (mitte-spalt/2)-lx, 2*dick, fA, C.aS, {sw:breit()});
+    rect(g, mitte+spalt/2, cy-dick, rx-(mitte+spalt/2), 2*dick, fB, C.bS, {sw:breit()});
     txt(g, lx+4, cy-dick-10, "Grundwerkstoff bleibt fest", {fill:C.aS, size:12});
 
     /* Lot laeuft von oben in den Spalt */
     var fuell = 2*dick * fluss;
-    rect(g, mitte-spalt/2, cy-dick, spalt, fuell, C.lot, C.lotS, {sw:1});
+    rect(g, mitte-spalt/2, cy-dick, spalt, fuell, C.lot, C.lotS, {sw:breit()});
     if(fluss > 0 && fluss < 1){
       txt(g, mitte+22, cy-dick+fuell+4, "Kapillarwirkung zieht das Lot in den Spalt",
         {fill:C.lotS, size:11.5});
@@ -1922,13 +1934,13 @@ verfahren({
       for(var i=0;i<3;i++){
         var x = mitte - 60 + i*60;
         pfad(g, "M"+x+","+(cy-dick-16)+" q 6,-10 0,-20 q -6,-10 0,-20",
-          "none", C.heiss, {sw:2, opacity:waerme*(1-kuehl)});
+          "none", C.heiss, {erklaer:true, sw:2, opacity:waerme*(1-kuehl)});
       }
       txt(g, mitte+80, cy-dick-46, "erwärmt", {fill:C.heiss, size:12, opacity:waerme*(1-kuehl)});
     }
     if(t < 0.25){
-      linie(g, mitte-spalt/2, cy+dick+10, mitte-spalt/2, cy+dick+30, "#64748b", 1);
-      linie(g, mitte+spalt/2, cy+dick+10, mitte+spalt/2, cy+dick+30, "#64748b", 1);
+      linie(g, mitte-spalt/2, cy+dick+10, mitte-spalt/2, cy+dick+30, "#64748b", schmal());
+      linie(g, mitte+spalt/2, cy+dick+10, mitte+spalt/2, cy+dick+30, "#64748b", schmal());
       txt(g, mitte+16, cy+dick+34, "Lötspalt 0,05 bis 0,2 mm", {fill:"#64748b", size:11.5});
     }
     if(kuehl > 0.3){
@@ -1960,7 +1972,7 @@ verfahren({
     var cy = 168, dick = 26, lx = 110, rx = 530;
     var abstand = 66 * (1 - fuegen) + 8;
 
-    rect(g, lx, cy, rx-lx, dick, C.bF, C.bS, {sw:1.8});
+    rect(g, lx, cy, rx-lx, dick, C.bF, C.bS, {sw:breit()});
     txt(g, lx+4, cy+dick+18, "Fügeteil B", {fill:C.bS, size:12});
 
     /* Klebstoffraupe */
@@ -1968,9 +1980,9 @@ verfahren({
       var breiteK = (rx-lx-40) * Math.min(1, auftrag + fuegen);
       var hoeheK = fuegen > 0 ? 8 : 14;
       rect(g, lx+20, cy-hoeheK, breiteK, hoeheK, haerten > 0.5 ? "#c4b5fd" : C.kleb,
-        C.klebS, {sw:1.2, rx:zustand.norm ? 0 : 3});
+        C.klebS, {sw:breit(), rx:zustand.norm ? 0 : 3});
     }
-    rect(g, lx, cy-abstand-dick, rx-lx, dick, C.aF, C.aS, {sw:1.8});
+    rect(g, lx, cy-abstand-dick, rx-lx, dick, C.aF, C.aS, {sw:breit()});
     txt(g, lx+4, cy-abstand-dick-10, "Fügeteil A", {fill:C.aS, size:12});
 
     if(t < 0.25){
@@ -2018,16 +2030,16 @@ verfahren({
     var lx = cx-190, rx = cx+190;
     var y1u = oben + dick, y2u = y1u + dick - 4*zieh;
 
-    rect(g, lx, oben, rx-lx, dick, C.aF, C.aS, {sw:1.8});
-    rect(g, lx, y1u, rx-lx, dick - 4*zieh, C.bF, C.bS, {sw:1.8});
+    rect(g, lx, oben, rx-lx, dick, C.aF, C.aS, {sw:breit()});
+    rect(g, lx, y1u, rx-lx, dick - 4*zieh, C.bF, C.bS, {sw:breit()});
 
-    rect(g, cx-30, oben-14, 60, 14, C.eF, C.eS, {sw:1.6, rx:3});
-    rect(g, cx-14, oben, 28, y2u-oben, C.eF, C.eS, {sw:1.6});
+    rect(g, cx-30, oben-14, 60, 14, C.eF, C.eS, {sw:breit(), rx:3});
+    rect(g, cx-14, oben, 28, y2u-oben, C.eF, C.eS, {sw:breit()});
 
     /* Schliesskopf entsteht */
     var kh = 4 + 12*stauch, kb = 16 + 20*stauch;
     pfad(g, "M"+(cx-kb)+","+y2u+" Q "+cx+","+(y2u+kh*1.8)+" "+(cx+kb)+","+y2u+" Z",
-      C.eF, C.eS, {sw:1.6});
+      C.eF, C.eS, {sw:breit()});
     txt(g, cx+kb+12, y2u+30, "Schließkopf", {fill:C.eS, size:12});
     txt(g, cx+34, oben-4, "Setzkopf", {fill:C.eS, size:12});
 
@@ -2074,7 +2086,7 @@ verfahren({
     /* Matrize */
     pfad(g, "M120,"+(cy+30)+" L"+(cx-46)+","+(cy+30)+" L"+(cx-46)+","+(cy+72)+
             " L"+(cx+46)+","+(cy+72)+" L"+(cx+46)+","+(cy+30)+" L480,"+(cy+30)+
-            " L480,"+(cy+92)+" L120,"+(cy+92)+" Z", "#cbd5e1", "#475569", {sw:1.6});
+            " L480,"+(cy+92)+" L120,"+(cy+92)+" Z", "#cbd5e1", "#475569", {sw:breit()});
     txt(g, 126, cy+108, "Matrize", {fill:"#475569", size:12});
 
     /* Bleche mit Napf */
@@ -2084,7 +2096,7 @@ verfahren({
               " L"+(cx+breite)+","+yo+" L480,"+yo+" L480,"+(yo+dick)+
               " L"+(cx+breite-4)+","+(yo+dick)+" L"+(cx+breite-12)+","+(yo+tief+dick)+
               " L"+(cx-breite+12)+","+(yo+tief+dick)+" L"+(cx-breite+4)+","+(yo+dick)+
-              " L120,"+(yo+dick)+" Z", fill, stroke, {sw:1.6});
+              " L120,"+(yo+dick)+" Z", fill, stroke, {sw:breit()});
     }
     blech(cy+4, C.aF, C.aS);
     blech(cy+4-dick-1, C.bF, C.bS);
@@ -2092,7 +2104,7 @@ verfahren({
 
     /* Stempel */
     var sy = cy - 58 + (zurueck > 0 ? (1-zurueck)*tief : tief);
-    rect(g, cx-24, sy-70, 48, 78, "#94a3b8", "#334155", {sw:1.5, rx:3});
+    rect(g, cx-24, sy-70, 48, 78, "#94a3b8", "#334155", {sw:breit(), rx:3});
     txt(g, cx+32, sy-56, "Stempel", {fill:"#334155", size:12});
     if(druck > 0 && zurueck < 1){
       kraftpfeil(g, cx, sy-92, cx, sy-74, "#b45309", 3);
@@ -2140,7 +2152,7 @@ verfahren({
     var spitze = r3 / Math.tan(60 * Math.PI / 180);   /* 120 Grad */
     var strichB = kante(C.bS);
 
-    rect(g, cx-150, yO, 300, tiefe+40, C.bF, C.bS, {sw:1.8});
+    rect(g, cx-150, yO, 300, tiefe+40, C.bF, C.bS, {sw:breit()});
     pfad(g, "M"+(cx-r3)+","+yO+" L"+(cx-r3)+","+yB+
       " L"+cx+","+(yB+spitze)+" L"+(cx+r3)+","+yB+" L"+(cx+r3)+","+yO+" Z",
       "#ffffff", "none");
@@ -2169,7 +2181,7 @@ verfahren({
     if(auftrag > 0){
       var f = haerten > 0.4 ? "#a78bfa" : C.kleb;
       if(drehen < 0.1){
-        rect(g, cx-rd+1, sy+40, 2*rd-2, 26, f, C.klebS, {sw:1.1, rx:4, opacity:auftrag});
+        rect(g, cx-rd+1, sy+40, 2*rd-2, 26, f, C.klebS, {sw:breit(), rx:4, opacity:auftrag});
         txt(g, cx+rd+26, sy+58, "Schraubensicherung auftragen",
           {fill:C.klebS, size:11.5, opacity:auftrag});
       }else{
@@ -2183,8 +2195,8 @@ verfahren({
     }
     if(haerten > 0.1){
       pfad(g, "M"+(cx+70)+","+(cy-tiefe+40)+" A 34 34 0 1 0 "+(cx+70)+","+(cy-tiefe+42),
-        "none", "#dc2626", {sw:2.4, opacity:haerten});
-      linie(g, cx+52, cy-tiefe+26, cx+92, cy-tiefe+62, "#dc2626", 3, {opacity:haerten});
+        "none", "#dc2626", {erklaer:true, sw:2.4, opacity:haerten});
+      linie(g, cx+52, cy-tiefe+26, cx+92, cy-tiefe+62, "#dc2626", 3, {erklaer:true, opacity:haerten});
       txt(g, cx+156, cy-tiefe+50, "kein Losdrehen mehr",
         {fill:"#dc2626", size:12, opacity:haerten});
     }
@@ -2557,8 +2569,8 @@ function prinzipbilder(){
   /* --- Kraftschluss: Normalkraft presst, Reibung haelt --- */
   var svg = el("svgUeK"); leeren(svg); spitzen(svg, FARBEN);
   var g = ns("g", {}); svg.appendChild(g);
-  rect(g, lx, cy-d, rx-lx, d, C.aF, C.aS, {sw:1.8});
-  rect(g, lx, cy, rx-lx, d, C.bF, C.bS, {sw:1.8});
+  rect(g, lx, cy-d, rx-lx, d, C.aF, C.aS, {sw:breit()});
+  rect(g, lx, cy, rx-lx, d, C.bF, C.bS, {sw:breit()});
   /* Dieselbe Schraube wie in den Verfahrensbildern - ein blaues Rechteck
      sagt nicht, dass hier etwas angezogen wird. Farbig bleibt sie: eine
      Prinzipskizze ist keine technische Zeichnung. */
@@ -2581,10 +2593,10 @@ function prinzipbilder(){
      gegen den Bolzen - nicht gegen Reibung und nicht gegen eine Klebschicht.
      Das unterscheidet den Formschluss von seinen beiden Nachbarbildern. */
   var bx = 160, br = 17, ue = 34;             /* Bolzen, Ueberlappung */
-  rect(g, lx, cy-d, (bx+ue)-lx, d, C.aF, C.aS, {sw:1.8});
-  rect(g, bx-ue, cy, rx-(bx-ue), d, C.bF, C.bS, {sw:1.8});
+  rect(g, lx, cy-d, (bx+ue)-lx, d, C.aF, C.aS, {sw:breit()});
+  rect(g, bx-ue, cy, rx-(bx-ue), d, C.bF, C.bS, {sw:breit()});
   /* Der Bolzen steht vor beiden Laschen und deckt sie deshalb. */
-  rect(g, bx-br, cy-d-14, 2*br, 2*d+28, C.eF, C.eS, {sw:1.8, rx:3});
+  rect(g, bx-br, cy-d-14, 2*br, 2*d+28, C.eF, C.eS, {sw:breit(), rx:3});
   kraftpfeil(g, 96, cy-d/2, 46, cy-d/2, "#7c3aed", 3);
   kraftpfeil(g, 224, cy+d+d/2-d, 274, cy+d/2, "#7c3aed", 3);
   txt(g, 46, cy-d-10, "Last", {fill:"#7c3aed", size:13});
@@ -2593,9 +2605,9 @@ function prinzipbilder(){
   /* --- Stoffschluss: eine durchgehende Schicht verbindet --- */
   svg = el("svgUeS"); leeren(svg); spitzen(svg, FARBEN);
   g = ns("g", {}); svg.appendChild(g);
-  rect(g, lx, cy-d-6, rx-lx, d, C.aF, C.aS, {sw:1.8});
-  rect(g, lx, cy+8, rx-lx, d, C.bF, C.bS, {sw:1.8});
-  rect(g, lx, cy-6, rx-lx, 14, C.lot, C.lotS, {sw:1.4, rx:3});
+  rect(g, lx, cy-d-6, rx-lx, d, C.aF, C.aS, {sw:breit()});
+  rect(g, lx, cy+8, rx-lx, d, C.bF, C.bS, {sw:breit()});
+  rect(g, lx, cy-6, rx-lx, 14, C.lot, C.lotS, {sw:breit(), rx:3});
   txt(g, lx, cy-d-16, "Schmelze, Lot oder Klebstoff", {fill:C.lotS, size:13});
   kraftpfeil(g, 92, cy+d+34, 52, cy+d+34, "#c2410c", 3);
   kraftpfeil(g, 228, cy+d+34, 268, cy+d+34, "#c2410c", 3);

@@ -183,6 +183,14 @@ ${zeile}`;
   if (!beschreibung) {
     warnen(rel, 'ohne <meta name="description"> - die Karte bleibt ohne Untertitel');
   }
+  /* Die Karten stehen nebeneinander in einem Gitter. Eine Beschreibung mit
+     dem doppelten Umfang der anderen macht ihre Karte doppelt hoch und
+     reisst eine Luecke in die Reihe. */
+  const OBERGRENZE = 140;
+  if (beschreibung.length > OBERGRENZE) {
+    warnen(rel, 'Untertitel ist ' + beschreibung.length + ' Zeichen lang - '
+      + 'hoechstens ' + OBERGRENZE + ', sonst wird die Karte zu hoch');
+  }
   const reihe = meta('reihenfolge');
   if (reihe && !/^[0-9]+$/.test(reihe)) {
     warnen(rel, 'reihenfolge "' + reihe + '" ist keine Zahl - Seite steht hinten');
