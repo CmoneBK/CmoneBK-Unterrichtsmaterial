@@ -82,6 +82,46 @@ td.zahl, th.zahl{text-align:right; white-space:nowrap}
 .schlecht{background:#fef2f2; border-left:4px solid var(--bad); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
 .fussnote{color:var(--muted); font-size:.82rem; margin:12px 0 0}
 
+/* --- Fachbegriffe: gleiches Prinzip wie in den anderen Lektionen ------- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  user-select:none; font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.link{background:none; border:0; padding:0; color:var(--primary); cursor:pointer;
+  font:600 .88rem/1 inherit; text-decoration:underline}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt
+   durch die Farbe auf. So begegnet der Begriff ab jetzt an jeder Stelle
+   wieder und praegt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+
 figure{margin:14px 0 0}
 figure svg{
   display:block; width:100%; height:auto; max-width:620px; margin:0 auto;
@@ -109,6 +149,16 @@ footer a{color:var(--muted)}
     entscheidet, nicht die Naht.</p>
 </header>
 
+<div class="schalter" data-druck="weg">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.
+    Einen Schalter f&uuml;r die Normdarstellung gibt es hier nicht: Die drei
+    Zeichnungen sind von vornherein Normzeichnungen.</span>
+</div>
+
 <div class="tabs" role="tablist" data-druck="weg">
   <button role="tab" data-tab="loeten"    aria-selected="true">L&ouml;ten</button>
   <button role="tab" data-tab="spalt"     aria-selected="false">Der L&ouml;tspalt</button>
@@ -126,15 +176,15 @@ footer a{color:var(--muted)}
     <h2>Was beim L&ouml;ten passiert</h2>
     <p class="sub">Einteilung nach der Arbeitstemperatur.</p>
     <p>Beim Schwei&szlig;en schmilzt der Grundwerkstoff. Beim L&ouml;ten nicht:
-    Dort schmilzt <em>nur das Lot</em>. Es benetzt die erw&auml;rmten Fl&auml;chen,
+    Dort schmilzt <em>nur das Lot</em>. Es <span class="term" data-t="benetzen"></span> die erw&auml;rmten Fl&auml;chen,
     wird vom Spalt eingesogen und bildet beim Erstarren eine d&uuml;nne
-    Diffusionszone mit dem Grundwerkstoff. Das Bauteil bleibt, was es war
+    <span class="term" data-t="diffusionszone"></span> mit dem <span class="term" data-t="grundwerkstoff"></span>. Das Bauteil bleibt, was es war
     &ndash; keine W&auml;rmeeinflusszone, kein Gef&uuml;geumbau, kein Verzug durch
     Schrumpfen der Naht.</p>
     <p>Daf&uuml;r h&auml;ngt alles am <strong>Spalt</strong>. Ist er zu eng, kommt
-    kein Lot hinein; ist er zu weit, tr&auml;gt die Kapillarwirkung nicht mehr.
-    Die Festigkeit der Verbindung ist die des Lots, nicht die des Bauteils
-    &ndash; deshalb wird eine L&ouml;tstelle auf <strong>Abscheren</strong> gelegt,
+    kein Lot hinein; ist er zu weit, tr&auml;gt die <span class="term" data-t="kapillarwirkung"></span> nicht mehr.
+    Die Festigkeit der Verbindung ist die des <span class="term" data-t="lot"></span>, nicht die des Bauteils
+    &ndash; deshalb wird eine L&ouml;tstelle auf <strong><span class="term" data-t="abscheren" data-cap="1"></span></strong> gelegt,
     nicht auf Zug.</p>
 
     <figure id="bildLoetstelle"></figure>
@@ -143,7 +193,7 @@ footer a{color:var(--muted)}
   <div class="karte">
     <h2>Drei Verfahren</h2>
     <p class="sub">Die Grenze zwischen Weich- und Hartl&ouml;ten liegt bei
-      450&nbsp;&deg;C Arbeitstemperatur.</p>
+      450&nbsp;&deg;C <span class="term" data-t="arbeitstemperatur"></span>.</p>
     <div class="wahl" id="wahlVerfahren"></div>
     <div class="tabellenrahmen"><table id="tabVerfahren"></table></div>
     <div id="verfahrenText"></div>
@@ -169,7 +219,7 @@ footer a{color:var(--muted)}
     <h2>Wie breit darf der Spalt sein?</h2>
     <p class="sub">Richtwerte nach der Tabelle der L&ouml;tspaltbreiten.</p>
     <p>Das Lot flie&szlig;t nicht von selbst in den Spalt &ndash; es wird
-    <strong>hineingesogen</strong>. Diese Kapillarwirkung wird mit wachsender
+    <strong>hineingesogen</strong>. Diese <span class="term" data-t="kapillarwirkung" data-cap="1"></span> wird mit wachsender
     Spaltbreite schw&auml;cher. Jeder Grundwerkstoff und jede Lotgruppe haben
     deshalb ihren eigenen Bereich.</p>
 
@@ -189,7 +239,7 @@ footer a{color:var(--muted)}
     <h2>Wie tief darf der Spalt sein?</h2>
     <p class="sub">Die Regel aus den Gestaltungsregeln f&uuml;r L&ouml;tverbindungen.</p>
     <p>Naheliegend w&auml;re: mehr Fl&auml;che, mehr Festigkeit. Beim L&ouml;ten
-    stimmt das nur bis zu einer Grenze. Ab einer L&ouml;ttiefe
+    stimmt das nur bis zu einer Grenze. Ab einer <span class="term" data-t="loettiefe"></span>
     <em>l</em><sub>&uuml;</sub> &gt; 5&nbsp;&middot;&nbsp;<em>s</em> f&uuml;llt
     sich der Spalt nicht mehr zuverl&auml;ssig mit Lot &ndash; hinten bleiben
     Hohlr&auml;ume. Wer die Belastbarkeit steigern will, muss also etwas anderes
@@ -247,9 +297,9 @@ footer a{color:var(--muted)}
   <div class="karte">
     <h2>Das Flussmittel-Kennzeichen lesen</h2>
     <p class="sub">Flussmittel zum Weichl&ouml;ten nach DIN EN ISO 9454-1.</p>
-    <p>Ohne Flussmittel benetzt das Lot nicht: Auf jeder blanken Metallfl&auml;che
-    liegt eine Oxidschicht, und die verhindert genau den Kontakt, auf den es
-    ankommt. Das Flussmittel l&ouml;st sie und h&auml;lt sie w&auml;hrend des
+    <p>Ohne <span class="term" data-t="flussmittel"></span> <span class="term" data-t="benetzen"></span> das <span class="term" data-t="lot"></span> nicht: Auf jeder blanken Metallfl&auml;che
+    liegt eine <span class="term" data-t="oxidschicht"></span>, und die verhindert genau den Kontakt, auf den es
+    ankommt. Das <span class="term" data-t="flussmittel" data-cap="1"></span> l&ouml;st sie und h&auml;lt sie w&auml;hrend des
     L&ouml;tens fern. Vier Ziffern sagen, um welches es sich handelt.</p>
 
     <div class="felder">
@@ -277,9 +327,9 @@ footer a{color:var(--muted)}
     <p>Kleben ist das einzige F&uuml;geverfahren, das ohne W&auml;rme am Bauteil
     auskommt und Werkstoffe verbindet, die sonst nicht zusammengehen: Metall
     mit Glas, Aluminium mit Kunststoff, Bleche verschiedener Dicke. Der
-    Klebstoff tr&auml;gt &uuml;ber <strong>Adh&auml;sion</strong> zur
-    Oberfl&auml;che und <strong>Koh&auml;sion</strong> in sich selbst &ndash;
-    beides steht und f&auml;llt mit der Vorbehandlung der F&uuml;gefl&auml;chen.</p>
+    Klebstoff tr&auml;gt &uuml;ber <strong><span class="term" data-t="adhaesion" data-cap="1"></span></strong> zur
+    Oberfl&auml;che und <strong><span class="term" data-t="kohaesion" data-cap="1"></span></strong> in sich selbst &ndash;
+    beides steht und f&auml;llt mit der <span class="term" data-t="vorbehandlung"></span> der F&uuml;gefl&auml;chen.</p>
 
     <div class="felder">
       <label class="feld">Betriebstemperatur mindestens
@@ -330,7 +380,7 @@ footer a{color:var(--muted)}
   <div class="karte">
     <h2>Die Grundregel</h2>
     <p class="sub">Gilt f&uuml;r Klebe- und f&uuml;r L&ouml;tverbindungen.</p>
-    <p><strong>Auf Druck und Scherung ja, auf Zug, Sch&auml;len und Biegen
+    <p><strong>Auf Druck und Scherung ja, auf Zug, <span class="term" data-t="schaelen"></span> und Biegen
     nein.</strong> Eine Klebe- oder L&ouml;tschicht ist d&uuml;nn. Fl&auml;chig
     geschoben h&auml;lt sie viel; an einer Kante angehoben reicht schon eine
     kleine Kraft, weil sie nur noch auf einer schmalen Linie angreift und die
@@ -392,6 +442,187 @@ footer a{color:var(--muted)}
 
 function el(id){ return document.getElementById(id); }
 function zahl(x, n){ return x.toFixed(n === undefined ? 1 : n).replace(".", ","); }
+
+/* ============================================================================
+   0  FACHBEGRIFFE
+   ----------------------------------------------------------------------------
+   Jeder Begriff steht in zwei Fassungen: f ist der Fachbegriff, a die
+   alltagssprachliche. Der Schalter oben stellt alle auf einmal um; ein Klick
+   auf ein einzelnes Wort dreht es fuer sich um und faerbt es ein. So
+   begegnet der Begriff ab dann an jeder Stelle wieder.
+
+   fkurz und kurz sind die Fassungen fuer Zeichnungsbeschriftungen - dort ist
+   kein Platz fuer einen Nebensatz.
+   ========================================================================== */
+var TERME = {
+  arbeitstemperatur: {f:"Arbeitstemperatur", a:"Temperatur, bei der das Lot flie\u00dft",
+                      fkurz:"Arbeitstemperatur", kurz:"Flie\u00dftemperatur"},
+  kapillarwirkung:   {f:"Kapillarwirkung", a:"Sogwirkung im engen Spalt",
+                      fkurz:"Kapillarwirkung", kurz:"Sogwirkung"},
+  benetzen:          {f:"benetzen", a:"sich mit dem Metall verbinden"},
+  loetspalt:         {f:"L\u00f6tspalt", a:"Spalt zwischen den Teilen",
+                      fkurz:"L\u00f6tspalt", kurz:"Spalt"},
+  spaltloeten:       {f:"Spaltl\u00f6ten", a:"L\u00f6ten mit engem Spalt"},
+  fugenloeten:       {f:"Fugenl\u00f6ten", a:"L\u00f6ten mit weitem Spalt"},
+  flussmittel:       {f:"Flussmittel", a:"Mittel, das die Oxidschicht l\u00f6st",
+                      fkurz:"Flussmittel", kurz:"Reinigungsmittel"},
+  oxidschicht:       {f:"Oxidschicht", a:"d\u00fcnne Schicht aus Metalloxid"},
+  diffusionszone:    {f:"Diffusionszone", a:"\u00dcbergangsschicht zwischen Lot und Werkstoff"},
+  grundwerkstoff:    {f:"Grundwerkstoff", a:"Werkstoff des Bauteils",
+                      fkurz:"Grundwerkstoff", kurz:"Bauteilwerkstoff"},
+  lot:               {f:"Lot", a:"Zusatzwerkstoff", fkurz:"Lot", kurz:"Zusatz"},
+  loettiefe:         {f:"L\u00f6ttiefe", a:"Tiefe des Spalts"},
+  adhaesion:         {f:"Adh\u00e4sion", a:"Haftung an der Oberfl\u00e4che"},
+  kohaesion:         {f:"Koh\u00e4sion", a:"Zusammenhalt im Klebstoff selbst"},
+  zugscherfestigkeit:{f:"Zugscherfestigkeit", a:"Belastbarkeit beim seitlichen Schieben"},
+  abscheren:         {f:"Abscheren", a:"seitliches Abschieben"},
+  schaelen:          {f:"Sch\u00e4lbeanspruchung", a:"Abziehen von der Kante her"},
+  aushaerten:        {f:"Aush\u00e4rten", a:"Festwerden"},
+  vorbehandlung:     {f:"Vorbehandlung", a:"Reinigen und Aufrauen"},
+  wirktemperatur:    {f:"Wirktemperatur", a:"Temperatur, bei der das Flussmittel arbeitet"}
+};
+
+var zustand = {fach:false};
+var aufgedeckt = {};
+
+function paramsLesen(){
+  try{
+    var q = new URLSearchParams(window.location.search);
+    if(q.has("fach")) zustand.fach = q.get("fach") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Ein einzeln aufgedeckter Begriff dreht die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  var basis = wurzel || document;
+  if(!wurzel) document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+  var knoten = basis.querySelectorAll(".term");
+  for(var i=0;i<knoten.length;i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var b = TERME[schluessel];
+    if(!b) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? b.f : b.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff \u2013 klicken f\u00fcr die einfache Formulierung"
+              : "einfache Formulierung \u2013 klicken f\u00fcr den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung" : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zur\u00fccksetzen"
+    : anzahl + " aufgedeckte W\u00f6rter zur\u00fccksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Fuer Texte, die erst beim Zeichnen entstehen: eine echte Fundstelle, damit
+   sich der Satz wie der Fliesstext verhaelt. */
+function wort(schluessel, gross){
+  if(!TERME[schluessel]) return schluessel;
+  return '<span class="term" data-t="' + schluessel + '"' +
+         (gross ? ' data-cap="1"' : "") + "></span>";
+}
+
+/* SVG-Text kann kein Markup tragen - hier kommt nur der Wortlaut. */
+function zWort(schluessel, ersatz){
+  var b = TERME[schluessel];
+  if(!b) return ersatz || schluessel;
+  return zeigtFach(schluessel) ? (b.fkurz || b.f) : (b.kurz || b.a);
+}
+
+/* Was nach einem Umschalten neu geschrieben werden muss. Die Tabellen und
+   Rueckmeldungen entstehen erst zur Laufzeit und tragen selbst Begriffe. */
+function allesNeuZeichnen(){
+  verfahrenZeigen();
+  spaltZeigen();
+  loteZeigen();
+  fmZeigen();
+  kleberZeigen();
+  gestaltenZeigen();
+  bildLoetstelle();
+  bildSpalt();
+  bildKlebung();
+  begriffeZeichnen(el("verfahrenText"));
+  begriffeZeichnen(el("spText"));
+  begriffeZeichnen(el("fmText"));
+  begriffeZeichnen(el("geText"));
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert \u2013 Fachbegriffe "
+        + (zustand.fach ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig, function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
 
 /* --- Einteilung der Loetverfahren ------------------------------------------ */
 var VERFAHREN = [
@@ -1055,6 +1286,7 @@ function reiterSetzen(name){
 }
 
 function start(){
+  paramsLesen();
   var kn = document.querySelectorAll(".tabs button");
   for(var i=0;i<kn.length;i++){
     (function(b){
@@ -1071,6 +1303,9 @@ function start(){
   bildLoetstelle();
   bildSpalt();
   bildKlebung();
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+  begriffeZeichnen();
   reiterSetzen("loeten");
 }
 
