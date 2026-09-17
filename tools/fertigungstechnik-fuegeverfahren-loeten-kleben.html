@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="lektion">
+<meta name="description" content="Wo der Grundwerkstoff fest bleibt: Lötspalt und Lotwahl, Flussmittel, Klebstoffe und die Gestaltungsregel dahinter.">
+<meta name="reihenfolge" content="3">
+<title>Fertigungstechnik: Fügeverfahren - Löten und Kleben</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .zwei{grid-template-columns:1fr} }
+
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer; font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+
+.felder{display:flex; flex-wrap:wrap; gap:14px; margin:12px 0 4px}
+.feld{display:flex; flex-direction:column; gap:4px; font-size:.86rem; color:var(--muted)}
+.feld select, .feld input{
+  font:inherit; padding:7px 10px; border:1px solid var(--border-strong);
+  border-radius:8px; background:#fff; color:var(--text); min-width:180px;
+}
+
+.werte{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px}
+.wert{
+  background:var(--primary-light); border:1px solid #dbeafe; border-radius:10px;
+  padding:9px 14px; min-width:150px;
+}
+.wert .l{display:block; font-size:.78rem; color:var(--muted)}
+.wert .z{font-size:1.2rem; font-weight:700; color:var(--primary)}
+
+table{border-collapse:collapse; width:100%; font-size:.9rem}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:var(--primary-light); color:var(--primary); font-weight:600}
+tbody tr:nth-child(even){background:#fbfdff}
+.tabellenrahmen{overflow-x:auto; margin:10px 0}
+td.zahl, th.zahl{text-align:right; white-space:nowrap}
+
+.merke{
+  background:#fffbeb; border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
+  padding:12px 14px; margin:14px 0 0; font-size:.94rem;
+}
+.gut{background:#f0fdf4; border-left:4px solid var(--ok); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.schlecht{background:#fef2f2; border-left:4px solid var(--bad); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.fussnote{color:var(--muted); font-size:.82rem; margin:12px 0 0}
+
+figure{margin:14px 0 0}
+figure svg{
+  display:block; width:100%; height:auto; max-width:620px; margin:0 auto;
+  color:var(--text); background:var(--card);
+}
+figcaption{color:var(--muted); font-size:.82rem; text-align:center; margin-top:6px}
+
+footer{
+  text-align:center; color:var(--muted); font-size:13px;
+  padding:34px 0 10px; border-top:1px solid var(--border); margin-top:34px;
+}
+footer a{color:var(--muted)}
+</style>
+<link rel="stylesheet" href="assets/thema-werkzeug.css">
+<script src="assets/thema.js"></script>
+</head>
+<body>
+
+<div class="wrap">
+
+<header>
+  <h1>L&ouml;ten und Kleben</h1>
+  <p class="lead">Die beiden stoffschl&uuml;ssigen Verfahren, bei denen der
+    Grundwerkstoff fest bleibt &ndash; und bei denen deshalb der Spalt
+    entscheidet, nicht die Naht.</p>
+</header>
+
+<div class="tabs" role="tablist" data-druck="weg">
+  <button role="tab" data-tab="loeten"    aria-selected="true">L&ouml;ten</button>
+  <button role="tab" data-tab="spalt"     aria-selected="false">Der L&ouml;tspalt</button>
+  <button role="tab" data-tab="lot"       aria-selected="false">Lot und Flussmittel</button>
+  <button role="tab" data-tab="kleben"    aria-selected="false">Kleben</button>
+  <button role="tab" data-tab="gestalten" aria-selected="false">Gestalten</button>
+</div>
+
+<main>
+
+<!-- ================================================================ LÖTEN -->
+<section class="panel" id="p-loeten">
+
+  <div class="karte">
+    <h2>Was beim L&ouml;ten passiert</h2>
+    <p class="sub">Einteilung nach der Arbeitstemperatur.</p>
+    <p>Beim Schwei&szlig;en schmilzt der Grundwerkstoff. Beim L&ouml;ten nicht:
+    Dort schmilzt <em>nur das Lot</em>. Es benetzt die erw&auml;rmten Fl&auml;chen,
+    wird vom Spalt eingesogen und bildet beim Erstarren eine d&uuml;nne
+    Diffusionszone mit dem Grundwerkstoff. Das Bauteil bleibt, was es war
+    &ndash; keine W&auml;rmeeinflusszone, kein Gef&uuml;geumbau, kein Verzug durch
+    Schrumpfen der Naht.</p>
+    <p>Daf&uuml;r h&auml;ngt alles am <strong>Spalt</strong>. Ist er zu eng, kommt
+    kein Lot hinein; ist er zu weit, tr&auml;gt die Kapillarwirkung nicht mehr.
+    Die Festigkeit der Verbindung ist die des Lots, nicht die des Bauteils
+    &ndash; deshalb wird eine L&ouml;tstelle auf <strong>Abscheren</strong> gelegt,
+    nicht auf Zug.</p>
+
+    <figure id="bildLoetstelle"></figure>
+  </div>
+
+  <div class="karte">
+    <h2>Drei Verfahren</h2>
+    <p class="sub">Die Grenze zwischen Weich- und Hartl&ouml;ten liegt bei
+      450&nbsp;&deg;C Arbeitstemperatur.</p>
+    <div class="wahl" id="wahlVerfahren"></div>
+    <div class="tabellenrahmen"><table id="tabVerfahren"></table></div>
+    <div id="verfahrenText"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Was das L&ouml;ten vom Schwei&szlig;en unterscheidet</h2>
+    <div class="tabellenrahmen"><table id="tabVergleich"></table></div>
+    <div class="merke">
+      <b>Die eine Frage, die alles entscheidet:</b> Darf das Bauteil hei&szlig;
+      werden? Ein aufgel&ouml;teter Hartmetallschneidkopf, ein Kupferrohr in der
+      Wand, eine Leiterplatte &ndash; &uuml;berall dort w&auml;re Schwei&szlig;en
+      falsch, weil der Grundwerkstoff die Temperatur nicht &uuml;bersteht oder
+      gar nicht schwei&szlig;bar ist.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ LÖTSPALT -->
+<section class="panel" id="p-spalt" hidden>
+
+  <div class="karte">
+    <h2>Wie breit darf der Spalt sein?</h2>
+    <p class="sub">Richtwerte nach der Tabelle der L&ouml;tspaltbreiten.</p>
+    <p>Das Lot flie&szlig;t nicht von selbst in den Spalt &ndash; es wird
+    <strong>hineingesogen</strong>. Diese Kapillarwirkung wird mit wachsender
+    Spaltbreite schw&auml;cher. Jeder Grundwerkstoff und jede Lotgruppe haben
+    deshalb ihren eigenen Bereich.</p>
+
+    <div class="felder">
+      <label class="feld">Grundwerkstoff
+        <select id="spWerkstoff"></select></label>
+      <label class="feld">Lot
+        <select id="spLot"></select></label>
+    </div>
+    <div class="werte" id="spWerte"></div>
+    <div id="spText"></div>
+
+    <figure id="bildSpalt"></figure>
+  </div>
+
+  <div class="karte">
+    <h2>Wie tief darf der Spalt sein?</h2>
+    <p class="sub">Die Regel aus den Gestaltungsregeln f&uuml;r L&ouml;tverbindungen.</p>
+    <p>Naheliegend w&auml;re: mehr Fl&auml;che, mehr Festigkeit. Beim L&ouml;ten
+    stimmt das nur bis zu einer Grenze. Ab einer L&ouml;ttiefe
+    <em>l</em><sub>&uuml;</sub> &gt; 5&nbsp;&middot;&nbsp;<em>s</em> f&uuml;llt
+    sich der Spalt nicht mehr zuverl&auml;ssig mit Lot &ndash; hinten bleiben
+    Hohlr&auml;ume. Wer die Belastbarkeit steigern will, muss also etwas anderes
+    &auml;ndern als die Tiefe.</p>
+
+    <div class="felder">
+      <label class="feld">Blechdicke s in mm
+        <input type="number" id="spS" min="0.5" max="20" step="0.5" value="2"></label>
+    </div>
+    <div class="werte" id="spTiefe"></div>
+
+    <div class="merke">
+      <b>Was stattdessen hilft:</b> die Fl&auml;che <em>breiter</em> statt tiefer
+      machen &ndash; oder den Stoss falzen. Beim Falzen legt sich das Blech um,
+      die Kraft geht &uuml;ber zwei Spalte statt &uuml;ber einen, und die
+      Bauteile halten sich beim L&ouml;ten von selbst in Position.
+    </div>
+  </div>
+</section>
+
+<!-- ================================================== LOT UND FLUSSMITTEL -->
+<section class="panel" id="p-lot" hidden>
+
+  <div class="karte">
+    <h2>Welches Lot passt zum Grundwerkstoff?</h2>
+    <p class="sub">Hartlote f&uuml;r Schwermetalle, vgl. DIN EN ISO 17672.</p>
+    <p>Die Bezeichnung eines Hartlots nennt die Gruppe und eine Kennzahl,
+    etwa <strong>Ag 145</strong>. Dahinter steht in der Tabelle die
+    <strong>Arbeitstemperatur</strong> &ndash; die Temperatur, bei der das Lot
+    flie&szlig;t &ndash; und der <strong>L&ouml;tsto&szlig;</strong>: <em>S</em>
+    f&uuml;r Spaltl&ouml;ten, <em>F</em> f&uuml;r Fugenl&ouml;ten.</p>
+
+    <div class="felder">
+      <label class="feld">Grundwerkstoff
+        <select id="lotWerkstoff"></select></label>
+      <label class="feld">h&ouml;chstens
+        <select id="lotTemp">
+          <option value="9999">keine Grenze</option>
+          <option value="700">700 &deg;C</option>
+          <option value="800">800 &deg;C</option>
+          <option value="1000">1000 &deg;C</option>
+        </select></label>
+    </div>
+    <div class="tabellenrahmen"><table id="tabLote"></table></div>
+    <p class="fussnote" id="loteHinweis"></p>
+  </div>
+
+  <div class="karte">
+    <h2>Weichlote</h2>
+    <p class="sub">Auswahl nach DIN EN ISO 9453. Die Legierungsnummer
+      ersetzt das alte Kurzzeichen nach DIN 1707.</p>
+    <div class="tabellenrahmen"><table id="tabWeichlote"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Das Flussmittel-Kennzeichen lesen</h2>
+    <p class="sub">Flussmittel zum Weichl&ouml;ten nach DIN EN ISO 9454-1.</p>
+    <p>Ohne Flussmittel benetzt das Lot nicht: Auf jeder blanken Metallfl&auml;che
+    liegt eine Oxidschicht, und die verhindert genau den Kontakt, auf den es
+    ankommt. Das Flussmittel l&ouml;st sie und h&auml;lt sie w&auml;hrend des
+    L&ouml;tens fern. Vier Ziffern sagen, um welches es sich handelt.</p>
+
+    <div class="felder">
+      <label class="feld">1 &ndash; Typ
+        <select id="fmTyp"></select></label>
+      <label class="feld">2 &ndash; Basis
+        <select id="fmBasis"></select></label>
+      <label class="feld">3 &ndash; Aktivator
+        <select id="fmAkt"></select></label>
+      <label class="feld">4 &ndash; Halogenidanteil
+        <select id="fmHal"></select></label>
+    </div>
+    <div class="werte" id="fmWerte"></div>
+    <div id="fmText"></div>
+  </div>
+</section>
+
+<!-- =============================================================== KLEBEN -->
+<section class="panel" id="p-kleben" hidden>
+
+  <div class="karte">
+    <h2>Kleben</h2>
+    <p class="sub">Richtwerte &ndash; die Zahlen h&auml;ngen stark vom
+      einzelnen Produkt ab.</p>
+    <p>Kleben ist das einzige F&uuml;geverfahren, das ohne W&auml;rme am Bauteil
+    auskommt und Werkstoffe verbindet, die sonst nicht zusammengehen: Metall
+    mit Glas, Aluminium mit Kunststoff, Bleche verschiedener Dicke. Der
+    Klebstoff tr&auml;gt &uuml;ber <strong>Adh&auml;sion</strong> zur
+    Oberfl&auml;che und <strong>Koh&auml;sion</strong> in sich selbst &ndash;
+    beides steht und f&auml;llt mit der Vorbehandlung der F&uuml;gefl&auml;chen.</p>
+
+    <div class="felder">
+      <label class="feld">Betriebstemperatur mindestens
+        <select id="klTemp">
+          <option value="0">egal</option>
+          <option value="60">60 &deg;C</option>
+          <option value="100">100 &deg;C</option>
+          <option value="140">140 &deg;C</option>
+        </select></label>
+      <label class="feld">Zugscherfestigkeit mindestens
+        <select id="klTau">
+          <option value="0">egal</option>
+          <option value="10">10 N/mm&sup2;</option>
+          <option value="20">20 N/mm&sup2;</option>
+          <option value="30">30 N/mm&sup2;</option>
+        </select></label>
+      <label class="feld">Elastizit&auml;t
+        <select id="klEla">
+          <option value="alle">egal</option>
+          <option value="vorhanden">vorhanden</option>
+          <option value="gering">gering</option>
+        </select></label>
+    </div>
+    <div class="tabellenrahmen"><table id="tabKleber"></table></div>
+    <p class="fussnote" id="kleberHinweis"></p>
+  </div>
+
+  <div class="karte">
+    <h2>Vorbehandlung der F&uuml;gefl&auml;chen</h2>
+    <p class="sub">Kennziffern der Arbeitsschritte.</p>
+    <p>Ein Klebstoff h&auml;ngt an dem, worauf er sitzt. Liegt darunter Fett,
+    Zunder oder eine lose Oxidschicht, h&auml;lt die Verbindung an dieser
+    Schicht &ndash; und die h&auml;lt an nichts.</p>
+    <div class="tabellenrahmen"><table id="tabVorbehandlung"></table></div>
+    <div class="merke">
+      <b>Drei Beanspruchungsstufen</b> sind in der Tabelle unterschieden:
+      <b>niedrig</b> bis 5&nbsp;N/mm&sup2; in trockener Umgebung,
+      <b>mittel</b> bis 10&nbsp;N/mm&sup2; bei Feuchte und &Ouml;lkontakt,
+      <b>hoch</b> dar&uuml;ber. Je h&ouml;her die Stufe, desto mehr Schritte
+      der Vorbehandlung.
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ GESTALTEN -->
+<section class="panel" id="p-gestalten" hidden>
+
+  <div class="karte">
+    <h2>Die Grundregel</h2>
+    <p class="sub">Gilt f&uuml;r Klebe- und f&uuml;r L&ouml;tverbindungen.</p>
+    <p><strong>Auf Druck und Scherung ja, auf Zug, Sch&auml;len und Biegen
+    nein.</strong> Eine Klebe- oder L&ouml;tschicht ist d&uuml;nn. Fl&auml;chig
+    geschoben h&auml;lt sie viel; an einer Kante angehoben reicht schon eine
+    kleine Kraft, weil sie nur noch auf einer schmalen Linie angreift und die
+    Schicht Millimeter f&uuml;r Millimeter aufrei&szlig;t.</p>
+
+    <figure id="bildKlebung"></figure>
+
+    <div class="tabellenrahmen"><table id="tabStoesse"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Breiter wirkt st&auml;rker als tiefer</h2>
+    <p class="sub">Beobachtung aus der Tabelle der Einflussgr&ouml;&szlig;en.</p>
+    <p>Die Bruchlast steigt mit der Klebefl&auml;che &ndash; aber nicht
+    gleichm&auml;&szlig;ig: Eine gr&ouml;&szlig;ere <strong>Breite b</strong>
+    wirkt st&auml;rker als eine gr&ouml;&szlig;ere
+    <strong>&Uuml;berlappung l</strong>. Denn die Spannung verteilt sich nicht
+    gleichm&auml;&szlig;ig &uuml;ber die &Uuml;berlappung: An den beiden Enden
+    ist sie am h&ouml;chsten, in der Mitte niedrig. Wer die &Uuml;berlappung
+    verdoppelt, verdoppelt vor allem die wenig belastete Mitte.</p>
+
+    <div class="felder">
+      <label class="feld">Breite b in mm
+        <input type="number" id="geB" min="5" max="200" step="5" value="25"></label>
+      <label class="feld">&Uuml;berlappung l in mm
+        <input type="number" id="geL" min="5" max="100" step="5" value="10"></label>
+      <label class="feld">Zugscherfestigkeit in N/mm&sup2;
+        <input type="number" id="geTau" min="2" max="60" step="1" value="20"></label>
+    </div>
+    <div class="werte" id="geWerte"></div>
+    <div id="geText"></div>
+  </div>
+
+  <div class="karte">
+    <h2>Gepr&uuml;ft wird nach eigenen Normen</h2>
+    <div class="tabellenrahmen"><table id="tabPruef"></table></div>
+    <p class="fussnote">Alle Zahlen dieser Lektion sind Richtwerte aus dem
+      Tabellenbuch. Ma&szlig;gebend sind Norm und Herstellerangabe.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  &copy; 2026 t-bk.de &middot; <a href="/impressum.html">Impressum</a> &middot;
+  <a href="/datenschutz.html">Datenschutz</a>
+</footer>
+
+</div>
+
+<script src="assets/zeichnen.js"></script>
+<script>
+"use strict";
+
+/* ============================================================================
+   Alle Zahlen stammen aus dem Tabellenbuch Metall (Europa-Verlag),
+   Kapitel 6.10 Fuegen - Loeten und Kleben.
+   ========================================================================== */
+
+function el(id){ return document.getElementById(id); }
+function zahl(x, n){ return x.toFixed(n === undefined ? 1 : n).replace(".", ","); }
+
+/* --- Einteilung der Loetverfahren ------------------------------------------ */
+var VERFAHREN = [
+  {id:"weich", name:"Weichl&ouml;ten",
+   temperatur:"&lt; 450 &deg;C",
+   energie:"Kolben, L&ouml;tbad, elektrischer Widerstand",
+   grund:"Cu- und Cu-Al-Legierungen, Al-Legierungen, nichtrostender Stahl, Stahl, Cu- und Ni-Legierungen",
+   lot:"Sn- und Pb-Legierungen",
+   hilfe:"Flussmittel",
+   satz:"Die kleinen Temperaturen: Der Kolben reicht, das Bauteil bleibt ma&szlig;haltig. "
+      + "Daf&uuml;r ist die Verbindung die schw&auml;chste der drei &ndash; Weichl&ouml;tn&auml;hte "
+      + "d&uuml;rfen nie auf Zug oder sch&auml;lend beansprucht werden."},
+  {id:"hart", name:"Hartl&ouml;ten",
+   temperatur:"&gt; 450 &deg;C",
+   energie:"Flamme, Ofen",
+   grund:"Stahl, Hartmetall-Schneidplatten",
+   lot:"Cu- und Ag-Legierungen",
+   hilfe:"Flussmittel, Vakuum",
+   satz:"Der Regelfall im Metallbau: Rohre und Fittings, Blechteile, aufgel&ouml;tete "
+      + "Hartmetallschneiden. Silberhaltige Lote arbeiten schon um 600 bis 700 &deg;C, "
+      + "Kupferbasislote erst um 900 bis 1100 &deg;C."},
+  {id:"hoch", name:"Hochtemperaturl&ouml;ten",
+   temperatur:"&gt; 900 &deg;C",
+   energie:"Flamme, Laserstrahl, elektrische Induktion",
+   grund:"Stahl, Hartmetall",
+   lot:"Ni-Cr-Legierungen, Ag-Au-Pd-Legierungen",
+   hilfe:"Vakuum, Schutzgas",
+   satz:"Ohne Flussmittel &ndash; das &uuml;bernimmt hier das Vakuum oder das Schutzgas. "
+      + "Die Verbindungen halten hohe Betriebstemperaturen aus, die Anlage ist "
+      + "entsprechend aufwendig."}
+];
+var verfahrenAktiv = "hart";
+
+/* --- Loetspaltbreiten ------------------------------------------------------ */
+var SPALT_LOTE = ["für Weichlote", "Hartlote Kupferbasis",
+                  "Hartlote Messingbasis", "Hartlote Silberbasis"];
+var SPALT = {
+  "Stahl, unlegiert":   ["0,05…0,2",  "0,05…0,15", "0,1…0,3",  "0,05…0,2"],
+  "Stahl, legiert":     ["0,1…0,25",  "0,1…0,2",   "0,1…0,35", "0,1…0,25"],
+  "Cu, Cu-Legierungen": ["0,05…0,2",  "–",         "–",        "0,05…0,25"],
+  "Hartmetall":         ["–",         "0,3…0,5",   "–",        "0,3…0,5"]
+};
+
+/* --- Hartlote (Auswahl) ---------------------------------------------------- */
+var HARTLOTE = [
+  {kurz:"Ag 345", temp:620,  stoss:"S",    gruppe:"AgCuZnCd",
+   werkstoffe:"Edelmetalle, St&auml;hle, Kupferlegierungen"},
+  {kurz:"Ag 340", temp:610,  stoss:"S",    gruppe:"AgCuZnCd",
+   werkstoffe:"St&auml;hle, Temperguss, Kupfer, Kupferlegierungen, Nickel, Nickellegierungen"},
+  {kurz:"Ag 145", temp:670,  stoss:"S",    gruppe:"AgCuZn(Sn)",
+   werkstoffe:"St&auml;hle, Temperguss, Kupfer, Kupferlegierungen, Nickel, Nickellegierungen"},
+  {kurz:"Ag 134", temp:710,  stoss:"S",    gruppe:"AgCuZn(Sn)",
+   werkstoffe:"St&auml;hle, Temperguss, Kupfer, Kupferlegierungen, Nickel, Nickellegierungen"},
+  {kurz:"Ag 326", temp:750,  stoss:"S, F", gruppe:"AgCuZnCd",
+   werkstoffe:"St&auml;hle, Temperguss, Kupfer, Kupferlegierungen, Nickel, Nickellegierungen"},
+  {kurz:"Ag 206", temp:860,  stoss:"S, F", gruppe:"AgCuZn",
+   werkstoffe:"St&auml;hle, Temperguss, Kupfer, Kupferlegierungen, Nickel, Nickellegierungen"},
+  {kurz:"Ag 351", temp:660,  stoss:"S",    gruppe:"AgCuZn",
+   werkstoffe:"Kupferlegierungen"},
+  {kurz:"Ag 449", temp:690,  stoss:"S",    gruppe:"AgCuZn",
+   werkstoffe:"Hartmetall auf Stahl, Wolfram- und Molybd&auml;n-Werkstoffe"},
+  {kurz:"Ag 463", temp:790,  stoss:"S",    gruppe:"AgCuZn",
+   werkstoffe:"Chrom, Chrom-Nickel-St&auml;hle"},
+  {kurz:"CuP 279", temp:710, stoss:"S, F", gruppe:"CuP",
+   werkstoffe:"Kupfer und nickelfreie Kupferlegierungen"},
+  {kurz:"CuP 180", temp:720, stoss:"F",    gruppe:"CuP",
+   werkstoffe:"Cu, Fe-freie und Ni-freie Cu-Legierungen"},
+  {kurz:"Cu 470a", temp:900, stoss:"S, F", gruppe:"Cu",
+   werkstoffe:"Stahl, Temperguss, Cu, Ni, Cu- und Ni-Legierungen"},
+  {kurz:"Cu 773", temp:910,  stoss:"S, F", gruppe:"Cu",
+   werkstoffe:"St&auml;hle, Temperguss, Ni, Ni-Legierungen"},
+  {kurz:"Cu 925", temp:990,  stoss:"S",    gruppe:"Cu",
+   werkstoffe:"Eisen- und Nickelwerkstoffe"},
+  {kurz:"Cu 922", temp:1040, stoss:"S",    gruppe:"Cu",
+   werkstoffe:"Eisen- und Nickelwerkstoffe"},
+  {kurz:"Cu 141", temp:1100, stoss:"S",    gruppe:"Cu",
+   werkstoffe:"St&auml;hle"},
+  {kurz:"Al 110", temp:600,  stoss:"S",    gruppe:"Al",
+   werkstoffe:"Aluminium und Al-Legierungen der Typen AlMn, AlMg, G-AlSi"},
+  {kurz:"Al 112", temp:595,  stoss:"S",    gruppe:"Al",
+   werkstoffe:"Aluminium und Al-Legierungen der Typen AlMn, AlMg, G-AlSi"}
+];
+/* Womit die Auswahl arbeitet: ein Suchwort je Grundwerkstoff. */
+var LOT_WERKSTOFFE = [
+  {name:"Stahl, unlegiert",  suche:"St&auml;hle|Stahl"},
+  {name:"Chrom-Nickel-Stahl", suche:"Chrom"},
+  {name:"Kupfer und Kupferlegierungen", suche:"Kupfer|Cu"},
+  {name:"Hartmetall",        suche:"Hartmetall"},
+  {name:"Aluminium",         suche:"Aluminium|Al-"}
+];
+
+/* --- Weichlote (Auswahl) --------------------------------------------------- */
+var WEICHLOTE = [
+  {nr:101, kurz:"S-Sn63Pb37",   alt:"L-Sn63Pb",   temp:"183",      zweck:"Feinwerktechnik"},
+  {nr:102, kurz:"S-Sn63Pb37E",  alt:"L-Sn63PbE",  temp:"183",      zweck:"Elektronik, gedruckte Schaltungen"},
+  {nr:103, kurz:"S-Sn60Pb40",   alt:"L-Sn60Pb",   temp:"183…190", zweck:"Elektronik, gedruckte Schaltungen, Edelstahl"},
+  {nr:111, kurz:"S-Pb50Sn50",   alt:"L-PbSn50",   temp:"183…215", zweck:"Elektroindustrie, Verzinnung"},
+  {nr:114, kurz:"S-Pb60Sn40",   alt:"L-PbSn40",   temp:"183…238", zweck:"Feinblechpackungen, Wei&szlig;blech"},
+  {nr:117, kurz:"S-Pb80Sn20",   alt:"L-PbSn20",   temp:"183…280", zweck:"K&uuml;hlerbau"},
+  {nr:151, kurz:"S-Sn50Pb32Cd18", alt:"L-SnPbCd18", temp:"145",    zweck:"Thermosicherungen, Kabelverbindungen"},
+  {nr:171, kurz:"S-Sn62Pb36Ag2", alt:"L-Sn60PbAg", temp:"179",     zweck:"Elektroger&auml;te, gedruckte Schaltungen"},
+  {nr:182, kurz:"S-Pb95Ag5",    alt:"L-PbAg5",    temp:"304…370", zweck:"f&uuml;r hohe Betriebstemperaturen"}
+];
+
+/* --- Flussmittel-Kennzeichen ISO 9454-1 ------------------------------------ */
+var FM_TYP = [["1", "Harz"], ["2", "organisch"], ["3", "anorganisch"]];
+var FM_BASIS = {
+  "1": [["1", "Kolophonium"], ["2", "ohne Kolophonium"]],
+  "2": [["1", "wasserlöslich"], ["2", "nicht wasserlöslich"]],
+  "3": [["1", "Salze"], ["2", "Säuren"], ["3", "alkalisch"]]
+};
+var FM_AKT = {
+  "harz":   [["1", "ohne Aktivator"], ["2", "mit Halogen aktiviert"],
+             ["3", "ohne Halogene aktiviert"]],
+  "salze":  [["1", "mit Ammoniumchlorid"], ["2", "ohne Ammoniumchlorid"]],
+  "saeure": [["1", "Phosphors&auml;ure"], ["2", "andere S&auml;uren"]],
+  "alk":    [["1", "Amine und/oder Ammoniak"]]
+};
+var FM_HAL = [["1", "unter 0,01 %"], ["2", "unter 0,15 %"],
+              ["3", "0,15…2,0 %"], ["4", "über 2,0 %"]];
+/* Rueckstaende nach der Tabelle - die Kennzahl ist Typ+Basis+Aktivator. */
+var FM_RUECKSTAND = {
+  "111":"nicht korrodierend", "123":"nicht korrodierend",
+  "122":"bedingt korrodierend", "212":"bedingt korrodierend",
+  "213":"bedingt korrodierend", "321":"bedingt korrodierend",
+  "322":"stark korrodierend",
+  /* 311 steht im Buch in beiden Zeilen - bedingt und stark. Eine eindeutige
+     Zuordnung gibt die Tabelle dafuer nicht her, und das sagen wir auch. */
+  "311":"bedingt bis stark korrodierend"
+};
+
+/* --- Klebstoffe ------------------------------------------------------------ */
+var KLEBER = [
+  {name:"Methylmethacrylat (MMA)", handel:"Agomet, Stabilit-Express",
+   haerten:"0…30 &deg;C, 1 h", tempMax:80, tauVon:6, tauBis:30,
+   elastisch:"gering", zweck:"Metalle, Duroplaste, Keramik, Glas"},
+  {name:"Epoxidharz (EP)", handel:"Araldite, Metallon, Uhu-Plus",
+   haerten:"20…150 &deg;C, 1…12 h", tempMax:150, tauVon:10, tauBis:35,
+   elastisch:"gering", zweck:"Metalle, Duroplaste, Glas, Keramik, Kunststoffe, Beton, Holz"},
+  {name:"Phenolharz (PF)", handel:"Bakelite, Pertinax",
+   haerten:"120…200 &deg;C, 60 s", tempMax:140, tauVon:20, tauBis:20,
+   elastisch:"gering", zweck:"Metalle, Duroplaste, Glas, Keramik, Kunststoffe, Holz"},
+  {name:"Polyvinylchlorid (PVC)", handel:"Bostik, Tangit",
+   haerten:"20 &deg;C, &gt; 24 h", tempMax:60, tauVon:60, tauBis:60,
+   elastisch:"gering", zweck:"Metalle, Glas, Elastomere, Holz, Keramik"},
+  {name:"Polyurethan (PUR)", handel:"Delopur, Fastbond, Macroplast",
+   haerten:"20 &deg;C, &gt; 24 h", tempMax:40, tauVon:10, tauBis:50,
+   elastisch:"vorhanden", zweck:"Metalle, Elastomere, Kunststoffe, Holz, Glas"},
+  {name:"Polyesterharz (UP)", handel:"Leguval, Verstopal",
+   haerten:"25 &deg;C, 1 h", tempMax:170, tauVon:60, tauBis:60,
+   elastisch:"gering", zweck:"Metalle, Duroplaste, Keramik, Kunststoffe, Holz"},
+  {name:"Polychloroprene (CR)", handel:"Baypren, ContiSecur",
+   haerten:"50 &deg;C, &gt; 24 h", tempMax:110, tauVon:5, tauBis:5,
+   elastisch:"vorhanden", zweck:"Kontaktkleber f&uuml;r Metalle, Kunststoffe, Holz"},
+  {name:"Cyanacrylat", handel:"Permabond 737, Sicomet 77",
+   haerten:"20 &deg;C, 40 s", tempMax:120, tauVon:20, tauBis:35,
+   elastisch:"gering", zweck:"Schnellkleber f&uuml;r Metalle, Kunststoffe, Elastomere"},
+  {name:"Schmelzklebstoffe", handel:"Jet-Melt, Technomelt, Vestra-Melt",
+   haerten:"20 &deg;C, &gt; 30 s", tempMax:60, tauVon:2, tauBis:5,
+   elastisch:"vorhanden", zweck:"Werkstoffe aller Art; Klebewirkung durch Erkalten"}
+];
+
+var VORBEHANDLUNG = [
+  ["1", "Reinigen von Schmutz, Zunder, Rost"],
+  ["2", "Entfetten mit organischen L&ouml;sungsmitteln oder w&auml;ssrigen Reinigungsmitteln"],
+  ["3", "Sp&uuml;len mit kaltem Wasser"],
+  ["4", "Trocknen in Warmluft bis 65 &deg;C"],
+  ["5", "Entfetten mit alkalischem Beizen"],
+  ["6", "Mechanisches Aufrauen durch Schleifen oder B&uuml;rsten"],
+  ["7", "Mechanisches Aufrauen durch Strahlen"],
+  ["8", "Beizen 30 min bei 60 &deg;C in 27,5-%iger Schwefels&auml;ure"],
+  ["9", "Beizen 1 min bei 20 &deg;C in 20-%iger Salpeters&auml;ure"],
+  ["10", "Beizen 3 min bei 20 &deg;C in 15-%iger Flusss&auml;ure"]
+];
+
+var STOESSE = [
+  {stoss:"&Uuml;berlappsto&szlig;",
+   gut:"Klebefl&auml;che nur auf Abscherung beansprucht",
+   schlecht:"absch&auml;lende Kr&auml;fte durch au&szlig;ermittige Krafteinleitung"},
+  {stoss:"T-Sto&szlig;",
+   gut:"Klebefl&auml;che nur auf Abscherung und Druck beansprucht",
+   schlecht:"absch&auml;lende Kr&auml;fte durch Biegebeanspruchung"},
+  {stoss:"Rohrverbindung",
+   gut:"ausreichend gro&szlig;e Klebefl&auml;che f&uuml;r die Scherbeanspruchung",
+   schlecht:"kleine Klebefl&auml;che f&uuml;r Zug- und Scherbeanspruchung"}
+];
+
+var PRUEFUNGEN = [
+  ["Biegesch&auml;lversuch", "DIN 54461",
+   "Widerstand gegen absch&auml;lende Kr&auml;fte"],
+  ["Zugscherversuch", "DIN EN 1465",
+   "Zugscherfestigkeit hochfester &Uuml;berlappungsklebungen"],
+  ["Erm&uuml;dungspr&uuml;fung", "DIN EN ISO 9664",
+   "Erm&uuml;dungseigenschaften bei Zugscherbeanspruchung"],
+  ["Zugversuch", "DIN EN 15870",
+   "Zugfestigkeit von Stumpfklebungen rechtwinklig zur Klebefl&auml;che"]
+];
+
+/* ============================================================================
+   1  LÖTEN
+   ========================================================================== */
+function verfahrenAufbauen(){
+  var w = el("wahlVerfahren");
+  VERFAHREN.forEach(function(v){
+    var b = document.createElement("button");
+    b.innerHTML = v.name;
+    b.setAttribute("data-id", v.id);
+    b.setAttribute("aria-pressed", "false");
+    b.addEventListener("click", function(){ verfahrenAktiv = v.id; verfahrenZeigen(); });
+    w.appendChild(b);
+  });
+  verfahrenZeigen();
+}
+
+function verfahrenZeigen(){
+  var kn = el("wahlVerfahren").querySelectorAll("button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].setAttribute("aria-pressed",
+      kn[i].getAttribute("data-id") === verfahrenAktiv ? "true" : "false");
+  }
+  var h = "<thead><tr><th>&nbsp;</th>";
+  VERFAHREN.forEach(function(v){
+    h += "<th" + (v.id === verfahrenAktiv ? " style=\"background:#dbeafe\"" : "")
+       + ">" + v.name + "</th>";
+  });
+  h += "</tr></thead><tbody>";
+  [["Arbeitstemperatur","temperatur"], ["Energiequelle","energie"],
+   ["Grundwerkstoff","grund"], ["Lotwerkstoff","lot"], ["Hilfsmittel","hilfe"]
+  ].forEach(function(z){
+    h += "<tr><td><b>" + z[0] + "</b></td>";
+    VERFAHREN.forEach(function(v){ h += "<td>" + v[z[1]] + "</td>"; });
+    h += "</tr>";
+  });
+  el("tabVerfahren").innerHTML = h + "</tbody>";
+
+  var v = VERFAHREN.filter(function(x){ return x.id === verfahrenAktiv; })[0];
+  el("verfahrenText").innerHTML = "<div class=\"merke\"><b>" + v.name
+    + ":</b> " + v.satz + "</div>";
+}
+
+function vergleichAufbauen(){
+  var zeilen = [
+    ["Grundwerkstoff", "wird aufgeschmolzen", "bleibt fest"],
+    ["Festigkeit der Verbindung", "wie der Grundwerkstoff", "wie das Lot &ndash; deutlich weniger"],
+    ["W&auml;rmeeinflusszone", "ja, mit Gef&uuml;ge&auml;nderung", "nein"],
+    ["Verzug", "durch Schrumpfen der Naht", "kaum"],
+    ["Ungleiche Werkstoffe", "nur eingeschr&auml;nkt", "gut m&ouml;glich"],
+    ["Belastungsart", "beliebig", "auf Abscheren legen"]
+  ];
+  var h = "<thead><tr><th>&nbsp;</th><th>Schwei&szlig;en</th><th>L&ouml;ten</th></tr></thead><tbody>";
+  zeilen.forEach(function(z){
+    h += "<tr><td><b>" + z[0] + "</b></td><td>" + z[1] + "</td><td>" + z[2] + "</td></tr>";
+  });
+  el("tabVergleich").innerHTML = h + "</tbody>";
+}
+
+/* ============================================================================
+   2  DER LÖTSPALT
+   ========================================================================== */
+function spaltAufbauen(){
+  var w = el("spWerkstoff");
+  Object.keys(SPALT).forEach(function(k){
+    var o = document.createElement("option");
+    o.value = k; o.textContent = k; w.appendChild(o);
+  });
+  var l = el("spLot");
+  SPALT_LOTE.forEach(function(name, i){
+    var o = document.createElement("option");
+    o.value = String(i); o.innerHTML = name; l.appendChild(o);
+  });
+  l.value = "3";
+  w.addEventListener("change", spaltZeigen);
+  l.addEventListener("change", spaltZeigen);
+  el("spS").addEventListener("input", tiefeZeigen);
+  spaltZeigen();
+  tiefeZeigen();
+}
+
+/* Aus "0,05…0,2" die beiden Grenzen in Millimetern. */
+function grenzen(text){
+  var t = text.split("…");
+  if(t.length !== 2) return null;
+  return [parseFloat(t[0].replace(",", ".")), parseFloat(t[1].replace(",", "."))];
+}
+
+function spaltZeigen(){
+  var werkstoff = el("spWerkstoff").value;
+  var i = parseInt(el("spLot").value, 10);
+  var wert = SPALT[werkstoff][i];
+  var g = grenzen(wert);
+
+  el("spWerte").innerHTML =
+    "<div class=\"wert\"><span class=\"l\">L&ouml;tspaltbreite b</span><span class=\"z\">"
+      + (g ? wert + " mm" : "&ndash;") + "</span></div>"
+    + (g ? "<div class=\"wert\"><span class=\"l\">L&ouml;tsto&szlig;</span><span class=\"z\">"
+      + (g[1] <= 0.25 ? "S" : g[0] >= 0.3 ? "F" : "S / F") + "</span></div>" : "");
+
+  el("spText").innerHTML = g
+    ? "<div class=\"gut\"><b>Passt.</b> Bei <b>" + werkstoff + "</b> und "
+      + SPALT_LOTE[i] + " liegt der Spalt zwischen <b>" + wert + " mm</b>. "
+      + (g[1] <= 0.25
+          ? "Bis 0,25 mm hei&szlig;t das <b>Spaltl&ouml;ten (S)</b>: Das Lot wird "
+            + "durch die Kapillarwirkung eingesogen."
+          : g[0] >= 0.3
+          ? "Ab 0,3 mm hei&szlig;t das <b>Fugenl&ouml;ten (F)</b>: Das Lot "
+            + "muss eingelegt oder von oben zugef&uuml;hrt werden, die Kapillarwirkung "
+            + "reicht nicht mehr."
+          : "Der Bereich reicht &uuml;ber die Grenze von 0,25 mm hinaus &ndash; je "
+            + "nach Spaltma&szlig; ist es <b>Spalt-</b> oder <b>Fugenl&ouml;ten</b>.")
+      + "</div>"
+    : "<div class=\"schlecht\"><b>Diese Paarung steht nicht in der Tabelle.</b> "
+      + "F&uuml;r <b>" + werkstoff + "</b> ist " + SPALT_LOTE[i] + " nicht vorgesehen "
+      + "&ndash; w&auml;hle eine andere Lotgruppe.</div>";
+}
+
+function tiefeZeigen(){
+  var s = parseFloat(el("spS").value) || 0;
+  var max = 5 * s;
+  el("spTiefe").innerHTML =
+    "<div class=\"wert\"><span class=\"l\">Blechdicke s</span><span class=\"z\">"
+      + zahl(s, 1) + " mm</span></div>"
+    + "<div class=\"wert\"><span class=\"l\">gr&ouml;&szlig;te sinnvolle L&ouml;ttiefe</span>"
+      + "<span class=\"z\">" + zahl(max, 1) + " mm</span></div>"
+    + "<div class=\"wert\"><span class=\"l\">Rechnung</span><span class=\"z\">5 &middot; "
+      + zahl(s, 1) + "</span></div>";
+}
+
+/* ============================================================================
+   3  LOT UND FLUSSMITTEL
+   ========================================================================== */
+function loteAufbauen(){
+  var w = el("lotWerkstoff");
+  LOT_WERKSTOFFE.forEach(function(x, i){
+    var o = document.createElement("option");
+    o.value = String(i); o.textContent = x.name; w.appendChild(o);
+  });
+  w.addEventListener("change", loteZeigen);
+  el("lotTemp").addEventListener("change", loteZeigen);
+  loteZeigen();
+
+  var h = "<thead><tr><th>Nr.</th><th>Kurzzeichen</th><th>fr&uuml;her DIN 1707</th>"
+        + "<th class=\"zahl\">Arbeitstemperatur</th><th>Anwendung</th></tr></thead><tbody>";
+  WEICHLOTE.forEach(function(l){
+    h += "<tr><td>" + l.nr + "</td><td><b>" + l.kurz + "</b></td><td>" + l.alt
+       + "</td><td class=\"zahl\">" + l.temp + " &deg;C</td><td>" + l.zweck + "</td></tr>";
+  });
+  el("tabWeichlote").innerHTML = h + "</tbody>";
+}
+
+function loteZeigen(){
+  var x = LOT_WERKSTOFFE[parseInt(el("lotWerkstoff").value, 10)];
+  var grenze = parseInt(el("lotTemp").value, 10);
+  var muster = new RegExp(x.suche);
+  var treffer = HARTLOTE.filter(function(l){
+    return muster.test(l.werkstoffe) && l.temp <= grenze;
+  });
+
+  var h = "<thead><tr><th>Kurzzeichen</th><th>Gruppe</th>"
+        + "<th class=\"zahl\">Arbeitstemperatur</th><th>L&ouml;tsto&szlig;</th>"
+        + "<th>geeignet f&uuml;r</th></tr></thead><tbody>";
+  if(!treffer.length){
+    h += "<tr><td colspan=\"5\">Kein Lot der Auswahl bleibt unter dieser "
+       + "Temperatur.</td></tr>";
+  }
+  treffer.forEach(function(l){
+    h += "<tr><td><b>" + l.kurz + "</b></td><td>" + l.gruppe + "</td>"
+       + "<td class=\"zahl\">" + l.temp + " &deg;C</td><td>" + l.stoss + "</td><td>"
+       + l.werkstoffe + "</td></tr>";
+  });
+  el("tabLote").innerHTML = h + "</tbody>";
+
+  el("loteHinweis").innerHTML = "L&ouml;tsto&szlig;: <b>S</b> = Spaltl&ouml;ten "
+    + "(b &lt; 0,25 mm), <b>F</b> = Fugenl&ouml;ten (b &gt; 0,3 mm). "
+    + treffer.length + " von " + HARTLOTE.length + " Loten der Auswahl passen. "
+    + "Angaben der Hersteller sind zu beachten.";
+}
+
+function fmAufbauen(){
+  fuellen(el("fmTyp"), FM_TYP);
+  fuellen(el("fmHal"), FM_HAL);
+  ["fmTyp","fmBasis","fmAkt","fmHal"].forEach(function(id){
+    el(id).addEventListener("change", function(){
+      if(id === "fmTyp" || id === "fmBasis") fmListenSetzen();
+      fmZeigen();
+    });
+  });
+  fmListenSetzen();
+  fmZeigen();
+}
+
+function fuellen(sel, liste){
+  var alt = sel.value;
+  sel.innerHTML = "";
+  liste.forEach(function(e){
+    var o = document.createElement("option");
+    o.value = e[0]; o.innerHTML = e[0] + " &ndash; " + e[1];
+    sel.appendChild(o);
+  });
+  if(alt && sel.querySelector("option[value=\"" + alt + "\"]")) sel.value = alt;
+}
+
+function fmListenSetzen(){
+  var typ = el("fmTyp").value;
+  fuellen(el("fmBasis"), FM_BASIS[typ]);
+  var basis = el("fmBasis").value;
+  var art = typ === "3" ? (basis === "1" ? "salze" : basis === "2" ? "saeure" : "alk")
+                        : "harz";
+  fuellen(el("fmAkt"), FM_AKT[art]);
+}
+
+function klartext(liste, wert){
+  var t = liste.filter(function(e){ return e[0] === wert; })[0];
+  return t ? t[1] : "?";
+}
+
+function fmZeigen(){
+  var typ = el("fmTyp").value, basis = el("fmBasis").value;
+  var akt = el("fmAkt").value, hal = el("fmHal").value;
+  var kennzahl = typ + basis + akt + hal;
+  var rueck = FM_RUECKSTAND[typ + basis + akt];
+
+  el("fmWerte").innerHTML =
+    "<div class=\"wert\"><span class=\"l\">Bezeichnung</span><span class=\"z\">ISO 9454 &ndash; "
+      + kennzahl + "</span></div>"
+    + (rueck ? "<div class=\"wert\"><span class=\"l\">R&uuml;ckst&auml;nde</span>"
+      + "<span class=\"z\" style=\"font-size:1rem\">" + rueck + "</span></div>" : "");
+
+  var art = typ === "3" ? (basis === "1" ? "salze" : basis === "2" ? "saeure" : "alk")
+                        : "harz";
+  el("fmText").innerHTML = "<div class=\"merke\"><b>Flussmittel ISO 9454 &ndash; "
+    + kennzahl + ":</b> Typ <b>" + klartext(FM_TYP, typ) + "</b> ("
+    + typ + "), Basis <b>" + klartext(FM_BASIS[typ], basis) + "</b> (" + basis
+    + "), <b>" + klartext(FM_AKT[art], akt) + "</b> (" + akt
+    + "), Halogenidanteil <b>" + klartext(FM_HAL, hal) + "</b> (" + hal + ")."
+    + (rueck === "stark korrodierend"
+        ? " <b>Achtung:</b> Die R&uuml;ckst&auml;nde sind stark korrodierend und "
+          + "m&uuml;ssen abgewaschen werden."
+        : rueck === "nicht korrodierend"
+        ? " Die R&uuml;ckst&auml;nde d&uuml;rfen auf dem Bauteil bleiben."
+        : rueck
+        ? " Die R&uuml;ckst&auml;nde sind bedingt korrodierend &ndash; im Zweifel "
+          + "abwaschen."
+        : " Zu dieser Kombination nennt die Tabelle keinen R&uuml;ckstandshinweis.")
+    + "</div>";
+}
+
+/* ============================================================================
+   4  KLEBEN
+   ========================================================================== */
+function kleberAufbauen(){
+  ["klTemp","klTau","klEla"].forEach(function(id){
+    el(id).addEventListener("change", kleberZeigen);
+  });
+  kleberZeigen();
+
+  var h = "<thead><tr><th class=\"zahl\">Kennziffer</th><th>Arbeitsschritt</th></tr></thead><tbody>";
+  VORBEHANDLUNG.forEach(function(z){
+    h += "<tr><td class=\"zahl\"><b>" + z[0] + "</b></td><td>" + z[1] + "</td></tr>";
+  });
+  el("tabVorbehandlung").innerHTML = h + "</tbody>";
+}
+
+function kleberZeigen(){
+  var temp = parseInt(el("klTemp").value, 10);
+  var tau = parseInt(el("klTau").value, 10);
+  var ela = el("klEla").value;
+  var treffer = KLEBER.filter(function(k){
+    return k.tempMax >= temp && k.tauBis >= tau
+        && (ela === "alle" || k.elastisch === ela);
+  });
+
+  var h = "<thead><tr><th>Klebstoff</th><th>Handelsname</th><th>Aush&auml;rten</th>"
+        + "<th class=\"zahl\">max. Betriebstemperatur</th>"
+        + "<th class=\"zahl\">Zugscherfestigkeit</th><th>Elastizit&auml;t</th>"
+        + "<th>Verwendung</th></tr></thead><tbody>";
+  if(!treffer.length){
+    h += "<tr><td colspan=\"7\">Kein Klebstoff der Tabelle erf&uuml;llt alle drei "
+       + "Bedingungen zugleich.</td></tr>";
+  }
+  treffer.forEach(function(k){
+    h += "<tr><td><b>" + k.name + "</b></td><td>" + k.handel + "</td><td>"
+       + k.haerten + "</td><td class=\"zahl\">" + k.tempMax + " &deg;C</td>"
+       + "<td class=\"zahl\">"
+       + (k.tauVon === k.tauBis ? k.tauVon : k.tauVon + "…" + k.tauBis)
+       + " N/mm&sup2;</td><td>" + k.elastisch + "</td><td>" + k.zweck + "</td></tr>";
+  });
+  el("tabKleber").innerHTML = h + "</tbody>";
+
+  el("kleberHinweis").innerHTML = treffer.length + " von " + KLEBER.length
+    + " Klebstoffen passen. Die Werte sind grobe Richtwerte &ndash; die chemische "
+    + "Zusammensetzung unterscheidet sich von Produkt zu Produkt, genaue Angaben "
+    + "nennt der Hersteller. Zugscherfestigkeit &tau;<sub>B</sub>.";
+}
+
+/* ============================================================================
+   5  GESTALTEN
+   ========================================================================== */
+function gestaltenAufbauen(){
+  var h = "<thead><tr><th>Sto&szlig;</th><th>so herum gut</th>"
+        + "<th>so herum weniger gut</th></tr></thead><tbody>";
+  STOESSE.forEach(function(s){
+    h += "<tr><td><b>" + s.stoss + "</b></td><td>" + s.gut + "</td><td>"
+       + s.schlecht + "</td></tr>";
+  });
+  el("tabStoesse").innerHTML = h + "</tbody>";
+
+  h = "<thead><tr><th>Pr&uuml;fverfahren</th><th>Norm</th><th>bestimmt</th></tr></thead><tbody>";
+  PRUEFUNGEN.forEach(function(z){
+    h += "<tr><td><b>" + z[0] + "</b></td><td>" + z[1] + "</td><td>" + z[2] + "</td></tr>";
+  });
+  el("tabPruef").innerHTML = h + "</tbody>";
+
+  ["geB","geL","geTau"].forEach(function(id){
+    el(id).addEventListener("input", gestaltenZeigen);
+  });
+  gestaltenZeigen();
+}
+
+function gestaltenZeigen(){
+  var b = parseFloat(el("geB").value) || 0;
+  var l = parseFloat(el("geL").value) || 0;
+  var tau = parseFloat(el("geTau").value) || 0;
+  var A = b * l;
+  var F = tau * A;
+
+  el("geWerte").innerHTML =
+    "<div class=\"wert\"><span class=\"l\">Klebefl&auml;che A = b &middot; l</span>"
+      + "<span class=\"z\">" + zahl(A, 0) + " mm&sup2;</span></div>"
+    + "<div class=\"wert\"><span class=\"l\">rechnerische Bruchlast F = &tau; &middot; A</span>"
+      + "<span class=\"z\">" + zahl(F / 1000, 2) + " kN</span></div>";
+
+  el("geText").innerHTML = "<div class=\"merke\"><b>Die Rechnung sagt nur die halbe "
+    + "Wahrheit.</b> F = &tau; &middot; b &middot; l setzt voraus, dass die Spannung "
+    + "&uuml;ber die ganze &Uuml;berlappung gleich gro&szlig; ist. Das ist sie nicht: "
+    + "An den Enden ist sie am h&ouml;chsten. Verdoppelst du <b>b</b> auf "
+    + zahl(2 * b, 0) + " mm, verdoppelt sich die Bruchlast tats&auml;chlich fast. "
+    + "Verdoppelst du dagegen <b>l</b> auf " + zahl(2 * l, 0) + " mm, w&auml;chst sie "
+    + "deutlich weniger &ndash; du vergr&ouml;&szlig;erst vor allem die wenig "
+    + "belastete Mitte. Deshalb: breiter statt tiefer.</div>";
+}
+
+/* ============================================================================
+   6  ZEICHNUNGEN
+   ========================================================================== */
+
+/* Die Loetstelle im Ueberlappstoss, laengs geschnitten. Zwei Bleche, dazwischen
+   die duenne Lotschicht - nach DIN ISO 128-50 wird ein so duenner Querschnitt
+   nicht schraffiert, sondern ganz geschwaerzt. */
+function bildLoetstelle(){
+  var svg = bild("bildLoetstelle", 620, 300,
+    "Lötstelle im Überlappstoß, längs geschnitten: zwei Bleche, "
+    + "dazwischen die Lotschicht, mit Blechdicke und Überlappung bemaßt",
+    "Lötstelle im Überlappstoß. Die Lotschicht ist überhöht "
+    + "gezeichnet – in Wirklichkeit misst sie Zehntelmillimeter.");
+  var g = svgEl("g", {}, svg);
+
+  var lx = 70, rx = 550, s = 26, y1 = 96, mitte = 310, ue = 120;
+  var y2 = y1 + s + 6;                    /* Untergurt, 6 Einheiten Spalt */
+  var sA = schraffur(svg, "lsA", 45), sB = schraffur(svg, "lsB", -45);
+
+  /* Oberes Blech reicht von links bis mitte + ue/2 */
+  kasten(g, lx, y1, (mitte + ue / 2) - lx, s, {fuell:sA});
+  /* Unteres Blech von mitte - ue/2 bis rechts */
+  kasten(g, mitte - ue / 2, y2, rx - (mitte - ue / 2), s, {fuell:sB});
+  /* Die Lotschicht im Spalt: geschwaerzt. */
+  svgEl("rect", {x:mitte - ue / 2, y:y1 + s, width:ue, height:6,
+    fill:"currentColor", stroke:"currentColor", "stroke-width":BREIT}, g);
+
+  massV(g, y1, y1 + s, 40, "s", lx, true);
+  mass(g, mitte - ue / 2, mitte + ue / 2, y2 + s + 44,
+       "lü", [y2 + s, y2 + s]);
+  txt(g, lx + 10, y1 - 12, "Blech A", {anker:"start"});
+  txt(g, rx - 10, y2 + s + 20, "Blech B", {anker:"end"});
+  txt(g, mitte, y1 - 12, "Lot im Spalt");
+}
+
+/* Der Spalt, stark vergroessert - hier ist Platz fuer das Mass b. */
+function bildSpalt(){
+  var svg = bild("bildSpalt", 620, 260,
+    "Lötspalt stark vergrößert: zwei Blechkanten mit der Lotschicht "
+    + "dazwischen, die Spaltbreite b ist bemaßt",
+    "Der Lötspalt, stark vergrößert. Nur in diesem Maßstab "
+    + "lässt sich b überhaupt bemaßen.");
+  var g = svgEl("g", {}, svg);
+
+  var lx = 124, rx = 540, h = 62, yO = 40, b = 34;
+  var yU = yO + h + b;
+  var sA = schraffur(svg, "spA", 45), sB = schraffur(svg, "spB", -45);
+
+  kasten(g, lx, yO, rx - lx, h, {fuell:sA});
+  kasten(g, lx, yU, rx - lx, h, {fuell:sB});
+  /* Das Lot fuellt den Spalt vollstaendig - genau das leistet die
+     Kapillarwirkung. */
+  svgEl("rect", {x:lx, y:yO + h, width:rx - lx, height:b,
+    fill:"currentColor", stroke:"none"}, g);
+
+  massV(g, yO + h, yU, rx + 40, "b", rx, false);
+  txt(g, lx - 10, yO + h / 2 + 4, "Blech A", {anker:"end"});
+  txt(g, lx - 10, yU + h / 2 + 4, "Blech B", {anker:"end"});
+  txt(g, (lx + rx) / 2, yU + h + 34, "Lot, vom Spalt eingesogen");
+}
+
+/* Zwei Klebungen nebeneinander: geschoben und geschaelt. Die Kraftpfeile
+   gehoeren zur Erklaerebene - sie zeigen, was an der Fuge passiert, und sind
+   kein Zeichnungsinhalt. */
+function bildKlebung(){
+  var svg = bild("bildKlebung", 620, 300,
+    "Zwei Klebungen im Vergleich: links die geschobene Überlappung, "
+    + "rechts die geschälte Verbindung mit außermittiger Krafteinleitung",
+    "Links trägt die Klebefläche, rechts reisst sie von der Kante her auf.");
+  var g = svgEl("g", {}, svg);
+  var sA = schraffur(svg, "klA", 45), sB = schraffur(svg, "klB", -45);
+
+  /* --- links: Ueberlappstoss, nur auf Abscherung --- */
+  (function(){
+    var lx = 26, rx = 280, s = 20, y1 = 70, mitte = 152, ue = 70;
+    kasten(g, lx, y1, (mitte + ue / 2) - lx, s, {fuell:sA});
+    kasten(g, mitte - ue / 2, y1 + s + 4, rx - (mitte - ue / 2), s, {fuell:sB});
+    svgEl("rect", {x:mitte - ue / 2, y:y1 + s, width:ue, height:4,
+      fill:"currentColor", stroke:"none"}, g);
+    var e = svgEl("g", {"class":"erklaer"}, svg);
+    linie(e, lx - 4, y1 + s / 2, lx - 4, y1 + s / 2, SCHMAL);
+    pfeil(e, lx - 6, y1 + s / 2, -1, 0);
+    linie(e, lx - 6, y1 + s / 2, lx + 16, y1 + s / 2, SCHMAL);
+    pfeil(e, rx + 6, y1 + s + 4 + s / 2, 1, 0);
+    linie(e, rx - 16, y1 + s + 4 + s / 2, rx + 6, y1 + s + 4 + s / 2, SCHMAL);
+    txt(g, 152, 200, "geschoben", {fett:true});
+    txt(g, 152, 220, "Die Fläche trägt.");
+  }());
+
+  /* --- rechts: dieselbe Fuge, aber von der Kante angehoben --- */
+  (function(){
+    var lx = 336, rx = 594, s = 20, y1 = 70, mitte = 462, ue = 70;
+    kasten(g, lx, y1, (mitte + ue / 2) - lx, s, {fuell:sA});
+    kasten(g, mitte - ue / 2, y1 + s + 4, rx - (mitte - ue / 2), s, {fuell:sB});
+    svgEl("rect", {x:mitte - ue / 2, y:y1 + s, width:ue, height:4,
+      fill:"currentColor", stroke:"none"}, g);
+    var e = svgEl("g", {"class":"erklaer"}, svg);
+    pfeil(e, lx + 10, y1 - 20, 0, -1);
+    linie(e, lx + 10, y1 - 20, lx + 10, y1 + 2, SCHMAL);
+    pfeil(e, rx - 10, y1 + 2 * s + 24, 0, 1);
+    linie(e, rx - 10, y1 + 2 * s + 4, rx - 10, y1 + 2 * s + 24, SCHMAL);
+    txt(g, 462, 200, "geschält", {fett:true});
+    txt(g, 462, 220, "Eine Kante reicht.");
+  }());
+}
+
+/* ============================================================================
+   7  REITER UND START
+   ========================================================================== */
+function reiterSetzen(name){
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++){
+    kn[i].setAttribute("aria-selected",
+      kn[i].getAttribute("data-tab") === name ? "true" : "false");
+  }
+  var panels = document.querySelectorAll(".panel");
+  for(var j=0;j<panels.length;j++){
+    panels[j].hidden = panels[j].id !== "p-" + name;
+  }
+}
+
+function start(){
+  var kn = document.querySelectorAll(".tabs button");
+  for(var i=0;i<kn.length;i++){
+    (function(b){
+      b.addEventListener("click", function(){ reiterSetzen(b.getAttribute("data-tab")); });
+    }(kn[i]));
+  }
+  verfahrenAufbauen();
+  vergleichAufbauen();
+  spaltAufbauen();
+  loteAufbauen();
+  fmAufbauen();
+  kleberAufbauen();
+  gestaltenAufbauen();
+  bildLoetstelle();
+  bildSpalt();
+  bildKlebung();
+  reiterSetzen("loeten");
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+<script src="assets/bildungsgang.js"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
+<script src="assets/feedback.js"></script>
+<script src="assets/back-nav.js" data-ziel="../"></script>
+</body>
+</html>
