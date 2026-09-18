@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="lektion">
+<meta name="description" content="Aufbau, Bezeichnung nach DIN 623-1, Bauformen und die Lebensdauerrechnung - mit dem durchgerechneten Beispiel des Tabellenbuchs.">
+<meta name="reihenfolge" content="1">
+<title>Maschinenelemente: Lager - Wälzlager auswählen</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .zwei{grid-template-columns:1fr} }
+
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer; font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+
+.felder{display:flex; flex-wrap:wrap; gap:14px; margin:12px 0 4px}
+.feld{display:flex; flex-direction:column; gap:4px; font-size:.86rem; color:var(--muted)}
+.feld select, .feld input{
+  font:inherit; padding:7px 10px; border:1px solid var(--border-strong);
+  border-radius:8px; background:#fff; color:var(--text); min-width:180px;
+}
+
+.werte{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px}
+.wert{
+  background:var(--primary-light); border:1px solid #dbeafe; border-radius:10px;
+  padding:9px 14px; min-width:150px;
+}
+.wert .l{display:block; font-size:.78rem; color:var(--muted)}
+.wert .z{font-size:1.2rem; font-weight:700; color:var(--primary)}
+
+table{border-collapse:collapse; width:100%; font-size:.9rem}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:var(--primary-light); color:var(--primary); font-weight:600}
+tbody tr:nth-child(even){background:#fbfdff}
+.tabellenrahmen{overflow-x:auto; margin:10px 0}
+td.zahl, th.zahl{text-align:right; white-space:nowrap}
+
+.merke{
+  background:#fffbeb; border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
+  padding:12px 14px; margin:14px 0 0; font-size:.94rem;
+}
+.gut{background:#f0fdf4; border-left:4px solid var(--ok); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.schlecht{background:#fef2f2; border-left:4px solid var(--bad); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.fussnote{color:var(--muted); font-size:.82rem; margin:12px 0 0}
+
+/* --- Fachbegriffe: gleiches Prinzip wie in den anderen Lektionen ------- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  user-select:none; font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.link{background:none; border:0; padding:0; color:var(--primary); cursor:pointer;
+  font:600 .88rem/1 inherit; text-decoration:underline}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt
+   durch die Farbe auf. So begegnet der Begriff ab jetzt an jeder Stelle
+   wieder und praegt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+
+figure{margin:14px 0 0}
+figure svg{
+  display:block; width:100%; height:auto; max-width:620px; margin:0 auto;
+  color:var(--text); background:var(--card);
+}
+figcaption{color:var(--muted); font-size:.82rem; text-align:center; margin-top:6px}
+
+footer{
+  text-align:center; color:var(--muted); font-size:13px;
+  padding:34px 0 10px; border-top:1px solid var(--border); margin-top:34px;
+}
+footer a{color:var(--muted)}
+
+/* --- Waelzlager auswaehlen --------------------------------------------- */
+.zerleger{margin:14px 0 0; padding:14px; border:1px solid var(--border);
+  border-radius:10px; background:var(--card)}
+.zerleger input[type="text"]{
+  font:inherit; font-size:1.1rem; font-weight:700; letter-spacing:.04em;
+  padding:8px 12px; border-radius:8px; border:1px solid var(--border-strong);
+  background:var(--bg); color:var(--text); width:13em;
+}
+.zerleger .knoepfe{display:flex; flex-wrap:wrap; gap:7px; margin:10px 0 0}
+.zerleger .knoepfe button{
+  font:inherit; font-size:.84rem; padding:5px 10px; border-radius:7px;
+  border:1px solid var(--border-strong); background:transparent;
+  color:var(--muted); cursor:pointer;
+}
+.zerleger .knoepfe button:hover{border-color:var(--primary);
+  color:var(--primary)}
+.teile{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 0}
+.teile div{flex:1 1 150px; border:1px solid var(--border);
+  border-radius:9px; padding:9px 12px; background:var(--bg)}
+.teile b{display:block; font-size:1.05rem; color:var(--primary)}
+.teile span{font-size:.78rem; color:var(--muted)}
+.teile.leer div{opacity:.4}
+
+.regler{display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+  margin:14px 0 0; padding:12px 14px; border:1px solid var(--border);
+  border-radius:10px; background:var(--card)}
+.regler label{font-size:.88rem; font-weight:600; display:flex;
+  align-items:center; gap:9px}
+.regler input[type="number"]{font:inherit; width:6.5em; padding:5px 8px;
+  border-radius:7px; border:1px solid var(--border-strong);
+  background:var(--bg); color:var(--text)}
+.regler select{font:inherit; padding:5px 8px; border-radius:7px;
+  border:1px solid var(--border-strong); background:var(--bg);
+  color:var(--text)}
+
+.ergebnis{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 0}
+.ergebnis div{flex:1 1 170px; border:1px solid var(--border);
+  border-radius:10px; padding:10px 13px; background:var(--card)}
+.ergebnis b{display:block; font-size:1.25rem; color:var(--primary);
+  font-variant-numeric:tabular-nums}
+.ergebnis span{font-size:.8rem; color:var(--muted)}
+
+table.weg{margin:12px 0 0; border-collapse:collapse; width:100%;
+  font-size:.86rem}
+table.weg td{border-bottom:1px solid var(--border); padding:6px 8px;
+  vertical-align:top}
+table.weg td:first-child{white-space:nowrap; font-weight:600; width:11em}
+table.weg td:last-child{text-align:right; white-space:nowrap;
+  font-variant-numeric:tabular-nums; font-weight:700; color:var(--primary)}
+
+.urteil{margin:12px 0 0; padding:11px 14px; border-radius:0 8px 8px 0;
+  font-size:.94rem}
+.urteil.ja{background:#f0fdf4; border-left:4px solid var(--ok)}
+.urteil.nein{background:#fef2f2; border-left:4px solid var(--bad)}
+</style>
+<link rel="stylesheet" href="assets/thema-werkzeug.css">
+<script src="assets/thema.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Wälzlager auswählen</h1>
+  <p class="lead">Vier Ziffern lesen, die richtige Bauform finden und nachrechnen, wie lange sie hält.</p>
+</header>
+
+
+<div class="schalter" data-druck="weg">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.
+    Einen Schalter f&uuml;r die Normdarstellung gibt es hier nicht: Die
+    Zeichnung ist von vornherein eine Normzeichnung.</span>
+</div>
+
+<div class="tabs" role="tablist" data-druck="weg">
+  <button role="tab" data-tab="aufbau"      aria-selected="true">Aufbau</button>
+  <button role="tab" data-tab="bezeichnung" aria-selected="false">Die Bezeichnung lesen</button>
+  <button role="tab" data-tab="bauformen"   aria-selected="false">Bauformen</button>
+  <button role="tab" data-tab="rechnen"     aria-selected="false">Tragf&auml;higkeit und Lebensdauer</button>
+</div>
+
+<main>
+
+<!-- =============================================================== AUFBAU -->
+<section class="panel" id="p-aufbau">
+
+  <div class="karte">
+    <h2>Rollen statt Gleiten</h2>
+    <p class="sub">Eine Kugel, die rollt, reibt fast nicht.</p>
+    <p>Die Aufgabe eines Lagers ist, unter Last eine Drehbewegung zwischen
+    zwei Bauteilen zu erlauben &ndash; einer Welle und einem Geh&auml;use
+    zum Beispiel. Ein <span class="term" data-t="waelzlager"></span> tut das
+    mit minimaler Reibung, weil die Rollreibung zweier geh&auml;rteter
+    Stahlfl&auml;chen sehr gering ist: Die Reibungszahl liegt bei
+    &micro;<sub>R</sub> = 0,005.</p>
+    <p>Das klingt nach einer Nebens&auml;chlichkeit und ist der ganze Grund,
+    warum es W&auml;lzlager gibt. Ein Gleitlager braucht beim Anlaufen ein
+    Vielfaches der Kraft, weil der Schmierfilm erst entstehen muss. Ein
+    W&auml;lzlager l&auml;uft sofort leicht.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Vier Teile, manchmal f&uuml;nf</h2>
+    <div class="tabellenrahmen"><table id="tabTeile"></table></div>
+    <p>Auf den Innenseiten der Ringe liegen die <strong>Laufbahnen</strong>.
+    Durch eine nachfolgende W&auml;rmebehandlung wird dort eine H&auml;rte
+    von 64 HRC erreicht &ndash; das ist der Grund, warum ein Lager
+    sto&szlig;empfindlich ist: So hart ist auch spr&ouml;de.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Die Form des W&auml;lzk&ouml;rpers gibt den Namen</h2>
+    <div class="tabellenrahmen"><table id="tabKoerper"></table></div>
+    <div class="merke">Kugellager ber&uuml;hren die Laufbahn theoretisch in
+    einem <strong>Punkt</strong>, Rollenlager auf einer
+    <strong>Linie</strong>. In der Praxis verformen sich die Bauteile
+    elastisch, und daraus wird eine kleine Fl&auml;che. Weil die Linie
+    l&auml;nger ist als der Punkt, tragen Rollenlager mehr.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Was daf&uuml;r und was dagegen spricht</h2>
+    <div class="zweispalt">
+      <div>
+        <h3>Vorteile</h3>
+        <ul>
+          <li>geringe Reibkr&auml;fte, kaum Gleitbewegung</li>
+          <li>geringe Anlaufkr&auml;fte</li>
+          <li>hohe Tragf&auml;higkeit auch bei niedrigen Drehzahlen</li>
+          <li>Wellendurchbiegung und Wellenversatz ausgleichbar, etwa mit
+            Pendelrollenlagern</li>
+          <li>geringer Schmierstoffbedarf, oft Lebensdauerschmierung</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Nachteile</h3>
+        <ul>
+          <li>sto&szlig;empfindlich durch Punkt- oder Linienbelastung</li>
+          <li>schmutzempfindlich &ndash; Verunreinigungen werden in die
+            Lauffl&auml;che eingepresst</li>
+          <li>lauter als ein Gleitlager</li>
+          <li>Drehzahl und Lebensdauer durch die Dauerfestigkeit der
+            W&auml;lzk&ouml;rper begrenzt</li>
+        </ul>
+      </div>
+    </div>
+    <p class="fussnote">Im Normalfall laufen W&auml;lzlager bis
+    100&nbsp;&deg;C ohne besondere Ma&szlig;nahmen, mit geeignetem
+    Schmierstoff bis 120&nbsp;&deg;C. Dar&uuml;ber wandelt sich das
+    Gef&uuml;ge des W&auml;lzlagerstahls um, die H&auml;rte geht verloren
+    und mit ihr die Lebensdauer.</p>
+  </div>
+
+</section>
+
+<!-- ========================================================== BEZEICHNUNG -->
+<section class="panel" id="p-bezeichnung" hidden>
+
+  <div class="karte">
+    <h2>Vier Ziffern, vier Aussagen</h2>
+    <p class="sub">Nach DIN 623-1 &ndash; und man kann es lesen wie ein Wort.</p>
+    <p>Das <strong>Basiszeichen</strong> eines W&auml;lzlagers sagt, welche
+    Bauart es ist und wie gro&szlig;. Von hinten gelesen:</p>
+    <ul>
+      <li>die <strong>letzten zwei Ziffern</strong> sind die
+        <span class="term" data-t="kennzahl"></span>,</li>
+      <li>davor steht die <strong>Durchmesserreihe</strong>,</li>
+      <li>davor die <strong>Breitenreihe</strong> &ndash; beide zusammen
+        ergeben die Ma&szlig;reihe,</li>
+      <li>ganz vorn die <strong>Lagerart</strong>.</li>
+    </ul>
+    <div class="merke">Ab der Kennzahl 04 gilt: Bohrungsdurchmesser
+    <strong>d = Kennzahl &times; 5 mm</strong>. Darunter stehen die vier
+    Werte 10, 12, 15 und 17 in der Tabelle &ndash; und sie sind der Grund,
+    warum man 00 bis 03 auswendig lernt.</div>
+    <p class="fussnote">Bei Rillen- und Schr&auml;gkugellagern l&auml;sst
+    DIN 623-1 die 0 der Breitenreihe teilweise weg. Deshalb hat 6206 vier
+    Ziffern und 30206 f&uuml;nf.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Selbst zerlegen</h2>
+    <p class="sub">Tippen oder einen der Knopfe nehmen.</p>
+    <div class="zerleger">
+      <label for="bezEingabe"><strong>Bezeichnung</strong></label><br>
+      <input type="text" id="bezEingabe" value="6206-2RS"
+        autocomplete="off" spellcheck="false">
+      <div class="knoepfe" id="bezBeispiele"></div>
+      <div class="teile" id="bezTeile"></div>
+      <p class="fussnote" id="bezHinweis"></p>
+    </div>
+  </div>
+
+  <div class="karte">
+    <h2>Die Lagerarten</h2>
+    <div class="tabellenrahmen"><table id="tabArt"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Vor- und Nachsetzzeichen</h2>
+    <p class="sub">Was vor und hinter dem Basiszeichen steht.</p>
+    <div class="zweispalt">
+      <div>
+        <h3>Vorsetzzeichen</h3>
+        <div class="tabellenrahmen"><table id="tabVor"></table></div>
+      </div>
+      <div>
+        <h3>Nachsetzzeichen (Auswahl)</h3>
+        <div class="tabellenrahmen"><table id="tabNach"></table></div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ============================================================ BAUFORMEN -->
+<section class="panel" id="p-bauformen" hidden>
+
+  <div class="karte">
+    <h2>Welche Last, welche Bauform</h2>
+    <p class="sub">Die erste Frage ist nie &bdquo;welches Lager?&ldquo;,
+      sondern &bdquo;welche Kraft?&ldquo;</p>
+    <div class="tabellenrahmen"><table id="tabBauform"></table></div>
+    <p class="fussnote">Schr&auml;gkugellager der Ausf&uuml;hrung B haben
+    einen Ber&uuml;hrungswinkel von 40&deg;. Kegelrollenlager und
+    Schr&auml;gkugellager m&uuml;ssen <strong>paarweise</strong> in einer
+    angestellten Lagerung arbeiten &ndash; einzeln k&ouml;nnen sie nicht
+    laufen.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Dieselbe Bohrung, drei Gr&ouml;&szlig;en</h2>
+    <p class="sub">Was die Durchmesserreihe ausmacht.</p>
+    <p>Zu jedem Bohrungsdurchmesser gibt es mehrere Au&szlig;endurchmesser
+    und Breiten. Wer mehr Tragf&auml;higkeit braucht, geht auf die
+    n&auml;chste Reihe &ndash; die Welle bleibt dieselbe, das Geh&auml;use
+    wird gr&ouml;&szlig;er.</p>
+    <div class="regler">
+      <label>Bohrung d
+        <select id="regReihenD"></select></label>
+    </div>
+    <div class="tabellenrahmen"><table id="tabReihen"></table></div>
+  </div>
+
+</section>
+
+<!-- ============================================================== RECHNEN -->
+<section class="panel" id="p-rechnen" hidden>
+
+  <div class="karte">
+    <h2>Zwei Tragzahlen, zwei Fragen</h2>
+    <p class="sub">C und C<sub>0</sub> &ndash; und sie beantworten
+      Verschiedenes.</p>
+    <p>Die <strong>statische Tragzahl C<sub>0</sub></strong> sagt, was das
+    stehende Lager aush&auml;lt, ohne dass die W&auml;lzk&ouml;rper bleibende
+    Eindr&uuml;cke in der Laufbahn hinterlassen. Die <strong>dynamische
+    Tragzahl C</strong> sagt, welche Last ein Lager f&uuml;r eine Million
+    Umdrehungen aush&auml;lt. Beide stehen in kN im Tabellenbuch.</p>
+    <p>Wirkt auf ein Lager gleichzeitig eine Radialkraft
+    F<sub>r</sub> und eine Axialkraft F<sub>a</sub>, wird daraus die
+    <strong>&auml;quivalente Belastung P</strong> &ndash; die Kraft, die
+    dieselbe Beanspruchung erzeugen w&uuml;rde:</p>
+    <div class="merke">P = X &middot; F<sub>r</sub> + Y &middot;
+      F<sub>a</sub></div>
+    <p>X und Y stehen nicht fest, sondern h&auml;ngen davon ab, wie sehr die
+    Axialkraft &uuml;berwiegt. Der Weg dahin geht &uuml;ber die Hilfsgr&ouml;&szlig;e
+    (f<sub>0</sub> &middot; F<sub>a</sub>) / C<sub>0</sub> und den Grenzwert
+    <em>e</em>.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Und wie lange h&auml;lt es?</h2>
+    <div class="merke">L<sub>10</sub> = (C / P)&sup3; &middot; 10<sup>6</sup>
+      Umdrehungen &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+      L<sub>10h</sub> = L<sub>10</sub> / (60 &middot; n)</div>
+    <p>Die 10 im Index ist kein Zufall: <strong>10 Prozent</strong> der
+    Lager d&uuml;rfen vor Erreichen dieser Lebensdauer ausfallen. Die
+    Erlebenswahrscheinlichkeit betr&auml;gt also 90 Prozent. Wer eine
+    Lebensdauer von 20 000 Stunden rechnet, hat nicht 20 000 Stunden
+    garantiert &ndash; er hat neun von zehn Lagern, die sie schaffen.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Nachrechnen</h2>
+    <p class="sub">Voreingestellt ist das Beispiel aus dem Tabellenbuch:
+      eine Bohrspindel.</p>
+    <div class="regler">
+      <label>Lager <select id="rLager"></select></label>
+      <label>F<sub>r</sub> in kN
+        <input type="number" id="rFr" value="1.5" step="0.1" min="0"></label>
+      <label>F<sub>a</sub> in kN
+        <input type="number" id="rFa" value="3.4" step="0.1" min="0"></label>
+      <label>n in 1/min
+        <input type="number" id="rN" value="1200" step="50" min="1"></label>
+      <label>Betriebsfall <select id="rFall"></select></label>
+    </div>
+    <div class="ergebnis">
+      <div><b id="eP">&ndash;</b><span>äquivalente Belastung P</span></div>
+      <div><b id="eL10">&ndash;</b><span>L₁₀ in Millionen Umdrehungen</span></div>
+      <div><b id="eL10h">&ndash;</b><span>L₁₀ₕ in Betriebsstunden</span></div>
+    </div>
+    <div id="eUrteil"></div>
+    <h3>Der Rechenweg</h3>
+    <table class="weg" id="tabWeg"></table>
+    <p class="fussnote">Zwischen den St&uuml;tzstellen der Tabelle wird
+    linear interpoliert &ndash; genau so rechnet das Beispiel im Buch. Die
+    Tragzahlen stehen nur f&uuml;r acht Bohrungsdurchmesser in der Tabelle;
+    deshalb sind hier auch nur diese Lager w&auml;hlbar.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Wie lange ist lange genug?</h2>
+    <p class="sub">Richtwerte f&uuml;r die empfohlene nominelle Lebensdauer.</p>
+    <div class="tabellenrahmen"><table id="tabEmpfohlen"></table></div>
+    <p class="fussnote">Anhaltswerte f&uuml;r &uuml;bliche
+    Betriebsbedingungen ohne &Uuml;berdimensionierung der Lager.</p>
+  </div>
+
+</section>
+
+</main>
+
+
+<footer>
+  &copy; 2026 t-bk.de &middot; <a href="/impressum.html">Impressum</a> &middot;
+  <a href="/datenschutz.html">Datenschutz</a>
+</footer>
+
+</div>
+
+<script src="assets/zeichnen.js"></script>
+<script src="assets/waelzlager.js"></script>
+<script>
+"use strict";
+
+function el(id){ return document.getElementById(id); }
+
+/* ==========================================================================
+   Die Begriffe dieser Lektion
+   --------------------------------------------------------------------------
+   Links der Fachbegriff, rechts die alltagssprachliche Fassung. Der Schalter
+   oben stellt alle auf einmal um; ein Klick auf ein einzelnes Wort dreht es
+   fuer sich um und faerbt es ein. So begegnet der Begriff ab dann an jeder
+   Stelle wieder.
+   ========================================================================== */
+var TERME = {
+  waelzlager:  {f:"W\u00e4lzlager", a:"Lager mit Kugeln oder Rollen"},
+  kennzahl:    {f:"Bohrungskennzahl", a:"Zahl f\u00fcr den Bohrungsdurchmesser"},
+  tragzahl:    {f:"Tragzahl", a:"Kraft, die das Lager aush\u00e4lt"},
+  aequivalent: {f:"\u00e4quivalente Belastung", a:"ersatzweise gedachte Kraft"},
+  nominell:    {f:"nominelle Lebensdauer", a:"Lebensdauer, die 90 von 100 Lagern erreichen"},
+  radial:      {f:"radial", a:"quer zur Welle"},
+  axial:       {f:"axial", a:"l\u00e4ngs der Welle"}
+};
+
+var zustand = {fach:false};
+var aufgedeckt = {};
+
+function paramsLesen(){
+  try{
+    var q = new URLSearchParams(window.location.search);
+    if(q.has("fach")) zustand.fach = q.get("fach") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Ein einzeln aufgedeckter Begriff dreht die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  var basis = wurzel || document;
+  if(!wurzel) document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+  var knoten = basis.querySelectorAll(".term");
+  for(var i = 0; i < knoten.length; i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var b = TERME[schluessel];
+    if(!b) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? b.f : b.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt
+        + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff \u2013 klicken f\u00fcr die einfache Formulierung"
+              : "einfache Formulierung \u2013 klicken f\u00fcr den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung"
+                      : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zur\u00fccksetzen"
+    : anzahl + " aufgedeckte W\u00f6rter zur\u00fccksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Fuer Texte, die erst beim Zeichnen entstehen. */
+function wort(schluessel, gross){
+  if(!TERME[schluessel]) return schluessel;
+  return '<span class="term" data-t="' + schluessel + '"'
+    + (gross ? ' data-cap="1"' : "") + "></span>";
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert \u2013 Fachbegriffe "
+        + (zustand.fach ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig,
+        function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
+/* ==========================================================================
+   Die Tabellen dieser Lektion
+   ========================================================================== */
+function tabelle(id, kopf, zeilen){
+  var t = el(id);
+  if(!t) return;
+  t.innerHTML = "";
+  var th = document.createElement("thead");
+  var tr = document.createElement("tr");
+  kopf.forEach(function(k){
+    var c = document.createElement("th");
+    c.innerHTML = k;
+    tr.appendChild(c);
+  });
+  th.appendChild(tr);
+  t.appendChild(th);
+  var tb = document.createElement("tbody");
+  zeilen.forEach(function(z){
+    var r = document.createElement("tr");
+    z.forEach(function(w){
+      var c = document.createElement("td");
+      c.innerHTML = w;
+      r.appendChild(c);
+    });
+    tb.appendChild(r);
+  });
+  t.appendChild(tb);
+}
+
+function teileTabelle(){
+  tabelle("tabTeile", ["Teil", "Wof\u00fcr"],
+    [["Innenring", "sitzt auf der Welle"],
+     ["Au\u00dfenring", "sitzt im Geh\u00e4use"],
+     ["W\u00e4lzk\u00f6rper",
+      "erm\u00f6glichen die Verdrehung der Ringe zueinander"],
+     ["K\u00e4fig", "f\u00fchrt die W\u00e4lzk\u00f6rper und h\u00e4lt "
+      + "sie auf Abstand, damit sie sich nicht ber\u00fchren"],
+     ["Dichtungen (nicht immer)",
+      "halten Fremdk\u00f6rper drau\u00dfen und das Fett drin"]]);
+}
+
+function koerperTabelle(){
+  tabelle("tabKoerper",
+    ["W\u00e4lzk\u00f6rper", "Lager", "Ber\u00fchrung"],
+    [["Kugel", "Kugellager", "Punkt"],
+     ["Zylinderrolle", "Zylinderrollenlager", "Linie"],
+     ["Nadelrolle", "Nadellager", "Linie, bei sehr wenig Bauraum radial"],
+     ["Kegelrolle", "Kegelrollenlager",
+      "Linie, nimmt " + wort("radial") + " und " + wort("axial") + " auf"],
+     ["Pendelrolle (symmetrisch oder asymmetrisch)", "Pendelrollenlager",
+      "Linie, gleicht Wellenversatz aus"]]);
+}
+
+function artTabelle(){
+  var z = [];
+  ["0", "1", "2", "3", "4", "5", "6", "7", "8", "NA", "QJ", "NU"]
+    .forEach(function(k){
+      z.push(["<strong>" + k + "</strong>", Waelzlager.LAGERART[k]]);
+    });
+  tabelle("tabArt", ["Kennzeichen", "Ausf\u00fchrung"], z);
+}
+
+function zeichenTabellen(){
+  var v = [];
+  Object.keys(Waelzlager.VORSETZ).forEach(function(k){
+    v.push(["<strong>" + k + "</strong>", Waelzlager.VORSETZ[k]]);
+  });
+  tabelle("tabVor", ["Zeichen", "Bedeutung"], v);
+  var n = [];
+  ["K", "Z", "2Z", "RS", "2RS", "E", "P2"].forEach(function(k){
+    n.push(["<strong>" + k + "</strong>", Waelzlager.NACHSETZ[k]]);
+  });
+  tabelle("tabNach", ["Zeichen", "Bedeutung"], n);
+}
+
+function bauformTabelle(){
+  tabelle("tabBauform",
+    ["Bauform", wort("radial", true), wort("axial", true), "Besonderheit"],
+    [["Rillenkugellager (6)", "gut", "m\u00e4\u00dfig, beide Richtungen",
+      "der Standard: billig, leise, schnell"],
+     ["Schr\u00e4gkugellager (7)", "gut", "gro\u00df, eine Richtung",
+      "nur paarweise; Ausf\u00fchrung B mit 40\u00b0"],
+     ["Kegelrollenlager (3)", "sehr gro\u00df", "gro\u00df, eine Richtung",
+      "nur paarweise; zerlegbar, deshalb leicht zu montieren"],
+     ["Zylinderrollenlager (N, NU)", "sehr gro\u00df",
+      "keine (Form N und NU)",
+      "das ideale Loslager: die Rollen wandern auf der Laufbahn"],
+     ["Nadellager (NA)", "gro\u00df", "keine",
+      "wenn radial kaum Platz ist"],
+     ["Pendelrollenlager (2)", "sehr gro\u00df", "m\u00e4\u00dfig",
+      "gleicht Fluchtfehler und Wellendurchbiegung aus"],
+     ["Axial-Rillenkugellager (5)", "keine", "sehr gro\u00df, eine Richtung",
+      "nur f\u00fcr reine L\u00e4ngskraft"]]);
+}
+
+function reihenTabelle(){
+  var d = Number(el("regReihenD").value);
+  var z = [];
+  ["60", "62", "63"].forEach(function(r){
+    var e = Waelzlager.RKL[r][d];
+    if(!e) return;
+    var t = Waelzlager.TRAG[r] && Waelzlager.TRAG[r][d];
+    z.push(["Lagerreihe " + r, "<strong>6" + r.charAt(1)
+      + (d < 20 ? {10:"00",12:"01",15:"02",17:"03"}[d] : (d / 5 < 10
+        ? "0" + (d / 5) : String(d / 5))) + "</strong>",
+      e[0] + " mm", e[1] + " mm",
+      t ? t[0] + " kN" : "&ndash;", t ? t[1] + " kN" : "&ndash;"]);
+  });
+  tabelle("tabReihen",
+    ["Reihe", "Bezeichnung", "Au\u00dfen-\u00d8 D", "Breite B",
+     "C", "C<sub>0</sub>"], z);
+}
+
+function empfohlenTabelle(){
+  var z = [];
+  Object.keys(Waelzlager.EMPFOHLEN).forEach(function(k){
+    var e = Waelzlager.EMPFOHLEN[k];
+    z.push([k, e[0].toLocaleString("de-DE") + " \u2026 "
+      + e[1].toLocaleString("de-DE") + " h"]);
+  });
+  tabelle("tabEmpfohlen", ["Betriebsfall", "L<sub>10h</sub>"], z);
+}
+
+/* ==========================================================================
+   Die Bezeichnung zerlegen
+   ========================================================================== */
+var BEISPIELE = ["6206-2RS", "6014", "30208", "7208 B", "NU 312 E",
+  "51210", "22308", "S 6004"];
+
+function beispieleFuellen(){
+  var k = el("bezBeispiele");
+  BEISPIELE.forEach(function(b){
+    var kn = document.createElement("button");
+    kn.type = "button";
+    kn.textContent = b;
+    kn.addEventListener("click", function(){
+      el("bezEingabe").value = b;
+      zerlegenZeigen();
+    });
+    k.appendChild(kn);
+  });
+}
+
+function zerlegenZeigen(){
+  var z = Waelzlager.zerlegen(el("bezEingabe").value);
+  var ziel = el("bezTeile");
+  ziel.innerHTML = "";
+  ziel.className = "teile" + (z ? "" : " leer");
+  if(!z){
+    el("bezHinweis").textContent = "Das ist keine Bezeichnung, die sich "
+      + "nach DIN 623-1 zerlegen l\u00e4sst.";
+    return;
+  }
+  var karten = [
+    ["Lagerart " + z.lagerart, z.lagerartText || "nicht in der Tabelle"],
+    ["Breitenreihe " + (z.breitenreihe === null ? "?" : z.breitenreihe),
+     z.breiteWeggelassen ? "die 0 wird weggelassen" : "aus dem Ma\u00dfplan"],
+    ["Durchmesserreihe " + (z.durchmesserreihe || "?"),
+     "bestimmt Au\u00dfen-\u00d8 und Breite"],
+    ["Kennzahl " + z.kennzahl,
+     z.d ? "d = " + z.d + " mm" : "kein Durchmesser in der Tabelle"]
+  ];
+  if(z.vorsetz) karten.unshift([z.vorsetz, z.vorsetzText]);
+  z.nachsetz.forEach(function(n, i){
+    karten.push([n, z.nachsetzText[i]]);
+  });
+  karten.forEach(function(k){
+    var dv = document.createElement("div");
+    var b = document.createElement("b");
+    b.textContent = k[0];
+    var s = document.createElement("span");
+    s.textContent = k[1];
+    dv.appendChild(b);
+    dv.appendChild(s);
+    ziel.appendChild(dv);
+  });
+  var l = Waelzlager.lager(el("bezEingabe").value);
+  el("bezHinweis").innerHTML = l
+    ? "Im Tabellenbuch: D = " + l.D + " mm, B = " + l.B + " mm"
+      + (l.C ? ", C = " + l.C + " kN, C<sub>0</sub> = " + l.C0 + " kN" : "")
+      + "."
+    : "Die Ma\u00dfe dieses Lagers stehen nicht in der Auswahl des Buchs.";
+}
+
+/* ==========================================================================
+   Der Lebensdauerrechner
+   ========================================================================== */
+function lagerFuellen(){
+  var s = el("rLager");
+  ["60", "62", "63"].forEach(function(r){
+    Object.keys(Waelzlager.TRAG[r]).forEach(function(d){
+      var bez = "6" + r.charAt(1) + (Number(d) / 5 < 10 ? "0" : "")
+        + (Number(d) / 5);
+      var o = document.createElement("option");
+      o.value = bez;
+      o.textContent = bez + " (d = " + d + ")";
+      if(bez === "6214") o.selected = true;
+      s.appendChild(o);
+    });
+  });
+  var f = el("rFall");
+  var leer = document.createElement("option");
+  leer.value = "";
+  leer.textContent = "\u2013 kein Vergleich \u2013";
+  f.appendChild(leer);
+  Object.keys(Waelzlager.EMPFOHLEN).forEach(function(k){
+    var o = document.createElement("option");
+    o.value = k;
+    o.textContent = k;
+    if(k === "Bohrspindeln") o.selected = true;
+    f.appendChild(o);
+  });
+}
+
+function rechnen(){
+  var l = Waelzlager.lager(el("rLager").value);
+  if(!l || !l.C) return;
+  var e = Waelzlager.lebensdauer({
+    C: l.C, C0: l.C0, f0: l.f0,
+    Fr: Number(el("rFr").value) || 0,
+    Fa: Number(el("rFa").value) || 0,
+    n: Number(el("rN").value) || 1
+  });
+  el("eP").textContent = Waelzlager.rund(e.P, 3) + " kN";
+  el("eL10").textContent = Waelzlager.rund(e.L10, 0);
+  el("eL10h").textContent = Math.round(e.L10h).toLocaleString("de-DE") + " h";
+
+  var t = el("tabWeg");
+  t.innerHTML = "";
+  e.schritte.forEach(function(s){
+    var tr = document.createElement("tr");
+    [s.was, s.rechnung, s.wert].forEach(function(w){
+      var td = document.createElement("td");
+      td.innerHTML = w;
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+  });
+
+  var fall = el("rFall").value;
+  var u = el("eUrteil");
+  if(!fall){ u.innerHTML = ""; return; }
+  var r = Waelzlager.EMPFOHLEN[fall];
+  var passt = e.L10h >= r[0];
+  u.className = "urteil " + (passt ? "ja" : "nein");
+  u.innerHTML = "<strong>" + (passt ? "Reicht." : "Reicht nicht.")
+    + "</strong> F\u00fcr " + fall + " empfiehlt das Buch "
+    + r[0].toLocaleString("de-DE") + " bis " + r[1].toLocaleString("de-DE")
+    + " Stunden; gerechnet sind "
+    + Math.round(e.L10h).toLocaleString("de-DE") + " h."
+    + (passt && e.L10h > r[1] * 3
+      ? " Allerdings deutlich \u00fcber dem Richtwert \u2013 ein kleineres "
+        + "Lager w\u00e4re billiger und liefe schneller."
+      : "");
+}
+
+function dFuellen(){
+  var s = el("regReihenD");
+  [20, 25, 30, 35, 40, 50, 60, 70, 80, 100].forEach(function(d){
+    var o = document.createElement("option");
+    o.value = d;
+    o.textContent = d + " mm";
+    if(d === 40) o.selected = true;
+    s.appendChild(o);
+  });
+}
+
+function allesNeuZeichnen(){
+  teileTabelle();
+  koerperTabelle();
+  artTabelle();
+  zeichenTabellen();
+  bauformTabelle();
+  empfohlenTabelle();
+  begriffeZeichnen(el("tabKoerper"));
+  begriffeZeichnen(el("tabBauform"));
+}
+
+/* ==========================================================================
+   Start
+   ========================================================================== */
+function start(){
+  paramsLesen();
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+
+  allesNeuZeichnen();
+
+  beispieleFuellen();
+  el("bezEingabe").addEventListener("input", zerlegenZeigen);
+  zerlegenZeigen();
+
+  dFuellen();
+  el("regReihenD").addEventListener("change", reihenTabelle);
+  reihenTabelle();
+
+  lagerFuellen();
+  ["rLager", "rFr", "rFa", "rN", "rFall"].forEach(function(id){
+    el(id).addEventListener("input", rechnen);
+    el(id).addEventListener("change", rechnen);
+  });
+  rechnen();
+
+  begriffeZeichnen();
+
+  /* Die Reiter. Dieselbe Bedienung wie in den anderen Lektionen. */
+  var knoepfe = document.querySelectorAll('.tabs button');
+  for(var i = 0; i < knoepfe.length; i++){
+    knoepfe[i].addEventListener("click", function(){
+      var ziel = this.getAttribute("data-tab");
+      for(var j = 0; j < knoepfe.length; j++){
+        var k = knoepfe[j];
+        var an = k.getAttribute("data-tab") === ziel;
+        k.setAttribute("aria-selected", an ? "true" : "false");
+        el("p-" + k.getAttribute("data-tab")).hidden = !an;
+      }
+    });
+  }
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+<script src="assets/bildungsgang.js"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
+<script src="assets/feedback.js"></script>
+<script src="assets/back-nav.js" data-ziel="../"></script>
+</body>
+</html>
