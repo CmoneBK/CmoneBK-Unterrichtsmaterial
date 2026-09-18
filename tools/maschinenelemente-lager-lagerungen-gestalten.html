@@ -333,6 +333,31 @@ footer a{color:var(--muted)}
   </div>
 
   <div class="karte">
+    <h2>Woran man es in der Zeichnung sieht</h2>
+    <p class="sub">Nicht am Lager &ndash; am Sitz.</p>
+    <p>Ein Schr&auml;gkugellager oder ein Kegelrollenlager kann die
+    Axialkraft nur in <em>eine</em> Richtung tragen. Welche das ist,
+    entscheidet nicht das Lager, sondern wogegen seine Ringe dr&uuml;cken:
+    gegen welche <strong>Geh&auml;useschulter</strong> der Au&szlig;enring
+    und gegen welchen <strong>Wellenabsatz</strong> oder welche
+    <strong>Nutmutter</strong> der Innenring.</p>
+    <p>Dasselbe Lagerpaar ergibt deshalb einmal eine X- und einmal eine
+    O-Anordnung &ndash; je nachdem, wie herum es eingebaut und wo es
+    gehalten wird. Bei anderen Bauarten steckt die Richtung dagegen in der
+    Geometrie selbst: Ein Rillenkugellager tr&auml;gt axial in beide
+    Richtungen, ein Zylinderrollenlager der Form NU in keine.</p>
+    <div class="merke">Die <strong>Geh&auml;useschulter</strong> liegt auf
+    der Seite, die von S wegzeigt. Der <strong>Wellenabsatz</strong> oder
+    die <strong>Mutter</strong> liegt auf der Seite, auf der S liegt.</div>
+    <div class="tabellenrahmen"><table id="tabSitz"></table></div>
+    <p class="fussnote">In den Bildern oben ist beides gezeichnet: die
+    Schultern im Geh&auml;use, der Absatz auf der Welle und die Nutmuttern.
+    Wer sie wegl&auml;sst, zeichnet eine Lagerung, die es so nicht gibt
+    &ndash; und nimmt dem Leser genau das Kennzeichen, an dem er die
+    Anordnung erkennen w&uuml;rde.</p>
+  </div>
+
+  <div class="karte">
     <h2>Was daraus folgt</h2>
     <div class="tabellenrahmen"><table id="tabXO"></table></div>
     <p>Die gr&ouml;&szlig;ere St&uuml;tzbasis der O-Anordnung ergibt das
@@ -737,6 +762,21 @@ function xoTabelle(){
       "Wellen, die sich durchbiegen oder nicht genau fluchten"]]);
 }
 
+function sitzTabelle(){
+  tabelle("tabSitz",
+    ["", "O-Anordnung", "X-Anordnung"],
+    [["Gehäuseschulter", "innen, zwischen den Lagern",
+      "außen, an den Enden"],
+     ["Innenring gehalten von", "außen – Nutmutter, "
+      + "Sicherungsring oder Deckel",
+      "innen – Wellenabsatz zwischen den Lagern"],
+     ["Zusammenbau", "Lager einzeln einsetzen, dann von außen "
+      + "anstellen",
+      "Welle mit Absatz vorbereiten, Lager von außen aufschieben"],
+     ["Woran erkennbar", "die Schultern zeigen nach innen",
+      "die Schultern zeigen nach außen"]]);
+}
+
 function anstellenTabelle(){
   tabelle("tabAnstellen",
     ["Womit", "Wo es angreift", "Bemerkung"],
@@ -882,6 +922,7 @@ function allesNeuZeichnen(){
   artenTabelle();
   xoTabelle();
   anstellenTabelle();
+  sitzTabelle();
   kmTabelle();
   umlaufTabelle();
   toleranzTabelle();
