@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="lektion">
+<meta name="description" content="Fest-Los, angestellt, schwimmend: warum eine Welle genau einen Festpunkt braucht, was X- und O-Anordnung unterscheidet und wie das Lagerspiel eingestellt wird.">
+<meta name="reihenfolge" content="1">
+<title>Maschinenelemente: Lager - Lagerungen gestalten</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .zwei{grid-template-columns:1fr} }
+
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer; font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+
+.felder{display:flex; flex-wrap:wrap; gap:14px; margin:12px 0 4px}
+.feld{display:flex; flex-direction:column; gap:4px; font-size:.86rem; color:var(--muted)}
+.feld select, .feld input{
+  font:inherit; padding:7px 10px; border:1px solid var(--border-strong);
+  border-radius:8px; background:#fff; color:var(--text); min-width:180px;
+}
+
+.werte{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px}
+.wert{
+  background:var(--primary-light); border:1px solid #dbeafe; border-radius:10px;
+  padding:9px 14px; min-width:150px;
+}
+.wert .l{display:block; font-size:.78rem; color:var(--muted)}
+.wert .z{font-size:1.2rem; font-weight:700; color:var(--primary)}
+
+table{border-collapse:collapse; width:100%; font-size:.9rem}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:var(--primary-light); color:var(--primary); font-weight:600}
+tbody tr:nth-child(even){background:#fbfdff}
+.tabellenrahmen{overflow-x:auto; margin:10px 0}
+td.zahl, th.zahl{text-align:right; white-space:nowrap}
+
+.merke{
+  background:#fffbeb; border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
+  padding:12px 14px; margin:14px 0 0; font-size:.94rem;
+}
+.gut{background:#f0fdf4; border-left:4px solid var(--ok); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.schlecht{background:#fef2f2; border-left:4px solid var(--bad); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.fussnote{color:var(--muted); font-size:.82rem; margin:12px 0 0}
+
+/* --- Fachbegriffe: gleiches Prinzip wie in den anderen Lektionen ------- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  user-select:none; font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.link{background:none; border:0; padding:0; color:var(--primary); cursor:pointer;
+  font:600 .88rem/1 inherit; text-decoration:underline}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt
+   durch die Farbe auf. So begegnet der Begriff ab jetzt an jeder Stelle
+   wieder und praegt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+
+figure{margin:14px 0 0}
+figure svg{
+  display:block; width:100%; height:auto; max-width:620px; margin:0 auto;
+  color:var(--text); background:var(--card);
+}
+figcaption{color:var(--muted); font-size:.82rem; text-align:center; margin-top:6px}
+
+footer{
+  text-align:center; color:var(--muted); font-size:13px;
+  padding:34px 0 10px; border-top:1px solid var(--border); margin-top:34px;
+}
+footer a{color:var(--muted)}
+
+/* --- Lagerungen -------------------------------------------------------- */
+.lagerbild{border:1px solid var(--border); border-radius:10px; padding:10px;
+  background:var(--card); margin:12px 0 0}
+.lagerbild svg{width:100%; max-width:none; height:auto; display:block;
+  color:var(--text)}
+.lagerbild figcaption{margin-top:6px}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+@media (max-width:820px){ .zwei{grid-template-columns:1fr} }
+
+.regler{display:flex; flex-wrap:wrap; gap:18px; align-items:center;
+  margin:14px 0 0; padding:12px 14px; border:1px solid var(--border);
+  border-radius:10px; background:var(--card)}
+.regler label{font-size:.88rem; font-weight:600; display:flex;
+  align-items:center; gap:9px}
+.regler input[type="range"]{width:180px}
+.regler output{font-variant-numeric:tabular-nums; color:var(--primary);
+  font-weight:700; min-width:4.5em; display:inline-block}
+
+.ergebnis{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 0}
+.ergebnis div{flex:1 1 180px; border:1px solid var(--border);
+  border-radius:10px; padding:10px 13px; background:var(--card)}
+.ergebnis b{display:block; font-size:1.25rem; color:var(--primary);
+  font-variant-numeric:tabular-nums}
+.ergebnis span{font-size:.8rem; color:var(--muted)}
+
+.rechenweg{margin:12px 0 0; border-collapse:collapse; width:100%;
+  font-size:.86rem}
+.rechenweg td{border-bottom:1px solid var(--border); padding:5px 8px;
+  vertical-align:top}
+.rechenweg td:first-child{white-space:nowrap; font-weight:600}
+.rechenweg td:last-child{text-align:right; white-space:nowrap;
+  font-variant-numeric:tabular-nums}
+
+.warnung{background:#fef2f2; border-left:4px solid var(--bad);
+  border-radius:0 8px 8px 0; padding:11px 14px; margin:12px 0 0;
+  font-size:.94rem}
+</style>
+<link rel="stylesheet" href="assets/thema-werkzeug.css">
+<script src="assets/thema.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Lagerungen gestalten</h1>
+  <p class="lead">Fest-Los, angestellt, schwimmend &ndash; und die Frage, an der sich alles entscheidet: X oder O.</p>
+</header>
+
+
+<div class="schalter" data-druck="weg">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.
+    Einen Schalter f&uuml;r die Normdarstellung gibt es hier nicht: Die
+    Zeichnung ist von vornherein eine Normzeichnung.</span>
+</div>
+
+<div class="tabs" role="tablist" data-druck="weg">
+  <button role="tab" data-tab="arten"     aria-selected="true">Die vier Lagerungsarten</button>
+  <button role="tab" data-tab="xo"        aria-selected="false">X oder O</button>
+  <button role="tab" data-tab="anstellen" aria-selected="false">Anstellen</button>
+  <button role="tab" data-tab="passung"   aria-selected="false">Umlauf und Passung</button>
+  <button role="tab" data-tab="montage"   aria-selected="false">Ein- und Ausbauen</button>
+</div>
+
+<main>
+
+<!-- ================================================================ ARTEN -->
+<section class="panel" id="p-arten">
+
+  <div class="karte">
+    <h2>Eine Welle braucht genau einen Festpunkt</h2>
+    <p class="sub">Sonst verspannt sie sich selbst.</p>
+    <p>Zwei Lager, zwei feste Sitze &ndash; das klingt sicher und ist der
+    h&auml;ufigste Konstruktionsfehler an einer Welle. Denn der Abstand
+    zwischen den Lagerstellen ist nie genau der geplante: Fertigungstoleranzen
+    machen ihn ein paar Hundertstel anders, und im Betrieb wird die Welle
+    warm und l&auml;nger als das Geh&auml;use, das sie h&auml;lt.</p>
+    <p>Diese L&auml;nge muss irgendwo hin. Entweder eine Lagerstelle gibt
+    nach &ndash; oder die Lager tun es, und zwar genau einmal.</p>
+    <div class="merke">Mindestens eine Lagerstelle muss die
+    L&auml;nген&auml;nderung ausgleichen k&ouml;nnen.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Fest- und Loslagerung</h2>
+    <p class="sub">Die L&ouml;sung f&uuml;r lange Wellen und gro&szlig;e
+      Temperaturunterschiede.</p>
+    <p>Das <strong>Festlager</strong> bleibt fest an seiner Position und
+    nimmt die Axialkr&auml;fte in beide Richtungen auf. Das
+    <strong>Loslager</strong> gleicht die L&auml;ngen&auml;nderungen aus:
+    Sein Innenring sitzt fest auf der Welle, sein Au&szlig;enring kann sich
+    im Geh&auml;use axial bewegen &ndash; er ist &bdquo;lose&ldquo;
+    eingebaut.</p>
+    <figure class="lagerbild" id="bildFestlos"></figure>
+    <p class="fussnote">Der Pfeil am rechten Lager zeigt, wohin sein
+    Au&szlig;enring wandern darf. Genau diese wenigen Zehntel sind der ganze
+    Zweck der Bauart.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Angestellte Lagerung</h2>
+    <p class="sub">Zwei Schr&auml;glager gegeneinander &ndash; und das Spiel
+      wird beim Einbau eingestellt.</p>
+    <p>Kegelrollenlager und Schr&auml;gkugellager k&ouml;nnen die Kraft nur
+    in eine Richtung aufnehmen. Sie m&uuml;ssen deshalb
+    <strong>paarweise</strong> arbeiten: Jedes h&auml;lt eine Richtung, und
+    beim Einbau wird eingestellt, wie fest sie gegeneinander stehen.</p>
+    <p>Das ist die genaueste und steifste Lagerung, die man mit zwei Lagern
+    bauen kann. Sie hat aber einen Preis: Das Lagerspiel h&auml;ngt an der
+    Temperatur. Eine angestellte Lagerung ist f&uuml;r st&auml;ndig
+    wechselnde Betriebstemperaturen ungeeignet.</p>
+    <p>Wie herum die beiden Lager stehen, entscheidet alles Weitere &ndash;
+    dazu der n&auml;chste Reiter.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Schwimmende Lagerung</h2>
+    <p class="sub">Die wirtschaftliche L&ouml;sung, wo es nicht genau sein
+      muss.</p>
+    <p>Beide Lager sitzen mit etwas Luft im Geh&auml;use; die Welle kann
+    sich um dieses Ma&szlig; axial verschieben. Axialkr&auml;fte werden
+    trotzdem aufgenommen und ans Geh&auml;use weitergeleitet &ndash; nur
+    eben erst, nachdem die Welle ein St&uuml;ck gewandert ist. Geeignet sind
+    Rillenkugellager, Pendelkugellager und Pendelrollenlager.</p>
+    <figure class="lagerbild" id="bildSchwimmend"></figure>
+  </div>
+
+  <div class="karte">
+    <h2>Die vier im Vergleich</h2>
+    <div class="tabellenrahmen"><table id="tabArten"></table></div>
+  </div>
+
+</section>
+
+<!-- =================================================================== XO -->
+<section class="panel" id="p-xo" hidden>
+
+  <div class="karte">
+    <h2>Die Drucklinie und der Punkt S</h2>
+    <p class="sub">Warum zwei gleiche Lager verschieden steif sind.</p>
+    <p>In einem Schr&auml;glager l&auml;uft die Kraft nicht senkrecht durch
+    den W&auml;lzk&ouml;rper, sondern schr&auml;g &ndash; unter dem
+    <span class="term" data-t="beruehrung"></span>. Verl&auml;ngert man diese
+    <strong>Drucklinie</strong>, trifft sie die Wellenachse in einem Punkt.
+    Der hei&szlig;t <strong>S</strong>, die Spitze des Druckkegels.</p>
+    <p>Zwei Lager haben zwei solche Punkte. Ihr Abstand ist die
+    <strong>St&uuml;tzbasis H</strong> &ndash; und nicht der Lagerabstand.
+    Genau daran h&auml;ngt, wie stark die Welle kippt.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Selbst ausprobieren</h2>
+    <p class="sub">Dieselben zwei Lager, zweimal herum gedreht.</p>
+    <div class="regler">
+      <label>Lagerabstand
+        <input type="range" id="regAbstand" min="60" max="220" step="10"
+          value="120">
+        <output id="ausAbstand">120 mm</output></label>
+      <label>Lager
+        <select id="regLager">
+          <option value="7205 B">7205 B (d = 25)</option>
+          <option value="7206 B">7206 B (d = 30)</option>
+          <option value="7208 B" selected>7208 B (d = 40)</option>
+          <option value="7210 B">7210 B (d = 50)</option>
+        </select></label>
+    </div>
+    <div class="zwei">
+      <figure class="lagerbild" id="bildO"></figure>
+      <figure class="lagerbild" id="bildX"></figure>
+    </div>
+    <div class="ergebnis">
+      <div><b id="wertA">&ndash;</b><span>Abstand Wälzkörpermitte bis S</span></div>
+      <div><b id="wertO">&ndash;</b><span>Stützbasis H, O-Anordnung</span></div>
+      <div><b id="wertX">&ndash;</b><span>Stützbasis H, X-Anordnung</span></div>
+    </div>
+    <p class="fussnote">Gerechnet wird mit dem
+    <span class="term" data-t="beruehrung"></span> von 40&deg;, den das
+    Tabellenbuch f&uuml;r Schr&auml;gkugellager der Ausf&uuml;hrung B angibt.
+    Von der Mitte der W&auml;lzk&ouml;rper aus trifft die Drucklinie die
+    Achse nach dem Weg <em>a</em> = r<sub>m</sub> / tan&nbsp;40&deg;.</p>
+    <div class="merke">Bei der O-Anordnung liegen die Punkte S
+    <strong>au&szlig;erhalb</strong> der Lager, bei der X-Anordnung
+    <strong>dazwischen</strong>. Deshalb ist H bei O gr&ouml;&szlig;er als
+    der Lagerabstand und bei X kleiner.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Was daraus folgt</h2>
+    <div class="tabellenrahmen"><table id="tabXO"></table></div>
+    <p>Die gr&ouml;&szlig;ere St&uuml;tzbasis der O-Anordnung ergibt das
+    <strong>geringere Kippspiel</strong>. Darum sitzt sie dort, wo wenig
+    Platz ist und trotzdem nichts wackeln darf: an Kegelritzeln, an
+    Laufr&auml;dern, an fliegend gelagerten Wellen.</p>
+    <div class="warnung">Und dann die Temperatur, die man beim Zeichnen
+    gern vergisst: Wird die <strong>Welle</strong> w&auml;rmer als das
+    Geh&auml;use, <strong>vergr&ouml;&szlig;ert</strong> sich das Lagerspiel
+    bei der O-Anordnung &ndash; und <strong>verringert</strong> sich bei der
+    X-Anordnung. Wer eine X-Anordnung ohne Reserve anstellt, hat nach einer
+    Stunde Betrieb ein hei&szlig;es Lager.</div>
+  </div>
+
+</section>
+
+<!-- ============================================================ ANSTELLEN -->
+<section class="panel" id="p-anstellen" hidden>
+
+  <div class="karte">
+    <h2>Warum &uuml;berhaupt anstellen?</h2>
+    <p class="sub">Zwischen zu viel und zu wenig liegt ein schmales Fenster.</p>
+    <p>Angestellte Lagerungen bieten die M&ouml;glichkeit, das Lagerspiel
+    genau einzustellen &ndash; oder sogar eine <strong>Vorspannung</strong>.
+    Beides hat seine Grenze:</p>
+    <ul>
+      <li><strong>Zu kleine Lagerluft</strong> f&uuml;hrt zu erh&ouml;hten
+        Druckspannungen zwischen W&auml;lzk&ouml;rpern und Lagerringen.
+        Erh&ouml;hter Verschlei&szlig; ist die Folge.</li>
+      <li><strong>Zu gro&szlig;e Lagerluft</strong> f&uuml;hrt ebenso zu
+        erh&ouml;htem Verschlei&szlig;: Die W&auml;lzk&ouml;rper tragen dann
+        nicht mehr gleichm&auml;&szlig;ig &uuml;ber ihren Umfang, und das
+        f&uuml;hrt zu Ungenauigkeiten bei der Wellenf&uuml;hrung.</li>
+    </ul>
+    <div class="merke">Die Lagerungstoleranzen werden meist so
+    gew&auml;hlt, dass bei <strong>Betriebstemperatur</strong> das
+    erforderliche Lagerspiel vorliegt &ndash; nicht bei Raumtemperatur auf
+    der Werkbank.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Womit wird angestellt</h2>
+    <div class="tabellenrahmen"><table id="tabAnstellen"></table></div>
+    <h3>Nutmutter und Sicherungsblech</h3>
+    <p>Die gebr&auml;uchlichste Art, einen Innenring axial zu ziehen: eine
+    <strong>Nutmutter DIN 981</strong> auf dem Feingewinde der Welle, dazu
+    ein <strong>Sicherungsblech DIN 5406</strong>. Die Nase des Blechs
+    greift in eine Nut der Welle, ein Lappen wird in eine Nut der Mutter
+    umgeschlagen. Die Paarung ist einfach: Zu KM6 geh&ouml;rt MB6.</p>
+    <div class="tabellenrahmen"><table id="tabKM"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Wie weit &ndash; und woran man es merkt</h2>
+    <p>Eingestellt wird nicht nach Gef&uuml;hl, sondern gegen eine
+    Messgr&ouml;&szlig;e:</p>
+    <ul>
+      <li><strong>Axialspiel mit der Messuhr.</strong> Uhr gegen die
+        Stirnfl&auml;che der Welle, Welle axial hin und her dr&uuml;cken,
+        Ausschlag ablesen. Das ist die sauberste Methode, weil sie eine Zahl
+        liefert.</li>
+      <li><strong>Lagerspiel mit der F&uuml;hlerlehre</strong> bei Lagern
+        mit kegeliger Bohrung: Dort wird der Innenring beim Aufschieben
+        aufgeweitet, und das Spiel schrumpft messbar mit.</li>
+      <li><strong>Reibmoment.</strong> Wo sich nichts messen l&auml;sst,
+        dreht man von Hand und f&uuml;hlt, wann es schwerg&auml;ngig wird.
+        Das ist die schlechteste der drei Methoden und trotzdem
+        h&auml;ufig die einzige.</li>
+    </ul>
+    <p class="fussnote">Die H&ouml;he des Lagerspiels steht im Montageplan
+    des Maschinenherstellers oder im Katalog des Lagerherstellers &ndash;
+    nicht im Tabellenbuch.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================== PASSUNG -->
+<section class="panel" id="p-passung" hidden>
+
+  <div class="karte">
+    <h2>Umfangslast oder Punktlast?</h2>
+    <p class="sub">Die Frage entscheidet, welcher Ring fest sitzen muss.</p>
+    <p>Ein Ring hat <strong>Umfangslast</strong>, wenn die Last nacheinander
+    &uuml;ber seinen ganzen Umfang wandert &ndash; und
+    <strong>Punktlast</strong>, wenn sie immer an derselben Stelle
+    dr&uuml;ckt. Das h&auml;ngt nicht am Lager, sondern daran, was sich
+    dreht: der Ring oder die Last.</p>
+    <div class="tabellenrahmen"><table id="tabUmlauf"></table></div>
+    <div class="merke">Der Ring mit <strong>Umfangslast</strong> braucht eine
+    feste Passung. Der Ring mit <strong>Punktlast</strong> darf lose
+    sitzen &ndash; und soll es meistens auch, damit sich das Loslager
+    bewegen kann.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Welche Toleranz</h2>
+    <p class="sub">Nach DIN 5425-1, Tabellenbuch bei den Passungen.</p>
+    <div class="tabellenrahmen"><table id="tabToleranz"></table></div>
+    <p class="fussnote">Grundtoleranzgrad: f&uuml;r Wellen meist IT6,
+    f&uuml;r Bohrungen meist IT7. Bei erh&ouml;hten Anforderungen an
+    Laufruhe und Laufgenauigkeit werden auch kleinere Grade verwendet.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================== MONTAGE -->
+<section class="panel" id="p-montage" hidden>
+
+  <div class="karte">
+    <h2>Der Satz, an dem alles h&auml;ngt</h2>
+    <div class="merke">Montagekr&auml;fte d&uuml;rfen nicht &uuml;ber die
+    W&auml;lzk&ouml;rper geleitet werden.</div>
+    <p>Wer das Lager &uuml;ber den falschen Ring auf die Welle treibt,
+    dr&uuml;ckt jede Kugel einmal in die Laufbahn. Die Vertiefungen sieht
+    man nicht, man h&ouml;rt sie sp&auml;ter. Deshalb: Bei nicht zerlegbaren
+    Lagern wird der Ring mit dem <strong>festen Sitz zuerst</strong>
+    montiert, und die Kraft greift auch nur an diesem Ring an.</p>
+    <h3>Vor dem Einbau</h3>
+    <ul>
+      <li>Mit der Zusammenbauzeichnung vertraut machen, das richtige Lager
+        bereitlegen (Herstellerangabe beachten).</li>
+      <li>Montageplatz weitgehend staubfrei und sauber halten &ndash;
+        Verunreinigungen setzen die Lebensdauer erheblich herab.</li>
+      <li>Geh&auml;usebohrung und Wellensitz auf Ma&szlig;-, Form- und
+        Lagegenauigkeit pr&uuml;fen, Korrosionsschutz abwischen,
+        Sitzfl&auml;chen leicht &ouml;len.</li>
+      <li>Einbaufase von 10&deg; bis 15&deg; vorbereiten.</li>
+      <li>Unterk&uuml;hlung vermeiden &ndash; es bildet sich Schwitzwasser
+        und in der Folge Korrosion.</li>
+    </ul>
+  </div>
+
+  <div class="karte">
+    <h2>Drei Wege auf die Welle</h2>
+    <div class="tabellenrahmen"><table id="tabMontage"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Warmmontage nachrechnen</h2>
+    <p class="sub">Wie viel gr&ouml;&szlig;er wird die Bohrung wirklich?</p>
+    <p>Beim Erw&auml;rmen dehnt sich der Innenring &ndash; auch seine
+    Bohrung. Der Durchmesser ist eine L&auml;nge wie jede andere, also gilt
+    &Delta;l = l<sub>1</sub> &middot; &alpha; &middot; &Delta;t.</p>
+    <div class="regler">
+      <label>Bohrung d
+        <input type="range" id="regD" min="20" max="120" step="5" value="60">
+        <output id="ausD">60 mm</output></label>
+      <label>Erw&auml;rmung auf
+        <input type="range" id="regT" min="40" max="120" step="5" value="80">
+        <output id="ausT">80 &deg;C</output></label>
+      <label>Werkstoff
+        <select id="regWerkstoff"></select></label>
+    </div>
+    <div class="ergebnis">
+      <div><b id="wertDT">&ndash;</b><span>Temperaturdifferenz</span></div>
+      <div><b id="wertDL">&ndash;</b><span>Aufweitung der Bohrung</span></div>
+    </div>
+    <p class="fussnote">Ausgangstemperatur 20&nbsp;&deg;C. Im Normalfall
+    k&ouml;nnen W&auml;lzlager bis 100&nbsp;&deg;C ohne besondere
+    Ma&szlig;nahmen betrieben werden; mit geeignetem Schmierstoff bis
+    120&nbsp;&deg;C. Dar&uuml;ber beginnt das Gef&uuml;ge des
+    W&auml;lzlagerstahls sich umzuwandeln, und das Lager verliert seine
+    H&auml;rte &ndash; deshalb ist bei 120&nbsp;&deg;C Schluss.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Wieder herunter</h2>
+    <p>Zur Demontage kleiner Lager eignen sich mechanische
+    <strong>Abziehvorrichtungen</strong>. Bei gr&ouml;&szlig;eren Lagern
+    werden die Abziehkr&auml;fte daf&uuml;r zu gro&szlig;; dann wird der
+    Innenring erw&auml;rmt &ndash; gleichm&auml;&szlig;ig &uuml;ber den
+    ganzen Umfang und nur <strong>kurz</strong>, denn sonst erw&auml;rmt
+    sich die Welle mit und dehnt sich auch aus. Dazu gibt es induktive
+    Erw&auml;rmungsanlagen und Anw&auml;rmringe.</p>
+    <p>Bei kegeliger Bohrung wird die <strong>Nutmutter gel&ouml;st, aber
+    auf dem Lagersitz belassen</strong>. Dann wird der Innenring mit
+    Schlagh&uuml;lse oder Austreibdorn in Richtung der Mutter getrieben. Das
+    Lager l&ouml;st sich schlagartig &ndash; und die Mutter f&auml;ngt es
+    auf.</p>
+    <div class="warnung">Ein Lager, das einmal abgezogen wurde, geht nicht
+    ohne Weiteres wieder hinein: Beim Abziehen wird der Innenring
+    beansprucht, und der Sitz auf der Welle hat sich beim Herunterziehen
+    ver&auml;ndert. Wer demontiert, plant ein neues Lager ein.</div>
+  </div>
+
+</section>
+
+</main>
+
+
+<footer>
+  &copy; 2026 t-bk.de &middot; <a href="/impressum.html">Impressum</a> &middot;
+  <a href="/datenschutz.html">Datenschutz</a>
+</footer>
+
+</div>
+
+<script src="assets/zeichnen.js"></script>
+<script src="assets/waelzlager.js"></script>
+<script>
+"use strict";
+
+function el(id){ return document.getElementById(id); }
+
+/* ==========================================================================
+   Die Begriffe dieser Lektion
+   --------------------------------------------------------------------------
+   Links der Fachbegriff, rechts die alltagssprachliche Fassung. Der Schalter
+   oben stellt alle auf einmal um; ein Klick auf ein einzelnes Wort dreht es
+   fuer sich um und faerbt es ein. So begegnet der Begriff ab dann an jeder
+   Stelle wieder.
+   ========================================================================== */
+var TERME = {
+  beruehrung:   {f:"Ber\u00fchrungswinkel", a:"Winkel der Drucklinie"},
+  stuetzbasis:  {f:"St\u00fctzbasis", a:"Abstand der Druckkegelspitzen"},
+  festlager:    {f:"Festlager", a:"Lager, das die Welle in L\u00e4ngsrichtung h\u00e4lt"},
+  loslager:     {f:"Loslager", a:"Lager, das wandern darf"},
+  umfangslast:  {f:"Umfangslast", a:"Last wandert um den Ring herum"},
+  punktlast:    {f:"Punktlast", a:"Last dr\u00fcckt immer an dieselbe Stelle"},
+  vorspannung:  {f:"Vorspannung", a:"Lager ist ab Werk zusammengedr\u00fcckt"},
+  lagerluft:    {f:"Lagerluft", a:"Spiel zwischen Ringen und W\u00e4lzk\u00f6rpern"},
+  anstellen:    {f:"Anstellen", a:"Lagerspiel beim Einbau einstellen"}
+};
+
+var zustand = {fach:false};
+var aufgedeckt = {};
+
+function paramsLesen(){
+  try{
+    var q = new URLSearchParams(window.location.search);
+    if(q.has("fach")) zustand.fach = q.get("fach") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Ein einzeln aufgedeckter Begriff dreht die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  var basis = wurzel || document;
+  if(!wurzel) document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+  var knoten = basis.querySelectorAll(".term");
+  for(var i = 0; i < knoten.length; i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var b = TERME[schluessel];
+    if(!b) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? b.f : b.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt
+        + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff \u2013 klicken f\u00fcr die einfache Formulierung"
+              : "einfache Formulierung \u2013 klicken f\u00fcr den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung"
+                      : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zur\u00fccksetzen"
+    : anzahl + " aufgedeckte W\u00f6rter zur\u00fccksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Fuer Texte, die erst beim Zeichnen entstehen. */
+function wort(schluessel, gross){
+  if(!TERME[schluessel]) return schluessel;
+  return '<span class="term" data-t="' + schluessel + '"'
+    + (gross ? ' data-cap="1"' : "") + "></span>";
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert \u2013 Fachbegriffe "
+        + (zustand.fach ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig,
+        function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
+/* ==========================================================================
+   Die Tabellen dieser Lektion
+   ========================================================================== */
+function tabelle(id, kopf, zeilen){
+  var t = el(id);
+  if(!t) return;
+  t.innerHTML = "";
+  var th = document.createElement("thead");
+  var tr = document.createElement("tr");
+  kopf.forEach(function(k){
+    var c = document.createElement("th");
+    c.innerHTML = k;
+    tr.appendChild(c);
+  });
+  th.appendChild(tr);
+  t.appendChild(th);
+  var tb = document.createElement("tbody");
+  zeilen.forEach(function(z){
+    var r = document.createElement("tr");
+    z.forEach(function(w){
+      var c = document.createElement("td");
+      c.innerHTML = w;
+      r.appendChild(c);
+    });
+    tb.appendChild(r);
+  });
+  t.appendChild(tb);
+}
+
+function artenTabelle(){
+  tabelle("tabArten",
+    ["Lagerungsart", "Wie sie ausgleicht", "Wof\u00fcr"],
+    [["Fest-Loslagerung",
+      "Das " + wort("loslager") + " wandert im Geh\u00e4use",
+      "lange Wellen, gro\u00dfe Temperaturunterschiede, ungenaue Fluchtung"],
+     ["Angestellte Lagerung (X oder O)",
+      "gar nicht \u2013 das Spiel wird beim Einbau eingestellt",
+      "wenn es steif und spielarm sein muss"],
+     ["Schwimmende Lagerung",
+      "die ganze Welle verschiebt sich um das Axialspiel",
+      "wo eine enge F\u00fchrung nicht n\u00f6tig ist"],
+     ["Federvorgespannt",
+      "eine Wellfeder h\u00e4lt die " + wort("vorspannung") + " nach",
+      "wenn die Vorspannung unabh\u00e4ngig von der Temperatur bleiben soll"]]);
+}
+
+function xoTabelle(){
+  tabelle("tabXO",
+    ["", "O-Anordnung", "X-Anordnung"],
+    [["Drucklinien", "zeigen nach au\u00dfen", "zeigen nach innen"],
+     [wort("stuetzbasis", true) + " H",
+      "gr\u00f6\u00dfer als der Lagerabstand",
+      "kleiner als der Lagerabstand"],
+     ["Kippspiel", "geringer", "gr\u00f6\u00dfer"],
+     ["Welle w\u00e4rmer als das Geh\u00e4use",
+      "Lagerspiel wird <strong>gr\u00f6\u00dfer</strong>",
+      "Lagerspiel wird <strong>kleiner</strong>"],
+     ["typisch f\u00fcr",
+      "Kegelritzel, Laufr\u00e4der, fliegende Lagerungen",
+      "Wellen, die sich durchbiegen oder nicht genau fluchten"]]);
+}
+
+function anstellenTabelle(){
+  tabelle("tabAnstellen",
+    ["Womit", "Wo es angreift", "Bemerkung"],
+    [["Nutmutter DIN 981 mit Sicherungsblech DIN 5406",
+      "Innenring, \u00fcber das Feingewinde der Welle",
+      "die \u00fcbliche L\u00f6sung; l\u00e4sst sich nachstellen"],
+     ["Passscheiben oder Distanzring unter dem Lagerdeckel",
+      "Au\u00dfenring",
+      "Dicke wird ausgemessen, nicht gesch\u00e4tzt"],
+     ["Lagerdeckel mit Schrauben",
+      "Au\u00dfenring",
+      "der Spalt wird gemessen und mit Passscheiben ausgeglichen"],
+     ["Wellfeder oder Tellerfeder",
+      "Au\u00dfenring des einen Lagers",
+      "h\u00e4lt die " + wort("vorspannung") +
+      " auch bei wechselnder Temperatur"]]);
+}
+
+function kmTabelle(){
+  var z = [];
+  ["KM4", "KM5", "KM6", "KM7", "KM8", "KM9", "KM10"].forEach(function(k){
+    var e = Waelzlager.NUTMUTTER[k];
+    z.push([k + " / M" + k.slice(2), e[0], e[1] + " mm", e[2] + " mm"]);
+  });
+  tabelle("tabKM",
+    ["Nutmutter / Sicherungsblech", "Gewinde d<sub>1</sub>",
+     "d<sub>2</sub>", "H\u00f6he h"], z);
+}
+
+function umlaufTabelle(){
+  tabelle("tabUmlauf",
+    ["Was sich dreht", "Beispiel", "Innenring", "Au\u00dfenring"],
+    [["Innenring dreht, Last steht", "Welle mit Gewichtsbelastung",
+      wort("umfangslast", true), wort("punktlast", true)],
+     ["Au\u00dfenring dreht, Last dreht mit",
+      "Nabenlagerung mit gro\u00dfer Unwucht",
+      wort("umfangslast", true), wort("punktlast", true)],
+     ["Au\u00dfenring dreht, Last steht",
+      "Kfz-Vorderrad, Laufrolle",
+      wort("punktlast", true), wort("umfangslast", true)],
+     ["Innenring dreht, Last dreht mit", "Zentrifuge, Schwingsieb",
+      wort("punktlast", true), wort("umfangslast", true)]]);
+}
+
+function toleranzTabelle(){
+  tabelle("tabToleranz",
+    ["Ring", "Belastung", "Toleranzfeld"],
+    [["Innenring (Welle)", wort("umfangslast", true) + ", niedrige Last",
+      "h, k"],
+     ["Innenring (Welle)", wort("umfangslast", true) + ", mittlere Last",
+      "j, k, m"],
+     ["Innenring (Welle)", wort("umfangslast", true) + ", hohe Last",
+      "m, n, p, r"],
+     ["Innenring (Welle)", wort("punktlast", true),
+      "Spielpassung zul\u00e4ssig: j, h, g, f"],
+     ["Au\u00dfenring (Geh\u00e4use)", wort("punktlast", true),
+      "Spielpassung zul\u00e4ssig, beliebig gro\u00df: J, H, G, F"],
+     ["Au\u00dfenring (Geh\u00e4use)",
+      wort("umfangslast", true) + ", niedrige Last", "J, K"],
+     ["Au\u00dfenring (Geh\u00e4use)",
+      wort("umfangslast", true) + ", mittlere Last", "K, M, N"],
+     ["Au\u00dfenring (Geh\u00e4use)",
+      wort("umfangslast", true) + ", hohe Last", "N, P"]]);
+}
+
+function montageTabelle(){
+  tabelle("tabMontage",
+    ["Weg", "Wie", "Wann"],
+    [["Mechanisch",
+      "Schlagb\u00fcchse und Montagescheibe, mechanische oder hydraulische Presse",
+      "Festsitze bis etwa 80 mm Bohrungsdurchmesser bei Raumtemperatur"],
+     ["Thermisch",
+      "induktives Anw\u00e4rmger\u00e4t, Heizplatte, W\u00e4rmeschrank oder \u00d6lbad",
+      "gr\u00f6\u00dfere Lager und festere Sitze; gleichm\u00e4\u00dfig erw\u00e4rmen"],
+     ["Hydraulisch",
+      "\u00d6l wird \u00fcber Kan\u00e4le in der Welle in den Lagersitz gedr\u00fcckt",
+      "nur bei kegeliger Lagerbohrung"]]);
+}
+
+/* ==========================================================================
+   Die Bilder und die Rechner
+   ========================================================================== */
+function bilderZeichnen(){
+  Waelzlager.lagerung("bildFestlos", {
+    links: "6208", rechts: "6208", abstand: 150, anordnung: "festlos",
+    unterschrift: "Fest-Loslagerung mit zwei Rillenkugellagern 6208. "
+      + "Links das Festlager, rechts das Loslager."
+  });
+  Waelzlager.lagerung("bildSchwimmend", {
+    links: "6206", rechts: "6206", abstand: 130, anordnung: "schwimmend",
+    unterschrift: "Schwimmende Lagerung mit zwei Rillenkugellagern 6206. "
+      + "Beide Au\u00dfenringe haben Luft im Geh\u00e4use."
+  });
+}
+
+function xoZeichnen(){
+  var bez = el("regLager").value;
+  var ab = Number(el("regAbstand").value);
+  el("ausAbstand").textContent = ab + " mm";
+
+  Waelzlager.lagerung("bildO", {
+    links: bez, rechts: bez, abstand: ab, anordnung: "O", drucklinien: true,
+    unterschrift: "<strong>O-Anordnung</strong> \u2013 die Drucklinien "
+      + "zeigen nach au\u00dfen."
+  });
+  Waelzlager.lagerung("bildX", {
+    links: bez, rechts: bez, abstand: ab, anordnung: "X", drucklinien: true,
+    unterschrift: "<strong>X-Anordnung</strong> \u2013 die Drucklinien "
+      + "zeigen nach innen."
+  });
+
+  var l = Waelzlager.lager(bez);
+  var s = Waelzlager.stuetzbasis({d: l.d, D: l.D, abstand: ab, winkel: 40});
+  el("wertA").textContent = Waelzlager.rund(s.a, 1) + " mm";
+  el("wertO").textContent = Waelzlager.rund(s.O, 0) + " mm";
+  el("wertX").textContent = Waelzlager.rund(s.X, 0) + " mm";
+}
+
+function warmRechnen(){
+  var d = Number(el("regD").value);
+  var t = Number(el("regT").value);
+  var a = Number(el("regWerkstoff").value);
+  el("ausD").textContent = d + " mm";
+  el("ausT").textContent = t + " \u00b0C";
+  var dt = t - 20;
+  el("wertDT").textContent = dt + " K";
+  var dl = Waelzlager.waermedehnung(d, a, dt);
+  el("wertDL").textContent = Waelzlager.rund(dl * 1000, 1) + " \u00b5m";
+}
+
+function werkstoffeFuellen(){
+  var s = el("regWerkstoff");
+  Object.keys(Waelzlager.ALPHA).forEach(function(k){
+    var o = document.createElement("option");
+    o.value = Waelzlager.ALPHA[k];
+    o.textContent = k;
+    if(k.indexOf("Unlegierter") === 0) o.selected = true;
+    s.appendChild(o);
+  });
+}
+
+function allesNeuZeichnen(){
+  artenTabelle();
+  xoTabelle();
+  anstellenTabelle();
+  kmTabelle();
+  umlaufTabelle();
+  toleranzTabelle();
+  montageTabelle();
+  begriffeZeichnen(el("tabArten"));
+  begriffeZeichnen(el("tabXO"));
+  begriffeZeichnen(el("tabUmlauf"));
+  begriffeZeichnen(el("tabToleranz"));
+  begriffeZeichnen(el("tabAnstellen"));
+}
+
+/* ==========================================================================
+   Start
+   ========================================================================== */
+function start(){
+  paramsLesen();
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+
+  allesNeuZeichnen();
+  bilderZeichnen();
+
+  el("regAbstand").addEventListener("input", xoZeichnen);
+  el("regLager").addEventListener("change", xoZeichnen);
+  xoZeichnen();
+
+  werkstoffeFuellen();
+  ["regD", "regT"].forEach(function(id){
+    el(id).addEventListener("input", warmRechnen);
+  });
+  el("regWerkstoff").addEventListener("change", warmRechnen);
+  warmRechnen();
+
+  begriffeZeichnen();
+
+  /* Die Reiter. Dieselbe Bedienung wie in den anderen Lektionen. */
+  var knoepfe = document.querySelectorAll('.tabs button');
+  for(var i = 0; i < knoepfe.length; i++){
+    knoepfe[i].addEventListener("click", function(){
+      var ziel = this.getAttribute("data-tab");
+      for(var j = 0; j < knoepfe.length; j++){
+        var k = knoepfe[j];
+        var an = k.getAttribute("data-tab") === ziel;
+        k.setAttribute("aria-selected", an ? "true" : "false");
+        el("p-" + k.getAttribute("data-tab")).hidden = !an;
+      }
+    });
+  }
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+<script src="assets/bildungsgang.js"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
+<script src="assets/feedback.js"></script>
+<script src="assets/back-nav.js" data-ziel="../"></script>
+</body>
+</html>
