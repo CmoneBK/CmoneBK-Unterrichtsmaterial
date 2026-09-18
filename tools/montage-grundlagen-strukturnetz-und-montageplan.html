@@ -136,6 +136,16 @@ footer{
 footer a{color:var(--muted)}
 
 /* --- Strukturnetz und Montageplan ------------------------------------- */
+.buehne{
+  width:100%; aspect-ratio:16/10; min-height:260px; margin:14px 0 0;
+  border:1px solid var(--border); border-radius:10px; overflow:hidden;
+  background:var(--bg);
+}
+@media (max-width:640px){ .buehne{aspect-ratio:4/3} }
+.schrittzeile{min-height:1.4em; margin:10px 0 0; font-size:.9rem;
+  color:var(--muted)}
+.ohne3d{color:var(--muted); font-size:.9rem; margin:14px 0 0}
+
 .netz{border:1px solid var(--border); border-radius:10px; padding:8px;
   background:var(--card); overflow-x:auto; margin:12px 0 0}
 .netz svg{width:100%; min-width:640px; height:auto; display:block;
@@ -215,6 +225,7 @@ figure#bildPresse svg{max-width:none}
   <button role="tab" data-tab="lesen"  aria-selected="false">Zeichnung und St&uuml;ckliste</button>
   <button role="tab" data-tab="netz"   aria-selected="false">Das Strukturnetz</button>
   <button role="tab" data-tab="plan"   aria-selected="false">Vorrang und Plan</button>
+  <button role="tab" data-tab="raum"   aria-selected="false">In 3D montieren</button>
   <button role="tab" data-tab="pruef"  aria-selected="false">Pr&uuml;fen und &Uuml;bergeben</button>
 </div>
 
@@ -419,6 +430,55 @@ figure#bildPresse svg{max-width:none}
 
 </section>
 
+<!-- ==================================================================== RAUM -->
+<section class="panel" id="p-raum" hidden>
+
+  <div class="karte">
+    <h2>Die Vorrichtung entsteht</h2>
+    <p class="sub">Derselbe Plan, nur dass man ihm jetzt zusehen kann.</p>
+    <p>Klickt die Position an, die als N&auml;chstes eingebaut wird &ndash;
+    sie f&auml;hrt an ihren Platz. Was noch nicht geht, wird abgelehnt und
+    begr&uuml;ndet; ihr steht ja an der Werkbank und nicht am Schreibtisch.
+    Ziehen dreht die Vorrichtung, das Mausrad zoomt.</p>
+
+    <div class="buehne" id="buehne3d"></div>
+    <p class="schrittzeile" id="zeile3d"></p>
+    <div id="planBauen"></div>
+    <p style="margin-top:14px">
+      <button class="link" id="btn3dVonVorn">von vorn</button>
+      <button class="link" id="btn3dFertig">fertig zeigen</button>
+    </p>
+    <p class="fussnote">Zehn Positionen, einunddrei&szlig;ig K&ouml;rper: Zu
+    einer Position geh&ouml;rt oft mehr als ein Teil. Der Kreuzgriff besteht
+    aus einer Nabe und zwei gekreuzten Armen, die Distanzs&auml;ule aus
+    S&auml;ule und Gewindezapfen &ndash; gez&auml;hlt wird trotzdem eine
+    Position, denn bestellt wird ein St&uuml;ck.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Was das Modell zeigt und die Zeichnung nicht</h2>
+    <p class="sub">Zwei Bedingungen stehen in keiner Ansicht.</p>
+    <ul>
+      <li><strong>Die M6-Schrauben vor der Bohrplatte.</strong> Ihre
+        K&ouml;pfe sitzen in den Anschlagleisten, angezogen wird von oben.
+        Steht die Bohrplatte schon, bleiben darunter 26 mm &ndash; zu wenig
+        f&uuml;r den Schl&uuml;ssel. Der Grund ist das Werkzeug, nicht das
+        Werkst&uuml;ck.</li>
+      <li><strong>Die Kontermutter vor dem Kreuzgriff.</strong> Sie muss
+        &uuml;ber das obere Ende der Spannschraube. Sitzt dort schon der
+        Griff, kommt sie nicht mehr daran vorbei.</li>
+    </ul>
+    <div class="merke">Beides merkt man am Modell in dem Augenblick, in dem
+      es nicht mehr geht. Auf dem Papier muss man es sich denken &ndash; und
+      genau daf&uuml;r schreibt jemand einen Montageplan.</div>
+  </div>
+
+  <p class="ohne3d" id="ohne3d" hidden>Dieses Ger&auml;t kann keine
+    3D-Darstellung zeigen. Der Reiter &bdquo;Vorrang und Plan&ldquo;
+    enth&auml;lt alles, was hier gefragt ist.</p>
+
+</section>
+
 <!-- ================================================================= PRUEFEN -->
 <section class="panel" id="p-pruef" hidden>
 
@@ -484,6 +544,9 @@ figure#bildPresse svg{max-width:none}
 <script src="assets/zusammenstellung.js"></script>
 <script src="assets/bohrvorrichtung.js"></script>
 <script src="assets/montageplan.js"></script>
+<script src="vendor/three.min.js"></script>
+<script src="vendor/OrbitControls.js"></script>
+<script src="assets/bauteil3d.js"></script>
 <script>
 "use strict";
 
@@ -770,6 +833,66 @@ function planAufbauen(){
   });
 }
 
+/* --- Der Reiter "In 3D montieren" ---------------------------------------
+   Der Montageplan-Baustein fuehrt die Reihenfolge, assets/bauteil3d.js
+   zeigt sie. Verbunden sind beide ueber die Positionsnummer: Zu einer
+   Position gehoeren ein oder mehrere Koerper - der Kreuzgriff etwa ist ein
+   Normteil, aber drei Koerper. */
+var szene = null;
+
+function koerperVon(pos){
+  return VORRICHTUNG.teile3d()
+    .filter(function(k){ return k.pos === pos; })
+    .map(function(k){ return k.id; });
+}
+
+function drei(){
+  if(!window.Bauteil3D || !Bauteil3D.moeglich()){
+    el("ohne3d").hidden = false;
+    return;
+  }
+  szene = Bauteil3D.aufbauen(el("buehne3d"), {
+    teile: VORRICHTUNG.teile3d(),
+    blick: {abstand: 520, hoch: 0.38, dreh: 0.80},
+    mitte: {x: 0, y: 48, z: 0},
+    dauer: 700,
+    beschreibung: "Die Bohrvorrichtung zum Zusammensetzen: zehn Positionen, "
+      + "die der Reihe nach an ihren Platz fahren"
+  });
+  if(!szene){ el("ohne3d").hidden = false; return; }
+
+  szene.alleVerbergen();
+
+  var bauen = Montageplan.reihenfolge("planBauen", {
+    teile: VORRICHTUNG.TEILE,
+    vorrang: VORRICHTUNG.VORRANG,
+    sofort: true,
+    onSetzen: function(pos){
+      koerperVon(pos).forEach(function(id){ szene.einsetzen(id); });
+      var t = VORRICHTUNG.teil(pos);
+      el("zeile3d").textContent = t ? t.menge + " \u00d7 " + t.benennung : "";
+    },
+    onZurueck: function(pos){
+      koerperVon(pos).forEach(function(id){ szene.herausnehmen(id); });
+      el("zeile3d").textContent = "";
+    },
+    onStand: function(gesetzt, fertig){
+      if(fertig) el("zeile3d").textContent = "Die Vorrichtung steht.";
+    }
+  });
+
+  el("btn3dVonVorn").addEventListener("click", function(){
+    bauen.vonVorn();
+    szene.alleVerbergen();
+    el("zeile3d").textContent = "";
+  });
+  el("btn3dFertig").addEventListener("click", function(){
+    szene.zeigenAlles();
+    el("zeile3d").textContent = "So sieht sie fertig aus. "
+      + "Zum Planen wieder auf \u201evon vorn\u201c.";
+  });
+}
+
 function start(){
   paramsLesen();
   schalterAufbauen();
@@ -795,6 +918,7 @@ function start(){
   el("btnVonVorn").addEventListener("click", function(){
     if(plan) plan.vonVorn();
   });
+  drei();
 
   begriffeZeichnen();
 
