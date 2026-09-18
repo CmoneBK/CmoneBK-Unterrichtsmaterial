@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="lektion">
+<meta name="description" content="Von der Zusammenstellungszeichnung über das Strukturnetz zu den Vorrangbeziehungen und zum Montageplan.">
+<meta name="reihenfolge" content="1">
+<title>Montage: Grundlagen - Strukturnetz und Montageplan</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary); margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.tabs{display:flex; flex-wrap:wrap; gap:6px; border-bottom:2px solid var(--border); margin-bottom:20px}
+.tabs button{
+  border:0; background:none; padding:10px 16px; cursor:pointer;
+  font:600 .95rem/1.4 inherit; color:var(--muted);
+  border-bottom:3px solid transparent; margin-bottom:-2px;
+}
+.tabs button[aria-selected="true"]{color:var(--primary); border-bottom-color:var(--accent)}
+.tabs button:hover{color:var(--primary)}
+.panel[hidden]{display:none}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h3{margin:18px 0 6px; font-size:1rem}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:860px){ .zwei{grid-template-columns:1fr} }
+
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer; font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary); border-color:var(--primary); color:#fff}
+
+.felder{display:flex; flex-wrap:wrap; gap:14px; margin:12px 0 4px}
+.feld{display:flex; flex-direction:column; gap:4px; font-size:.86rem; color:var(--muted)}
+.feld select, .feld input{
+  font:inherit; padding:7px 10px; border:1px solid var(--border-strong);
+  border-radius:8px; background:#fff; color:var(--text); min-width:180px;
+}
+
+.werte{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 4px}
+.wert{
+  background:var(--primary-light); border:1px solid #dbeafe; border-radius:10px;
+  padding:9px 14px; min-width:150px;
+}
+.wert .l{display:block; font-size:.78rem; color:var(--muted)}
+.wert .z{font-size:1.2rem; font-weight:700; color:var(--primary)}
+
+table{border-collapse:collapse; width:100%; font-size:.9rem}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left; vertical-align:top}
+th{background:var(--primary-light); color:var(--primary); font-weight:600}
+tbody tr:nth-child(even){background:#fbfdff}
+.tabellenrahmen{overflow-x:auto; margin:10px 0}
+td.zahl, th.zahl{text-align:right; white-space:nowrap}
+
+.merke{
+  background:#fffbeb; border-left:4px solid var(--accent); border-radius:0 8px 8px 0;
+  padding:12px 14px; margin:14px 0 0; font-size:.94rem;
+}
+.gut{background:#f0fdf4; border-left:4px solid var(--ok); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.schlecht{background:#fef2f2; border-left:4px solid var(--bad); border-radius:0 8px 8px 0; padding:11px 14px; margin:10px 0}
+.fussnote{color:var(--muted); font-size:.82rem; margin:12px 0 0}
+
+/* --- Fachbegriffe: gleiches Prinzip wie in den anderen Lektionen ------- */
+.schalter{
+  display:flex; flex-wrap:wrap; gap:12px; align-items:center;
+  background:var(--card); border:1px solid var(--border); border-radius:10px;
+  padding:10px 12px; margin:0 0 16px;
+}
+.sw{display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+  user-select:none; font-size:.9rem; font-weight:600}
+.sw input{position:absolute; opacity:0; width:0; height:0}
+.sw .track{
+  width:40px; height:22px; border-radius:999px; background:var(--border-strong);
+  position:relative; transition:background .15s; flex:none;
+}
+.sw .track::after{
+  content:''; position:absolute; top:2px; left:2px; width:18px; height:18px;
+  border-radius:50%; background:#fff; transition:transform .15s;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+}
+.sw input:checked + .track{background:var(--primary)}
+.sw input:checked + .track::after{transform:translateX(18px)}
+.sw input:focus-visible + .track{outline:2px solid var(--primary); outline-offset:2px}
+.link{background:none; border:0; padding:0; color:var(--primary); cursor:pointer;
+  font:600 .88rem/1 inherit; text-decoration:underline}
+.hinweis{font-size:.82rem; color:var(--muted); font-weight:400}
+.kopiert{color:var(--ok); font-size:.82rem; font-weight:600}
+
+.term{
+  border-bottom:1px dotted var(--border-strong); cursor:help;
+  border-radius:2px; transition:background .12s;
+}
+.term:hover{background:var(--primary-light); border-bottom-color:var(--primary)}
+.term:focus-visible{outline:2px solid var(--primary); outline-offset:2px}
+/* Einzeln aufgedeckt: Das Wort wird ERSETZT, nicht ergaenzt - und faellt
+   durch die Farbe auf. So begegnet der Begriff ab jetzt an jeder Stelle
+   wieder und praegt sich ein. */
+.fachwort{color:#6d28d9; font-weight:600; background:#f5f3ff; border-radius:3px; padding:0 2px}
+.einfachwort{color:#0f766e; font-weight:600; background:#f0fdfa; border-radius:3px; padding:0 2px}
+.term[aria-expanded="true"]{background:transparent}
+.term[aria-expanded="true"]:hover{background:var(--primary-light)}
+
+figure{margin:14px 0 0}
+figure svg{
+  display:block; width:100%; height:auto; max-width:620px; margin:0 auto;
+  color:var(--text); background:var(--card);
+}
+figcaption{color:var(--muted); font-size:.82rem; text-align:center; margin-top:6px}
+
+footer{
+  text-align:center; color:var(--muted); font-size:13px;
+  padding:34px 0 10px; border-top:1px solid var(--border); margin-top:34px;
+}
+footer a{color:var(--muted)}
+
+/* --- Strukturnetz und Montageplan ------------------------------------- */
+.netz{border:1px solid var(--border); border-radius:10px; padding:8px;
+  background:var(--card); overflow-x:auto; margin:12px 0 0}
+.netz svg{width:100%; min-width:640px; height:auto; display:block;
+  color:var(--text)}
+
+.mp-vorrat{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0}
+.mp-teil{
+  font:inherit; font-size:.88rem; padding:7px 11px; border-radius:9px;
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  cursor:pointer; display:inline-flex; align-items:center;
+}
+.mp-teil.norm{border-radius:18px}
+.mp-teil:hover:not(:disabled){border-color:var(--primary); color:var(--primary)}
+.mp-teil:disabled{opacity:.35; cursor:default}
+.mp-teil.zuckt{animation:zuck .28s 2}
+@keyframes zuck{0%{transform:translateX(0)}25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.mp-nr{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:21px; height:21px; padding:0 4px; border-radius:11px;
+  background:var(--primary); color:#fff; font-size:.72rem; font-weight:700;
+  margin-right:7px; font-variant-numeric:tabular-nums;
+}
+.mp-kopf{margin:0; font-size:.82rem; color:var(--muted)}
+.mp-zwischen{margin:14px 0 4px; font-weight:600; font-size:.88rem}
+.mp-plan{margin:0; padding:0; list-style:none; counter-reset:mpschritt}
+.mp-plan li{
+  counter-increment:mpschritt; display:flex; align-items:center; gap:8px;
+  padding:5px 0; border-bottom:1px dashed var(--border); font-size:.9rem;
+}
+.mp-plan li::before{
+  content:counter(mpschritt) "."; min-width:24px; color:var(--muted);
+  font-variant-numeric:tabular-nums; font-size:.8rem;
+}
+.mp-weg{
+  margin-left:auto; font:inherit; font-size:.78rem; padding:3px 9px;
+  border-radius:7px; border:1px solid var(--border-strong);
+  background:transparent; color:var(--muted); cursor:pointer;
+}
+.mp-rueck{margin:12px 0 0; padding:9px 12px; border-radius:8px;
+  font-size:.9rem}
+.mp-rueck.ja{background:#f0fdf4; border-left:4px solid var(--ok)}
+.mp-rueck.nein{background:#fef2f2; border-left:4px solid var(--bad)}
+.pos{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:22px; padding:0 5px; border-radius:11px;
+  background:var(--primary); color:#fff; font-size:.75rem; font-weight:700;
+  margin-right:6px; vertical-align:-4px; font-variant-numeric:tabular-nums;
+}
+figure#bildPresse svg{max-width:none}
+</style>
+<link rel="stylesheet" href="assets/thema-werkzeug.css">
+<script src="assets/thema.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Strukturnetz und Montageplan</h1>
+  <p class="lead">Von der Zusammenstellungszeichnung zum Plan, nach dem
+    jemand arbeiten kann, der die Baugruppe noch nie gesehen hat.</p>
+</header>
+
+<div class="schalter" data-druck="weg">
+  <label class="sw"><input type="checkbox" id="swFach"><span class="track"></span>Fachbegriffe</label>
+  <button class="link" id="btnLink">Link mit diesen Einstellungen kopieren</button>
+  <button class="link" id="btnZurueck" hidden>zur&uuml;cksetzen</button>
+  <span class="hinweis" id="linkHinweis">Einzelne W&ouml;rter anklicken &ndash; der
+    <span class="fachwort">Fachbegriff</span> ersetzt sie dann &uuml;berall.
+    Einen Schalter f&uuml;r die Normdarstellung gibt es hier nicht: Die
+    Zeichnung ist von vornherein eine Normzeichnung.</span>
+</div>
+
+<div class="tabs" role="tablist" data-druck="weg">
+  <button role="tab" data-tab="was"    aria-selected="true">Was Montage ist</button>
+  <button role="tab" data-tab="lesen"  aria-selected="false">Zeichnung und St&uuml;ckliste</button>
+  <button role="tab" data-tab="netz"   aria-selected="false">Das Strukturnetz</button>
+  <button role="tab" data-tab="plan"   aria-selected="false">Vorrang und Plan</button>
+  <button role="tab" data-tab="pruef"  aria-selected="false">Pr&uuml;fen und &Uuml;bergeben</button>
+</div>
+
+<main>
+
+<!-- =========================================================== WAS MONTAGE IST -->
+<section class="panel" id="p-was">
+
+  <div class="karte">
+    <h2>Montieren ist mehr als schrauben</h2>
+    <p class="sub">Vier Grundfunktionen, und drei davon werden gern &uuml;bersehen.</p>
+    <p>Wer &bdquo;montieren&ldquo; sagt, meint meist <em>verbinden</em>. Das ist
+    nur ein Viertel der Arbeit. Bevor zwei Teile verbunden werden, muss
+    eines von ihnen an seinen Platz &ndash; das ist das
+    <span class="term" data-t="handhaben"></span>. Manches muss dabei genau
+    eingestellt werden, sonst arbeitet die Baugruppe falsch &ndash; das ist
+    das <span class="term" data-t="justieren"></span>. Und am Ende muss
+    jemand nachsehen, ob es gestimmt hat &ndash; das ist das
+    <span class="term" data-t="kontrollieren"></span>.</p>
+
+    <div class="tabellenrahmen"><table id="tabGrund"></table></div>
+
+    <div class="merke">Die vier Grundfunktionen sind keine Theorie, sondern
+      die Spalten eines Montageplans. Wer nur die erste aufschreibt, hat
+      eine Schraubenliste und keinen Plan.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Teil, Baugruppe, Erzeugnis</h2>
+    <p class="sub">Die drei Stufen, nach denen eine St&uuml;ckliste gegliedert ist.</p>
+    <p>Ein <strong>Teil</strong> ist das, was sich nicht zerlegen l&auml;sst,
+    ohne es zu zerst&ouml;ren: eine Schraube, eine Welle, eine Platte. Eine
+    <strong>Baugruppe</strong> ist ein Verbund von Teilen, der f&uuml;r sich
+    montiert und gepr&uuml;ft werden kann. Ein <strong>Erzeugnis</strong> ist
+    das, was am Ende den Betrieb verl&auml;sst.</p>
+    <p>An der Biegepresse: Die Exzenterwelle ist ein Teil. Welle, Hebel und
+    Kegelstift zusammen sind eine Baugruppe &ndash; man kann sie fertig
+    zusammenbauen und dann als Ganzes einsetzen. Die Presse ist das
+    Erzeugnis.</p>
+    <div class="merke">Wer eine Baugruppe erkennt, spart sich Arbeit: Sie
+      l&auml;sst sich <span class="term" data-t="vormontage"></span>, w&auml;hrend
+      andere am Rest arbeiten &ndash; und sie l&auml;sst sich pr&uuml;fen, bevor
+      sie verschwindet.</div>
+  </div>
+
+  <div class="karte">
+    <h2>L&ouml;sbar oder nicht</h2>
+    <p class="sub">Was sich zerlegen l&auml;sst, bestimmt, wie man montiert.</p>
+    <div class="tabellenrahmen"><table id="tabVerbindung"></table></div>
+    <p class="fussnote">Die Biegepresse ist ganz aus l&ouml;sbaren
+      Verbindungen gebaut &ndash; Schrauben, Stifte, Steckverbindungen. Das
+      ist Absicht: Sie soll im Unterricht wieder zerlegt werden.</p>
+  </div>
+
+</section>
+
+<!-- ============================================================ ZEICHNUNG -->
+<section class="panel" id="p-lesen" hidden>
+
+  <div class="karte">
+    <h2>Die Zusammenstellungszeichnung</h2>
+    <p class="sub">Sie zeigt nicht, wie gefertigt wird &ndash; sondern was
+      zusammengeh&ouml;rt.</p>
+    <p>Eine <span class="term" data-t="zusammenstellung"></span> tr&auml;gt
+    <strong>Hauptma&szlig;e</strong>: Gesamtabmessungen, Anschlussma&szlig;e und
+    die Ma&szlig;e, die die Funktion beschreiben. Alle Fertigungsma&szlig;e stehen
+    auf den Einzelteilzeichnungen &ndash; nach DIN ISO 129-1 geh&ouml;rt nichts
+    doppelt in eine Zeichnung.</p>
+    <figure id="bildPresse"></figure>
+  </div>
+
+  <div class="karte">
+    <h2>Positionsnummern</h2>
+    <p class="sub">vgl. DIN EN ISO 6433</p>
+    <p>Jedes Einzelteil bekommt eine <span class="term" data-t="position"></span>.
+    Sie muss auf der Zeichnung, auf der St&uuml;ckliste und auf der
+    Einzelteilzeichnung dieselbe sein. F&uuml;r ihre Darstellung gilt:</p>
+    <ul>
+      <li>&uuml;bersichtlich angeordnet, vorzugsweise waagerecht und senkrecht</li>
+      <li>etwa in doppelter Gr&ouml;&szlig;e wie die Ma&szlig;zahlen</li>
+      <li>au&szlig;erhalb der Umrisslinien der Einzelteile</li>
+      <li>mit Hinweislinien auf das Teil, gegebenenfalls eingekreist</li>
+    </ul>
+    <div class="merke">Eine Positionsnummer ist <strong>keine
+      St&uuml;ckzahl</strong>. Der St&auml;nder der Presse hat die Nummer 2 und
+      wird zweimal verbaut &ndash; das ist Zufall. Wie oft ein Teil vorkommt,
+      sagt allein die Spalte <em>Menge</em> der St&uuml;ckliste.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Die St&uuml;ckliste</h2>
+    <p class="sub">Aufgesetzt oder getrennt &ndash; beides ist &uuml;blich.</p>
+    <p>Eine <strong>aufgesetzte</strong> St&uuml;ckliste steht &uuml;ber dem
+    Schriftfeld der Zeichnung. Die Teile werden darin in der Reihenfolge
+    ihrer Positionsnummern <strong>von unten nach oben</strong> eingetragen
+    &ndash; so bleibt Platz, wenn eine Position dazukommt.</p>
+    <p>Eine <strong>getrennte</strong> St&uuml;ckliste ist ein eigenes Blatt.
+    Dann muss die Zeichnungsnummer darauf stehen, sonst findet niemand
+    zur&uuml;ck.</p>
+    <div class="tabellenrahmen"><table id="tabStueck"></table></div>
+    <p class="fussnote">Die St&uuml;ckliste der Biegepresse, Zeichnung
+      TBK-2026-041. Die Spalten folgen dem Tabellenbuch: Pos.-Nr., Menge,
+      Benennung, Werkstoff bzw. Normkurzbezeichnung, Bemerkung.</p>
+  </div>
+
+</section>
+
+<!-- ========================================================== STRUKTURNETZ -->
+<section class="panel" id="p-netz" hidden>
+
+  <div class="karte">
+    <h2>Zwei Fragen, mehr nicht</h2>
+    <p class="sub">Berühren sich zwei Teile? Und bewegen sie sich dabei
+      gegeneinander?</p>
+    <p>Ein <span class="term" data-t="strukturnetz"></span> ist keine genormte
+    Darstellung, sondern ein Werkzeug zum Verstehen. Es zwingt dazu, die
+    Zeichnung Teil f&uuml;r Teil durchzugehen und zwei Fragen zu beantworten,
+    die man sonst &uuml;berspringt.</p>
+    <div class="tabellenrahmen"><table id="tabZeichen"></table></div>
+    <div class="merke">Die Eselsbr&uuml;cke: Was man <em>kauft</em>, ist rund
+      (Oval). Was man <em>fertigt</em>, ist eckig (Rechteck).</div>
+  </div>
+
+  <div class="karte">
+    <h2>Das Netz der Biegepresse</h2>
+    <p class="sub">Zw&ouml;lf Positionen, achtzehn Verbindungen.</p>
+    <div class="netz" id="netz"></div>
+    <p class="fussnote">Von der Grundplatte laufen die meisten Linien weg
+      &ndash; sie tr&auml;gt alles. Dass sich dabei Linien kreuzen, ist keine
+      schlechte Zeichnung, sondern die Aussage.</p>
+    <p>Drei Stellen lohnen das Hinsehen:</p>
+    <ul>
+      <li>Zwischen <span class="pos">4</span>Stempelhalter und
+        <span class="pos">5</span>Biegegesenk gibt es <strong>keine
+        Linie</strong>. Sie ber&uuml;hren sich nie &ndash; dazwischen liegt
+        das Blech.</li>
+      <li>Die <span class="pos">8</span>Druckfeder hat eine volle und eine
+        unterbrochene Linie: Auf der Grundplatte steht sie fest, gegen den
+        Stempelhalter arbeitet sie.</li>
+      <li>Der <span class="pos">12</span>Kegelstift hat zwei Linien &ndash;
+        zu Hebel und Welle. Ein Verbindungselement hat immer mindestens
+        zwei.</li>
+    </ul>
+  </div>
+
+  <div class="karte">
+    <h2>Was ein Strukturnetz nicht sagt</h2>
+    <p>Es sagt nichts &uuml;ber die <strong>Reihenfolge</strong> der Montage,
+    nichts &uuml;ber die <strong>St&uuml;ckzahl</strong> und nichts &uuml;ber
+    <strong>Ma&szlig;e</strong>. Wer das sucht, schaut in den Montageplan, in
+    die St&uuml;ckliste oder in die Zeichnung.</p>
+    <p>Und trotzdem ist es der Schritt davor: Ohne zu wissen, was womit
+    zusammenh&auml;ngt, l&auml;sst sich keine Reihenfolge begr&uuml;nden.</p>
+  </div>
+
+</section>
+
+<!-- ================================================================== PLAN -->
+<section class="panel" id="p-plan" hidden>
+
+  <div class="karte">
+    <h2>Vorrangbeziehungen</h2>
+    <p class="sub">Was muss vor was &ndash; und warum?</p>
+    <p>Eine <span class="term" data-t="vorrang"></span> sagt: Dieser Schritt
+    muss vor jenem kommen. Sie hat immer einen Grund, und der Grund steht
+    nie in der Zeichnung &ndash; er folgt aus ihr. Es gibt im Wesentlichen
+    drei:</p>
+    <div class="tabellenrahmen"><table id="tabGruende"></table></div>
+    <div class="merke">Wo keiner dieser Gr&uuml;nde greift, ist die
+      Reihenfolge <strong>frei</strong>. Das ist keine L&uuml;cke im Plan,
+      sondern Spielraum f&uuml;r die Werkstatt.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Ausprobieren</h2>
+    <p class="sub">Die Presse hat
+      <strong id="zahlFolgen">viele</strong> g&uuml;ltige Reihenfolgen.</p>
+    <p>Klickt die Positionen in der Reihenfolge an, in der ihr sie einbauen
+    w&uuml;rdet. Jeder Fehlgriff wird sofort begr&uuml;ndet.</p>
+    <div id="plan"></div>
+    <p style="margin-top:14px">
+      <button class="link" id="btnVonVorn">von vorn</button>
+    </p>
+    <p class="fussnote">Ohne jede Bedingung w&auml;ren es 12! =
+      479&nbsp;001&nbsp;600 Reihenfolgen. Die Vorrangbeziehungen streichen
+      fast alle weg &ndash; aber eben nicht bis auf eine.</p>
+  </div>
+
+  <div class="karte">
+    <h2>Der Montageplan</h2>
+    <p class="sub">Vier Spalten, und die vierte fehlt am h&auml;ufigsten.</p>
+    <div class="tabellenrahmen"><table id="tabPlan"></table></div>
+    <p>Ein Montageplan ist gut, wenn jemand danach arbeiten kann, der die
+    Baugruppe nicht kennt. Nicht, wenn man selbst noch wei&szlig;, was gemeint
+    war.</p>
+  </div>
+
+</section>
+
+<!-- ================================================================= PRUEFEN -->
+<section class="panel" id="p-pruef" hidden>
+
+  <div class="karte">
+    <h2>Kontrollieren geh&ouml;rt zur Montage</h2>
+    <p>Nicht danach, sondern mitten hinein. Wer den St&auml;nder erst nach dem
+    Festziehen auf Winkligkeit pr&uuml;ft, pr&uuml;ft zu sp&auml;t: Ein schiefer
+    St&auml;nder l&auml;sst sich dann nur noch mit Gewalt richten.</p>
+    <div class="tabellenrahmen"><table id="tabPruef"></table></div>
+  </div>
+
+  <div class="karte">
+    <h2>Die Funktionspr&uuml;fung</h2>
+    <p>Erst die Probe zeigt, ob die Montage gelungen ist. An der Biegepresse:</p>
+    <ol>
+      <li>L&auml;uft der Hebel &uuml;ber den ganzen Weg leicht?</li>
+      <li>Kommt der Stempelhalter von selbst wieder hoch?</li>
+      <li>Steht der Stempel mittig &uuml;ber der Nut?</li>
+      <li>Bleiben in der unteren Endlage 2&nbsp;mm bis zum Nutgrund?</li>
+      <li>Ein Probestreifen: Ist der Winkel sauber, ohne Riss au&szlig;en?</li>
+    </ol>
+    <div class="merke">Aus 150&nbsp;N Handkraft werden an dieser Presse rund
+      7&nbsp;kN am Stempel &ndash; das 47-Fache. Deshalb geh&ouml;rt zur
+      &Uuml;bergabe auch der Satz, dass man beim Biegen nicht in die Nut
+      fasst.</div>
+  </div>
+
+  <div class="karte">
+    <h2>Demontage</h2>
+    <p>Die Demontage l&auml;uft r&uuml;ckw&auml;rts &ndash; aber sie ist nicht nur
+    die Umkehrung. Es gibt Handgriffe, die es beim Zusammenbau nicht gab:</p>
+    <ul>
+      <li><strong>Entspannen.</strong> Die Druckfedern sind auch in der
+        oberen Lage noch 5&nbsp;mm zusammengedr&uuml;ckt.</li>
+      <li><strong>Kennzeichnen.</strong> Die beiden St&auml;nder sehen gleich
+        aus, sind aber mit der Welle eingelaufen. Ein K&ouml;rnerschlag
+        gen&uuml;gt.</li>
+      <li><strong>Austreiben statt ziehen.</strong> Der Kegelstift geht nur
+        von der d&uuml;nnen Seite heraus &ndash; er verj&uuml;ngt sich 1:50.</li>
+    </ul>
+  </div>
+
+</section>
+
+</main>
+
+<footer>
+  &copy; 2026 t-bk.de &middot; <a href="/impressum.html">Impressum</a> &middot;
+  <a href="/datenschutz.html">Datenschutz</a>
+</footer>
+
+</div>
+
+<script src="assets/zeichnen.js"></script>
+<script src="assets/biegepresse.js"></script>
+<script src="assets/montageplan.js"></script>
+<script>
+"use strict";
+
+function el(id){ return document.getElementById(id); }
+
+/* ==========================================================================
+   Die Begriffe dieser Lektion
+   --------------------------------------------------------------------------
+   Links der Fachbegriff, rechts die alltagssprachliche Fassung. Der Schalter
+   oben stellt alle auf einmal um; ein Klick auf ein einzelnes Wort dreht es
+   fuer sich um und faerbt es ein. So begegnet der Begriff ab dann an jeder
+   Stelle wieder.
+   ========================================================================== */
+var TERME = {
+  handhaben:      {f:"Handhaben", a:"an den Platz bringen"},
+  justieren:      {f:"Justieren", a:"genau einstellen"},
+  kontrollieren:  {f:"Kontrollieren", a:"nachpr\u00fcfen"},
+  vormontage:     {f:"vormontieren", a:"schon vorher zusammenbauen"},
+  zusammenstellung: {f:"Zusammenstellungszeichnung",
+                     a:"Zeichnung der ganzen Baugruppe"},
+  position:       {f:"Positionsnummer", a:"Nummer des Teils in der Zeichnung"},
+  strukturnetz:   {f:"Strukturnetz", a:"Schaubild der Verbindungen"},
+  vorrang:        {f:"Vorrangbeziehung", a:"Bedingung, was vorher sein muss"},
+  formschluss:    {f:"Formschluss", a:"H\u00e4lt durch die Form"},
+  kraftschluss:   {f:"Kraftschluss", a:"H\u00e4lt durch Reibung"},
+  stoffschluss:   {f:"Stoffschluss", a:"H\u00e4lt durch Werkstoff dazwischen"}
+};
+
+var zustand = {fach:false};
+var aufgedeckt = {};
+
+function paramsLesen(){
+  try{
+    var q = new URLSearchParams(window.location.search);
+    if(q.has("fach")) zustand.fach = q.get("fach") === "1";
+  }catch(e){ /* ohne Parameter bleibt es bei den Standardwerten */ }
+}
+
+function paramsSchreiben(){
+  try{
+    var u = new URL(window.location.href);
+    u.searchParams.set("fach", zustand.fach ? "1" : "0");
+    window.history.replaceState(null, "", u.toString());
+  }catch(e){ /* z. B. lokal geoeffnete Datei: nicht schlimm */ }
+}
+
+function grossErster(txt){ return txt.charAt(0).toUpperCase() + txt.slice(1); }
+
+/* Ein einzeln aufgedeckter Begriff dreht die globale Einstellung fuer sich um. */
+function zeigtFach(schluessel){
+  return zustand.fach !== !!aufgedeckt[schluessel];
+}
+
+function begriffeZeichnen(wurzel){
+  var basis = wurzel || document;
+  if(!wurzel) document.body.classList.toggle("zeigt-fachbegriffe", zustand.fach);
+  var knoten = basis.querySelectorAll(".term");
+  for(var i = 0; i < knoten.length; i++){
+    var k = knoten[i];
+    var schluessel = k.getAttribute("data-t");
+    var b = TERME[schluessel];
+    if(!b) continue;
+    var fach = zeigtFach(schluessel);
+    var txt = fach ? b.f : b.a;
+    if(k.getAttribute("data-cap")) txt = grossErster(txt);
+    k.innerHTML = aufgedeckt[schluessel]
+      ? '<span class="' + (fach ? "fachwort" : "einfachwort") + '">' + txt
+        + "</span>"
+      : txt;
+    k.setAttribute("role", "button");
+    k.setAttribute("tabindex", "0");
+    k.setAttribute("aria-expanded", aufgedeckt[schluessel] ? "true" : "false");
+    k.setAttribute("title", aufgedeckt[schluessel]
+      ? (fach ? "Fachbegriff \u2013 klicken f\u00fcr die einfache Formulierung"
+              : "einfache Formulierung \u2013 klicken f\u00fcr den Fachbegriff")
+      : (zustand.fach ? "Klicken: einfache Formulierung"
+                      : "Klicken: Fachbegriff"));
+  }
+  if(!wurzel) zuruecksetzenAnzeigen();
+}
+
+function begriffUmschalten(k){
+  var schluessel = k.getAttribute("data-t");
+  if(!schluessel || !TERME[schluessel]) return;
+  aufgedeckt[schluessel] = !aufgedeckt[schluessel];
+  begriffeZeichnen();
+  allesNeuZeichnen();
+}
+
+function zuruecksetzenAnzeigen(){
+  var knopf = el("btnZurueck");
+  if(!knopf) return;
+  var anzahl = 0;
+  for(var k in aufgedeckt){ if(aufgedeckt[k]) anzahl++; }
+  knopf.hidden = anzahl === 0;
+  knopf.textContent = anzahl === 1
+    ? "1 aufgedecktes Wort zur\u00fccksetzen"
+    : anzahl + " aufgedeckte W\u00f6rter zur\u00fccksetzen";
+}
+
+function begriffKlicksAktivieren(){
+  document.addEventListener("click", function(e){
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(k) begriffUmschalten(k);
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key !== "Enter" && e.key !== " " && e.key !== "Spacebar") return;
+    var k = e.target && e.target.closest ? e.target.closest(".term") : null;
+    if(!k) return;
+    e.preventDefault();
+    begriffUmschalten(k);
+  });
+}
+
+/* Fuer Texte, die erst beim Zeichnen entstehen. */
+function wort(schluessel, gross){
+  if(!TERME[schluessel]) return schluessel;
+  return '<span class="term" data-t="' + schluessel + '"'
+    + (gross ? ' data-cap="1"' : "") + "></span>";
+}
+
+function schalterAufbauen(){
+  el("swFach").checked = zustand.fach;
+  el("swFach").addEventListener("change", function(){
+    zustand.fach = this.checked;
+    begriffeZeichnen(); allesNeuZeichnen(); paramsSchreiben();
+  });
+  el("btnLink").addEventListener("click", function(){
+    paramsSchreiben();
+    var fertig = function(){
+      var h = el("linkHinweis");
+      h.className = "kopiert";
+      h.textContent = "Link kopiert \u2013 Fachbegriffe "
+        + (zustand.fach ? "an" : "aus") + ".";
+    };
+    try{
+      navigator.clipboard.writeText(window.location.href).then(fertig,
+        function(){});
+    }catch(e){ /* ohne Zwischenablage bleibt der Link in der Adresszeile */ }
+  });
+  el("btnZurueck").addEventListener("click", function(){
+    aufgedeckt = {};
+    begriffeZeichnen(); allesNeuZeichnen();
+  });
+}
+
+/* ==========================================================================
+   Die Tabellen
+   ========================================================================== */
+function tabelle(id, kopf, zeilen){
+  var t = el(id);
+  if(!t) return;
+  t.innerHTML = "<thead><tr>"
+    + kopf.map(function(k){ return "<th>" + k + "</th>"; }).join("")
+    + "</tr></thead><tbody>"
+    + zeilen.map(function(z){
+        return "<tr>" + z.map(function(c){ return "<td>" + c + "</td>"; })
+          .join("") + "</tr>";
+      }).join("") + "</tbody>";
+}
+
+function grundTabelle(){
+  tabelle("tabGrund",
+    ["Grundfunktion", "Was dabei geschieht", "An der Biegepresse"],
+    [["<b>" + wort("handhaben", 1) + "</b>",
+      "ein Teil in die richtige Lage bringen und dort halten",
+      "Feder aufstecken, Welle einlegen, St&auml;nder aufschieben"],
+     ["<b>F&uuml;gen</b>", "zwei Teile l&ouml;sbar oder unl&ouml;sbar verbinden",
+      "schrauben, stiften, einschrauben"],
+     ["<b>" + wort("justieren", 1) + "</b>",
+      "Lagen und Ma&szlig;e einstellen, damit die Funktion stimmt",
+      "Stempel mittig &uuml;ber der Nut, H&ouml;he des Gesenks"],
+     ["<b>" + wort("kontrollieren", 1) + "</b>", "pr&uuml;fen, ob es stimmt",
+      "Winkel messen, Probe biegen, Leichtg&auml;ngigkeit"]]);
+}
+
+function verbindungTabelle(){
+  tabelle("tabVerbindung",
+    ["Verbindung", "Wirkprinzip", "l&ouml;sbar?", "an der Presse"],
+    [["Schraube", wort("kraftschluss", 1), "ja",
+      "St&auml;nder auf der Grundplatte"],
+     ["Zylinderstift", wort("formschluss", 1), "ja",
+      "richtet das Gesenk aus"],
+     ["Kegelstift", wort("formschluss", 1), "ja",
+      "sichert den Hebel auf der Welle"],
+     ["Steckverbindung", "Formschluss", "ja",
+      "Wellenzapfen in der St&auml;nderbohrung"],
+     ["Schwei&szlig;naht, Klebung", wort("stoffschluss", 1), "nein",
+      "kommt an dieser Presse nicht vor"]]);
+}
+
+function stuecklisteTabelle(){
+  tabelle("tabStueck",
+    ["Pos.", "Menge", "Benennung", "Werkstoff / Norm", "Bemerkung"],
+    PRESSE.TEILE.map(function(t){
+      return ['<span class="pos">' + t.pos + "</span>", String(t.menge),
+        t.benennung, t.werkstoff || "&ndash;", t.bemerkung || "&ndash;"];
+    }));
+}
+
+function zeichenTabelle(){
+  tabelle("tabZeichen",
+    ["Zeichen", "Bedeutung", "Beispiel"],
+    [["<b>Rechteck</b>", "Fertigungsteil &ndash; entsteht in der Werkstatt",
+      "Grundplatte, St&auml;nder, Exzenterwelle"],
+     ["<b>Oval</b>", "Normteil &ndash; wird bestellt",
+      "Schraube, Stift, Druckfeder"],
+     ["<b>volle Linie</b>",
+      "die Teile ber&uuml;hren sich, ohne sich zu bewegen",
+      "St&auml;nder auf der Grundplatte"],
+     ["<b>unterbrochene Linie</b>",
+      "sie ber&uuml;hren sich und bewegen sich gegeneinander",
+      "Welle in der St&auml;nderbohrung"],
+     ["<b>keine Linie</b>", "kein Kontakt",
+      "Stempel und Gesenk &ndash; dazwischen liegt das Blech"]]);
+}
+
+function gruendeTabelle(){
+  tabelle("tabGruende",
+    ["Grund", "Frage dahinter", "Beispiel an der Presse"],
+    [["<b>Zug&auml;nglichkeit</b>",
+      "Komme ich sp&auml;ter noch heran?",
+      "Die Federn liegen unter dem Stempelhalter &ndash; danach nicht mehr "
+      + "erreichbar."],
+     ["<b>Der Weg</b>",
+      "L&auml;sst sich das Teil &uuml;berhaupt noch an seinen Platz bringen?",
+      "Der Exzenterbund ist &#8960;&nbsp;56 und passt durch keine "
+      + "&#8960;-20-Bohrung. Die Welle muss vor den St&auml;ndern liegen."],
+     ["<b>Die Funktion</b>",
+      "Muss etwas erst ausgerichtet werden?",
+      "Erst die Zylinderstifte, dann die Schrauben &ndash; sonst richtet man "
+      + "gegen eine festgezogene Verbindung."]]);
+}
+
+function planTabelle(){
+  tabelle("tabPlan",
+    ["Nr.", "Arbeitsschritt", "Betriebsmittel", "Pr&uuml;fen"],
+    [["1", "Grundplatte auf die Werkbank spannen",
+      "Schraubstock, Schutzbacken", "&ndash;"],
+     ["2", "Zwei F&uuml;hrungsbolzen einschrauben", "von Hand, dann SW 6",
+      "bis zum Bund eingeschraubt?"],
+     ["3", "Zwei Druckfedern aufstecken", "von Hand",
+      "sitzen sie auf der Platte auf?"],
+     ["4", "Stempelhalter auf die Bolzen f&auml;deln", "von Hand",
+      "gleitet er leicht?"],
+     ["&hellip;", "&hellip;", "&hellip;", "&hellip;"],
+     ["11", "Handhebel aufschieben", "von Hand",
+      "Nabe liegt am St&auml;nder an?"],
+     ["12", "Kegelstift eintreiben", "Kunststoffhammer, Splinttreiber",
+      "steht er auf der d&uuml;nnen Seite heraus?"]]);
+}
+
+function pruefTabelle(){
+  tabelle("tabPruef",
+    ["Wann", "Was", "Womit"],
+    [["vor dem Festziehen", "St&auml;nder senkrecht?", "Haarwinkel"],
+     ["vor dem Verschrauben des Gesenks", "Stempel mittig &uuml;ber der Nut?",
+      "Augenma&szlig; und Blechstreifen"],
+     ["beim Anziehen", "Anziehdrehmoment", "Drehmomentschl&uuml;ssel"],
+     ["nach der Montage", "Hub 12&nbsp;mm, Spalt 2&nbsp;mm",
+      "Messschieber"],
+     ["zum Schluss", "Probebiegung", "Streifen 30 &times; 2 mm"]]);
+}
+
+function allesNeuZeichnen(){
+  grundTabelle();
+  verbindungTabelle();
+  zeichenTabelle();
+  gruendeTabelle();
+  begriffeZeichnen(el("tabGrund"));
+  begriffeZeichnen(el("tabVerbindung"));
+}
+
+/* ==========================================================================
+   Start
+   ========================================================================== */
+var plan = null;
+
+function planAufbauen(){
+  plan = Montageplan.reihenfolge("plan", {
+    teile: PRESSE.TEILE,
+    vorrang: PRESSE.VORRANG,
+    sofort: true
+  });
+}
+
+function start(){
+  paramsLesen();
+  schalterAufbauen();
+  begriffKlicksAktivieren();
+
+  allesNeuZeichnen();
+  stuecklisteTabelle();
+  planTabelle();
+  pruefTabelle();
+
+  PRESSE.zeichnen("bildPresse");
+  Montageplan.netz("netz", {
+    teile: PRESSE.TEILE,
+    kanten: PRESSE.STRUKTUR,
+    lage: PRESSE.NETZ_LAGE
+  });
+
+  var z = Montageplan.wieVieleFolgen(PRESSE.TEILE, PRESSE.VORRANG, 300000);
+  el("zahlFolgen").textContent = z.abgebrochen
+    ? "mehr als " + z.zahl : String(z.zahl);
+
+  planAufbauen();
+  el("btnVonVorn").addEventListener("click", function(){
+    if(plan) plan.vonVorn();
+  });
+
+  begriffeZeichnen();
+
+  /* Die Reiter. Dieselbe Bedienung wie in den anderen Lektionen. */
+  var knoepfe = document.querySelectorAll('.tabs button');
+  for(var i = 0; i < knoepfe.length; i++){
+    knoepfe[i].addEventListener("click", function(){
+      var ziel = this.getAttribute("data-tab");
+      for(var j = 0; j < knoepfe.length; j++){
+        var k = knoepfe[j];
+        var an = k.getAttribute("data-tab") === ziel;
+        k.setAttribute("aria-selected", an ? "true" : "false");
+        el("p-" + k.getAttribute("data-tab")).hidden = !an;
+      }
+    });
+  }
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+<script src="assets/bildungsgang.js"></script>
+<script src="assets/qr.js"></script>
+<script src="assets/pdf.js"></script>
+<script src="assets/lektion.js"></script>
+<script src="assets/feedback.js"></script>
+<script src="assets/back-nav.js" data-ziel="../"></script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="art" content="simulation">
+<meta name="description" content="Vorrangbeziehungen ein- und ausschalten und sehen, wie viele Montagereihenfolgen gültig bleiben.">
+<meta name="reihenfolge" content="2">
+<title>Montage: Grundlagen - Montageplaner</title>
+<style>
+:root{
+  --primary:#1e3a8a; --primary-light:#eff6ff; --accent:#e67e22;
+  --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --border-strong:#cbd5e1;
+  --text:#0f172a; --muted:#64748b;
+  --ok:#16a34a; --warn:#ca8a04; --bad:#dc2626;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text); line-height:1.6;
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+.wrap{max-width:1100px; margin:0 auto; padding:56px 18px 60px}
+
+header h1{font-size:clamp(1.35rem,3.4vw,1.9rem); color:var(--primary);
+  margin:.2em 0 .1em}
+header p.lead{color:var(--muted); margin:0 0 16px}
+
+.karte{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:18px 20px; margin-bottom:18px;
+}
+.karte > h2{margin:0 0 4px; font-size:1.15rem; color:var(--primary)}
+.karte > h2 + p.sub{margin:0 0 14px; color:var(--muted); font-size:.9rem}
+.zwei{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:900px){ .zwei{grid-template-columns:1fr} }
+
+table{border-collapse:collapse; width:100%; font-size:.9rem}
+th,td{border:1px solid var(--border); padding:7px 9px; text-align:left;
+  vertical-align:top}
+th{background:var(--primary-light); color:var(--primary); font-weight:600}
+.tabellenrahmen{overflow-x:auto; margin:10px 0}
+
+.merke{
+  background:#fffbeb; border-left:4px solid var(--accent);
+  border-radius:0 8px 8px 0; padding:12px 14px; margin:14px 0 0;
+  font-size:.94rem;
+}
+.fussnote{color:var(--muted); font-size:.82rem; margin:12px 0 0}
+
+.zahlkarte{
+  display:flex; flex-wrap:wrap; gap:18px; align-items:baseline;
+  background:var(--primary-light); border-radius:10px; padding:14px 16px;
+  margin:12px 0 0;
+}
+.zahlkarte .gross{font-size:2rem; font-weight:700; color:var(--primary);
+  font-variant-numeric:tabular-nums; line-height:1.1}
+.zahlkarte .dazu{font-size:.88rem; color:var(--muted)}
+
+.regeln{list-style:none; margin:10px 0 0; padding:0}
+.regeln li{
+  display:flex; gap:10px; align-items:flex-start; padding:8px 0;
+  border-bottom:1px solid var(--border); font-size:.9rem;
+}
+.regeln li:last-child{border-bottom:0}
+.regeln input{margin-top:5px; flex:none; width:17px; height:17px}
+.regeln .aus{opacity:.45}
+.regeln b{white-space:nowrap}
+
+.netz{border:1px solid var(--border); border-radius:10px; padding:8px;
+  background:var(--card); overflow-x:auto; margin:12px 0 0}
+.netz svg{width:100%; min-width:640px; height:auto; display:block;
+  color:var(--text)}
+
+.mp-vorrat{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 0}
+.mp-teil{
+  font:inherit; font-size:.88rem; padding:7px 11px; border-radius:9px;
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  cursor:pointer; display:inline-flex; align-items:center;
+}
+.mp-teil.norm{border-radius:18px}
+.mp-teil:hover:not(:disabled){border-color:var(--primary); color:var(--primary)}
+.mp-teil:disabled{opacity:.35; cursor:default}
+.mp-teil.zuckt{animation:zuck .28s 2}
+@keyframes zuck{0%{transform:translateX(0)}25%{transform:translateX(-4px)}
+  75%{transform:translateX(4px)}100%{transform:translateX(0)}}
+.mp-nr{
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:21px; height:21px; padding:0 4px; border-radius:11px;
+  background:var(--primary); color:#fff; font-size:.72rem; font-weight:700;
+  margin-right:7px; font-variant-numeric:tabular-nums;
+}
+.mp-kopf{margin:0; font-size:.82rem; color:var(--muted)}
+.mp-zwischen{margin:14px 0 4px; font-weight:600; font-size:.88rem}
+.mp-plan{margin:0; padding:0; list-style:none; counter-reset:mpschritt}
+.mp-plan li{
+  counter-increment:mpschritt; display:flex; align-items:center; gap:8px;
+  padding:5px 0; border-bottom:1px dashed var(--border); font-size:.9rem;
+}
+.mp-plan li::before{
+  content:counter(mpschritt) "."; min-width:24px; color:var(--muted);
+  font-variant-numeric:tabular-nums; font-size:.8rem;
+}
+.mp-weg{
+  margin-left:auto; font:inherit; font-size:.78rem; padding:3px 9px;
+  border-radius:7px; border:1px solid var(--border-strong);
+  background:transparent; color:var(--muted); cursor:pointer;
+}
+.mp-rueck{margin:12px 0 0; padding:9px 12px; border-radius:8px;
+  font-size:.9rem}
+.mp-rueck.ja{background:#f0fdf4; border-left:4px solid var(--ok)}
+.mp-rueck.nein{background:#fef2f2; border-left:4px solid var(--bad)}
+
+.wahl{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 6px}
+.wahl button{
+  border:1px solid var(--border-strong); background:#fff; color:var(--text);
+  border-radius:999px; padding:7px 15px; cursor:pointer;
+  font:600 .88rem/1 inherit;
+}
+.wahl button:hover{border-color:var(--primary); color:var(--primary)}
+.wahl button[aria-pressed="true"]{background:var(--primary);
+  border-color:var(--primary); color:#fff}
+.link{background:none; border:0; padding:0; color:var(--primary);
+  cursor:pointer; font:600 .88rem/1 inherit; text-decoration:underline}
+
+footer{
+  text-align:center; color:var(--muted); font-size:13px;
+  padding:34px 0 10px; border-top:1px solid var(--border); margin-top:34px;
+}
+footer a{color:var(--muted)}
+</style>
+<link rel="stylesheet" href="assets/thema-werkzeug.css">
+<script src="assets/thema.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Montageplaner</h1>
+  <p class="lead">Wie viele richtige Reihenfolgen hat eine Baugruppe? Und was
+    macht eine einzige Bedingung aus?</p>
+</header>
+
+<main>
+
+<div class="karte">
+  <h2>Die Frage, die in jeder Klasse kommt</h2>
+  <p class="sub">&bdquo;Gibt es denn nur eine richtige Reihenfolge?&ldquo;</p>
+  <p>Nein. Und das ist nicht Nachl&auml;ssigkeit, sondern der Kern der
+  Montageplanung: Ein Montageplan legt fest, was <em>zwingend</em> ist, und
+  l&auml;sst alles &Uuml;brige offen. Dieser Rechner z&auml;hlt beides ab.</p>
+
+  <div class="zahlkarte">
+    <div>
+      <div class="gross" id="zahlFolgen">&ndash;</div>
+      <div class="dazu">g&uuml;ltige Reihenfolgen mit den gew&auml;hlten
+        Bedingungen</div>
+    </div>
+    <div>
+      <div class="gross" id="zahlOhne">&ndash;</div>
+      <div class="dazu">w&auml;ren es ohne jede Bedingung (12!)</div>
+    </div>
+    <div>
+      <div class="gross" id="zahlRegeln">&ndash;</div>
+      <div class="dazu">Vorrangbeziehungen sind eingeschaltet</div>
+    </div>
+  </div>
+</div>
+
+<div class="karte">
+  <h2>Die Bedingungen</h2>
+  <p class="sub">Schaltet eine ab und seht zu, was passiert.</p>
+  <p>Jede Zeile ist eine Vorrangbeziehung der Biegepresse mit ihrer
+  Begr&uuml;ndung. Wer eine abschaltet, tut so, als g&auml;be es den Grund
+  nicht &ndash; und bekommt sofort zu sehen, wie viele Reihenfolgen dadurch
+  zus&auml;tzlich m&ouml;glich w&auml;ren.</p>
+
+  <div class="wahl">
+    <button type="button" id="btnAlle">alle einschalten</button>
+    <button type="button" id="btnKeine">alle abschalten</button>
+  </div>
+
+  <ul class="regeln" id="regeln"></ul>
+
+  <div class="merke" id="merkeRegeln"></div>
+</div>
+
+<div class="karte">
+  <h2>Eine Reihenfolge bauen</h2>
+  <p class="sub">Gepr&uuml;ft wird gegen die eingeschalteten Bedingungen.</p>
+  <div class="wahl">
+    <button type="button" data-modus="sofort" aria-pressed="true">sofort pr&uuml;fen</button>
+    <button type="button" data-modus="ende" aria-pressed="false">erst am Schluss pr&uuml;fen</button>
+  </div>
+  <p class="fussnote" id="modustext"></p>
+  <div id="plan"></div>
+  <p style="margin-top:14px">
+    <button class="link" id="btnVonVorn">von vorn</button>
+    <button class="link" id="btnBeispiel">eine g&uuml;ltige Reihenfolge zeigen</button>
+  </p>
+</div>
+
+<div class="karte">
+  <h2>Das Strukturnetz dazu</h2>
+  <p class="sub">Woher die Bedingungen kommen.</p>
+  <div class="netz" id="netz"></div>
+  <p class="fussnote">Zw&ouml;lf Positionen, achtzehn Verbindungen. Rechteck =
+    Fertigungsteil, Oval = Normteil; volle Linie = fest verbunden,
+    unterbrochene Linie = beweglich verbunden.</p>
+</div>
+
+<div class="karte">
+  <h2>Die St&uuml;ckliste</h2>
+  <div class="tabellenrahmen"><table id="tabStueck"></table></div>
+  <p class="fussnote">Biegepresse, Zeichnung TBK-2026-041.</p>
+</div>
+
+</main>
+
+<footer>
+  &copy; 2026 t-bk.de &middot; <a href="/impressum.html">Impressum</a> &middot;
+  <a href="/datenschutz.html">Datenschutz</a>
+</footer>
+
+</div>
+
+<script src="assets/biegepresse.js"></script>
+<script src="assets/montageplan.js"></script>
+<script>
+"use strict";
+
+function el(id){ return document.getElementById(id); }
+
+/* Welche Bedingungen gerade gelten. Anfangs alle - so ist die Presse
+   gebaut. */
+var an = PRESSE.VORRANG.map(function(){ return true; });
+var modus = "sofort";
+var plan = null;
+
+function geltend(){
+  return PRESSE.VORRANG.filter(function(v, i){ return an[i]; });
+}
+
+var MODUSTEXT = {
+  sofort: "Jeder Schritt wird sofort geprüft. Was noch nicht geht, wird "
+    + "abgelehnt und begründet – so läuft es an der Maschine.",
+  ende: "Alles wird angenommen; geprüft wird erst, wenn alle zwölf "
+    + "stehen – so plant man am Schreibtisch."
+};
+
+/* --------------------------------------------------------------------------
+   Die Zahl der gültigen Reihenfolgen
+
+   Sie wird abgezählt, nicht geschätzt: Der Baustein geht alle möglichen
+   Folgen durch und bricht ab, wenn es zu viele werden. Bei abgeschalteten
+   Bedingungen wird es sehr schnell sehr viel - und genau das ist die
+   Aussage.
+   -------------------------------------------------------------------------- */
+function zahlenZeigen(){
+  var v = geltend();
+  var z = Montageplan.wieVieleFolgen(PRESSE.TEILE, v, 200000);
+  el("zahlFolgen").textContent = z.abgebrochen
+    ? "> " + z.zahl.toLocaleString("de-DE")
+    : z.zahl.toLocaleString("de-DE");
+  el("zahlRegeln").textContent = v.length + " von " + PRESSE.VORRANG.length;
+
+  var merke = el("merkeRegeln");
+  if(v.length === PRESSE.VORRANG.length){
+    merke.innerHTML = "<strong>So ist die Presse gebaut.</strong> "
+      + "Alle fünfzehn Bedingungen gelten, und trotzdem bleiben "
+      + z.zahl.toLocaleString("de-DE") + " richtige Reihenfolgen übrig. "
+      + "Welche davon im Montageplan steht, entscheidet die Werkstatt – "
+      + "nach Zugänglichkeit, nach Werkzeugwechseln, nach dem, was sich "
+      + "gut greifen lässt.";
+  }else if(!v.length){
+    merke.innerHTML = "<strong>Ohne jede Bedingung</strong> ist jede "
+      + "Reihenfolge erlaubt – alle 479.001.600. Das ist der Zustand, "
+      + "in dem man ohne Plan vor dem Teilehaufen steht.";
+  }else{
+    merke.innerHTML = "<strong>" + (PRESSE.VORRANG.length - v.length)
+      + " Bedingung" + (PRESSE.VORRANG.length - v.length === 1 ? "" : "en")
+      + " abgeschaltet.</strong> Die Zahl der „zulässigen“ "
+      + "Reihenfolgen steigt sprunghaft – aber die abgeschalteten Gründe "
+      + "verschwinden dadurch nicht. In der Werkstatt würde man es erst "
+      + "merken, wenn das Teil nicht mehr an seinen Platz geht.";
+  }
+}
+
+/* -------------------------------------------------------------- Bedingungen */
+function regelnAufbauen(){
+  var ul = el("regeln");
+  ul.textContent = "";
+  PRESSE.VORRANG.forEach(function(v, i){
+    var a = PRESSE.teil(v.vorher), b = PRESSE.teil(v.nachher);
+    var li = document.createElement("li");
+    if(!an[i]) li.className = "aus";
+
+    var box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = an[i];
+    box.id = "r" + i;
+    box.addEventListener("change", function(){
+      an[i] = this.checked;
+      li.className = this.checked ? "" : "aus";
+      zahlenZeigen();
+      planAufbauen();
+    });
+    li.appendChild(box);
+
+    var txt = document.createElement("label");
+    txt.setAttribute("for", "r" + i);
+    txt.innerHTML = "<b>" + a.kurz + " vor " + b.kurz + ".</b> " + v.warum;
+    li.appendChild(txt);
+
+    ul.appendChild(li);
+  });
+}
+
+/* ----------------------------------------------------------------- Der Plan */
+function planAufbauen(){
+  el("modustext").textContent = MODUSTEXT[modus];
+  plan = Montageplan.reihenfolge("plan", {
+    teile: PRESSE.TEILE,
+    vorrang: geltend(),
+    sofort: modus === "sofort"
+  });
+}
+
+/* Eine gültige Reihenfolge zeigen: immer das Teil nehmen, dessen Bedingungen
+   schon erfüllt sind. Das ist die einfachste Art, eine zu finden - und
+   nebenbei der Beweis, dass es überhaupt eine gibt. */
+function beispielFolge(){
+  var v = geltend();
+  var offen = PRESSE.TEILE.map(function(t){ return t.pos; });
+  var gesetzt = [];
+  while(offen.length){
+    var genommen = false;
+    for(var i = 0; i < offen.length; i++){
+      var p = offen[i];
+      var frei = v.every(function(r){
+        return r.nachher !== p || gesetzt.indexOf(r.vorher) >= 0;
+      });
+      if(!frei) continue;
+      gesetzt.push(p);
+      offen.splice(i, 1);
+      genommen = true;
+      break;
+    }
+    if(!genommen) break;      /* kann nicht vorkommen: Kreise gibt es keine */
+  }
+  return gesetzt;
+}
+
+function stuecklisteZeigen(){
+  var t = el("tabStueck");
+  t.innerHTML = "<thead><tr><th>Pos.</th><th>Menge</th><th>Benennung</th>"
+    + "<th>Werkstoff / Norm</th><th>Bemerkung</th></tr></thead><tbody>"
+    + PRESSE.TEILE.map(function(x){
+        return "<tr><td>" + x.pos + "</td><td>" + x.menge + "</td><td>"
+          + x.benennung + "</td><td>" + (x.werkstoff || "&ndash;")
+          + "</td><td>" + (x.bemerkung || "&ndash;") + "</td></tr>";
+      }).join("") + "</tbody>";
+}
+
+function start(){
+  el("zahlOhne").textContent = (479001600).toLocaleString("de-DE");
+  regelnAufbauen();
+  zahlenZeigen();
+  planAufbauen();
+  stuecklisteZeigen();
+
+  Montageplan.netz("netz", {
+    teile: PRESSE.TEILE,
+    kanten: PRESSE.STRUKTUR,
+    lage: PRESSE.NETZ_LAGE
+  });
+
+  el("btnAlle").addEventListener("click", function(){
+    an = an.map(function(){ return true; });
+    regelnAufbauen(); zahlenZeigen(); planAufbauen();
+  });
+  el("btnKeine").addEventListener("click", function(){
+    an = an.map(function(){ return false; });
+    regelnAufbauen(); zahlenZeigen(); planAufbauen();
+  });
+  el("btnVonVorn").addEventListener("click", function(){
+    if(plan) plan.vonVorn();
+  });
+  el("btnBeispiel").addEventListener("click", function(){
+    var folge = beispielFolge();
+    planAufbauen();
+    var knoepfe = el("plan").querySelectorAll(".mp-teil");
+    folge.forEach(function(pos){
+      for(var i = 0; i < knoepfe.length; i++){
+        if(Number(knoepfe[i].dataset.pos) === pos) knoepfe[i].click();
+      }
+    });
+  });
+
+  var wahl = document.querySelectorAll('.wahl button[data-modus]');
+  for(var i = 0; i < wahl.length; i++){
+    wahl[i].addEventListener("click", function(){
+      modus = this.getAttribute("data-modus");
+      for(var j = 0; j < wahl.length; j++){
+        wahl[j].setAttribute("aria-pressed",
+          wahl[j].getAttribute("data-modus") === modus ? "true" : "false");
+      }
+      planAufbauen();
+    });
+  }
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", start);
+}else{ start(); }
+</script>
+<script src="assets/feedback.js"></script>
+<script src="assets/back-nav.js" data-ziel="../"></script>
+</body>
+</html>
