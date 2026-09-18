@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="art" content="lektion">
+<meta name="quellen" content="tabellenbuch fachkunde-im katalog">
+<meta name="normen" content="DIN 623-1, DIN 625-1, DIN 628-1, DIN 720, DIN 981, DIN 5406 und DIN 5418">
 <meta name="description" content="Aufbau, Bezeichnung nach DIN 623-1, Bauformen und die Lebensdauerrechnung - mit dem durchgerechneten Beispiel des Tabellenbuchs.">
 <meta name="reihenfolge" content="1">
 <title>Maschinenelemente: Lager - Wälzlager auswählen</title>
@@ -189,6 +191,12 @@ table.weg td:last-child{text-align:right; white-space:nowrap;
   font-size:.94rem}
 .urteil.ja{background:#f0fdf4; border-left:4px solid var(--ok)}
 .urteil.nein{background:#fef2f2; border-left:4px solid var(--bad)}
+
+.quellen{
+  max-width:1100px; margin:26px auto 0; padding:0 18px;
+  font-size:.78rem; line-height:1.5; color:var(--muted);
+}
+.quellen em{font-style:italic}
 </style>
 <link rel="stylesheet" href="assets/thema-werkzeug.css">
 <script src="assets/thema.js"></script>
@@ -374,7 +382,8 @@ table.weg td:last-child{text-align:right; white-space:nowrap;
     <p>Zu jedem Bohrungsdurchmesser gibt es mehrere Au&szlig;endurchmesser
     und Breiten. Wer mehr Tragf&auml;higkeit braucht, geht auf die
     n&auml;chste Reihe &ndash; die Welle bleibt dieselbe, das Geh&auml;use
-    wird gr&ouml;&szlig;er.</p>
+    wird gr&ouml;&szlig;er. Die Ma&szlig;e sind genormt; die Tragzahlen
+    daneben sind Richtwerte und stehen beim Hersteller genauer.</p>
     <div class="regler">
       <label>Bohrung d
         <select id="regReihenD"></select></label>
@@ -443,9 +452,13 @@ table.weg td:last-child{text-align:right; white-space:nowrap;
     <h3>Der Rechenweg</h3>
     <table class="weg" id="tabWeg"></table>
     <p class="fussnote">Zwischen den St&uuml;tzstellen der Tabelle wird
-    linear interpoliert &ndash; genau so rechnet das Beispiel im Buch. Die
-    Tragzahlen stehen nur f&uuml;r acht Bohrungsdurchmesser in der Tabelle;
-    deshalb sind hier auch nur diese Lager w&auml;hlbar.</p>
+    linear interpoliert &ndash; genau so rechnet das Beispiel im Buch.</p>
+    <div class="merke"><strong>C und C<sub>0</sub> stehen im Katalog des
+    Lagerherstellers</strong>, nicht in einer Norm. Zwei Lager mit derselben
+    Bezeichnung k&ouml;nnen verschiedene Tragzahlen haben, wenn sie von
+    verschiedenen Herstellern kommen. Die Lager in der Auswahl oben sind
+    Richtwerte zum &Uuml;ben; wer wirklich auslegt, schl&auml;gt im Katalog
+    des Lagers nach, das eingebaut wird.</div>
   </div>
 
   <div class="karte">
@@ -869,11 +882,13 @@ function rechnen(){
 
 function dFuellen(){
   var s = el("regReihenD");
-  [20, 25, 30, 35, 40, 50, 60, 70, 80, 100].forEach(function(d){
+  /* Nur die Durchmesser, für die hier Tragzahlen liegen - sonst
+     stünden in der Hälfte der Zellen Striche. */
+  [30, 50, 80].forEach(function(d){
     var o = document.createElement("option");
     o.value = d;
     o.textContent = d + " mm";
-    if(d === 40) o.selected = true;
+    if(d === 50) o.selected = true;
     s.appendChild(o);
   });
 }
@@ -940,6 +955,7 @@ if(document.readyState === "loading"){
 <script src="assets/pdf.js"></script>
 <script src="assets/lektion.js"></script>
 <script src="assets/feedback.js"></script>
+<script src="assets/quellen.js"></script>
 <script src="assets/back-nav.js" data-ziel="../"></script>
 </body>
 </html>
