@@ -51,6 +51,7 @@ const LEKTION = ['assets/bildungsgang.js', 'assets/qr.js', 'assets/pdf.js',
    dort melden koennen, wo er ihn sieht. Genauso haelt es der Build im
    Materialrepo. */
 const FEEDBACK = 'assets/feedback.js';
+const QUELLEN = 'assets/quellen.js';
 const THEMA = 'assets/thema.js';
 const THEMA_CSS = 'assets/thema-werkzeug.css';
 
@@ -146,6 +147,10 @@ ${zeile}`;
   };
   if (art === 'lektion') LEKTION.forEach(vorBody);
   vorBody(FEEDBACK);
+  /* Wer im Kopf sagt, woher seine Zahlen stammen, bekommt die Quellenzeile
+     dazu. So muss niemand daran denken, das Skript einzubinden - und keine
+     Seite traegt es ohne Grund. */
+  if (/<meta[^>]+name=["'](?:quellen|normen)["']/i.test(text)) vorBody(QUELLEN);
 
   /* 5. Rücklink ans Dateiende, als Letztes. data-ziel="../" führt aus tools/
         heraus zur Übersicht - auf GitHub Pages wie auf t-bk.de. */
