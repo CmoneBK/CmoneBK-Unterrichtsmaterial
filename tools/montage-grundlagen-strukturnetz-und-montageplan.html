@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="art" content="lektion">
-<meta name="description" content="Von der Zusammenstellungszeichnung über das Strukturnetz zu den Vorrangbeziehungen und zum Montageplan.">
+<meta name="description" content="An der Bohrvorrichtung: von der Zusammenstellungszeichnung über das Strukturnetz zu den Vorrangbeziehungen und zum Montageplan.">
 <meta name="reihenfolge" content="1">
 <title>Montage: Grundlagen - Strukturnetz und Montageplan</title>
 <style>
@@ -196,7 +196,8 @@ figure#bildPresse svg{max-width:none}
 <header>
   <h1>Strukturnetz und Montageplan</h1>
   <p class="lead">Von der Zusammenstellungszeichnung zum Plan, nach dem
-    jemand arbeiten kann, der die Baugruppe noch nie gesehen hat.</p>
+    jemand arbeiten kann, der die Baugruppe noch nie gesehen hat &ndash;
+    ge&uuml;bt an einer Bohrvorrichtung.</p>
 </header>
 
 <div class="schalter" data-druck="weg">
@@ -249,10 +250,10 @@ figure#bildPresse svg{max-width:none}
     <strong>Baugruppe</strong> ist ein Verbund von Teilen, der f&uuml;r sich
     montiert und gepr&uuml;ft werden kann. Ein <strong>Erzeugnis</strong> ist
     das, was am Ende den Betrieb verl&auml;sst.</p>
-    <p>An der Biegepresse: Die Exzenterwelle ist ein Teil. Welle, Hebel und
-    Kegelstift zusammen sind eine Baugruppe &ndash; man kann sie fertig
-    zusammenbauen und dann als Ganzes einsetzen. Die Presse ist das
-    Erzeugnis.</p>
+    <p>An der Bohrvorrichtung: Die Distanzs&auml;ule ist ein Teil.
+    Bohrplatte, Spannschraube, Kontermutter und Kreuzgriff zusammen sind eine
+    Baugruppe &ndash; man kann sie fertig zusammenbauen und dann als Ganzes
+    auf die S&auml;ulen setzen. Die Vorrichtung ist das Erzeugnis.</p>
     <div class="merke">Wer eine Baugruppe erkennt, spart sich Arbeit: Sie
       l&auml;sst sich <span class="term" data-t="vormontage"></span>, w&auml;hrend
       andere am Rest arbeiten &ndash; und sie l&auml;sst sich pr&uuml;fen, bevor
@@ -263,9 +264,10 @@ figure#bildPresse svg{max-width:none}
     <h2>L&ouml;sbar oder nicht</h2>
     <p class="sub">Was sich zerlegen l&auml;sst, bestimmt, wie man montiert.</p>
     <div class="tabellenrahmen"><table id="tabVerbindung"></table></div>
-    <p class="fussnote">Die Biegepresse ist ganz aus l&ouml;sbaren
-      Verbindungen gebaut &ndash; Schrauben, Stifte, Steckverbindungen. Das
-      ist Absicht: Sie soll im Unterricht wieder zerlegt werden.</p>
+    <p class="fussnote">Die Bohrvorrichtung ist ganz aus l&ouml;sbaren
+      Verbindungen gebaut &ndash; Schrauben, Stifte, Gewinde. Das ist
+      Absicht: Eine Vorrichtung wird umgebaut, wenn das n&auml;chste
+      Werkst&uuml;ck kommt.</p>
   </div>
 
 </section>
@@ -298,9 +300,10 @@ figure#bildPresse svg{max-width:none}
       <li>mit Hinweislinien auf das Teil, gegebenenfalls eingekreist</li>
     </ul>
     <div class="merke">Eine Positionsnummer ist <strong>keine
-      St&uuml;ckzahl</strong>. Der St&auml;nder der Presse hat die Nummer 2 und
-      wird zweimal verbaut &ndash; das ist Zufall. Wie oft ein Teil vorkommt,
-      sagt allein die Spalte <em>Menge</em> der St&uuml;ckliste.</div>
+      St&uuml;ckzahl</strong>. Die Anschlagleiste hat die Nummer 2 und wird
+      zweimal verbaut, der Zylinderstift die Nummer 9 und wird viermal
+      verbaut. Wie oft ein Teil vorkommt, sagt allein die Spalte
+      <em>Menge</em> der St&uuml;ckliste.</div>
   </div>
 
   <div class="karte">
@@ -314,8 +317,8 @@ figure#bildPresse svg{max-width:none}
     Dann muss die Zeichnungsnummer darauf stehen, sonst findet niemand
     zur&uuml;ck.</p>
     <div class="tabellenrahmen"><table id="tabStueck"></table></div>
-    <p class="fussnote">Die St&uuml;ckliste der Biegepresse, Zeichnung
-      TBK-2026-041. Die Spalten folgen dem Tabellenbuch: Pos.-Nr., Menge,
+    <p class="fussnote">Die St&uuml;ckliste der Bohrvorrichtung, Zeichnung
+      TBK-2026-042. Die Spalten folgen dem Tabellenbuch: Pos.-Nr., Menge,
       Benennung, Werkstoff bzw. Normkurzbezeichnung, Bemerkung.</p>
   </div>
 
@@ -338,24 +341,27 @@ figure#bildPresse svg{max-width:none}
   </div>
 
   <div class="karte">
-    <h2>Das Netz der Biegepresse</h2>
-    <p class="sub">Zw&ouml;lf Positionen, achtzehn Verbindungen.</p>
+    <h2>Das Netz der Bohrvorrichtung</h2>
+    <p class="sub">Zehn Positionen, dreizehn Verbindungen.</p>
     <div class="netz" id="netz"></div>
     <p class="fussnote">Von der Grundplatte laufen die meisten Linien weg
       &ndash; sie tr&auml;gt alles. Dass sich dabei Linien kreuzen, ist keine
       schlechte Zeichnung, sondern die Aussage.</p>
     <p>Drei Stellen lohnen das Hinsehen:</p>
     <ul>
-      <li>Zwischen <span class="pos">4</span>Stempelhalter und
-        <span class="pos">5</span>Biegegesenk gibt es <strong>keine
-        Linie</strong>. Sie ber&uuml;hren sich nie &ndash; dazwischen liegt
-        das Blech.</li>
-      <li>Die <span class="pos">8</span>Druckfeder hat eine volle und eine
-        unterbrochene Linie: Auf der Grundplatte steht sie fest, gegen den
-        Stempelhalter arbeitet sie.</li>
-      <li>Der <span class="pos">12</span>Kegelstift hat zwei Linien &ndash;
-        zu Hebel und Welle. Ein Verbindungselement hat immer mindestens
-        zwei.</li>
+      <li>Zwischen <span class="pos">4</span>Bohrplatte und
+        <span class="pos">5</span>Spannschraube l&auml;uft die einzige
+        <strong>unterbrochene Linie</strong> der ganzen Baugruppe. Alles
+        andere steht fest; nur die Spannschraube dreht sich, und genau davon
+        lebt die Vorrichtung.</li>
+      <li>Der <span class="pos">9</span>Zylinderstift hat zwei Linien &ndash;
+        zur Grundplatte und zur Anschlagleiste. Ein Verbindungselement hat
+        immer mindestens zwei; h&auml;tte es nur eine, verb&auml;nde es
+        nichts.</li>
+      <li>Das <strong>Werkst&uuml;ck steht nicht im Netz</strong>. Es
+        geh&ouml;rt nicht zur Baugruppe &ndash; es wird hineingelegt,
+        gebohrt und wieder herausgenommen. Was nicht auf der St&uuml;ckliste
+        steht, hat auch im Strukturnetz nichts zu suchen.</li>
     </ul>
   </div>
 
@@ -389,7 +395,7 @@ figure#bildPresse svg{max-width:none}
 
   <div class="karte">
     <h2>Ausprobieren</h2>
-    <p class="sub">Die Presse hat
+    <p class="sub">Die Vorrichtung hat
       <strong id="zahlFolgen">viele</strong> g&uuml;ltige Reihenfolgen.</p>
     <p>Klickt die Positionen in der Reihenfolge an, in der ihr sie einbauen
     w&uuml;rdet. Jeder Fehlgriff wird sofort begr&uuml;ndet.</p>
@@ -397,8 +403,8 @@ figure#bildPresse svg{max-width:none}
     <p style="margin-top:14px">
       <button class="link" id="btnVonVorn">von vorn</button>
     </p>
-    <p class="fussnote">Ohne jede Bedingung w&auml;ren es 12! =
-      479&nbsp;001&nbsp;600 Reihenfolgen. Die Vorrangbeziehungen streichen
+    <p class="fussnote">Ohne jede Bedingung w&auml;ren es 10! =
+      3&nbsp;628&nbsp;800 Reihenfolgen. Die Vorrangbeziehungen streichen
       fast alle weg &ndash; aber eben nicht bis auf eine.</p>
   </div>
 
@@ -418,26 +424,32 @@ figure#bildPresse svg{max-width:none}
 
   <div class="karte">
     <h2>Kontrollieren geh&ouml;rt zur Montage</h2>
-    <p>Nicht danach, sondern mitten hinein. Wer den St&auml;nder erst nach dem
-    Festziehen auf Winkligkeit pr&uuml;ft, pr&uuml;ft zu sp&auml;t: Ein schiefer
-    St&auml;nder l&auml;sst sich dann nur noch mit Gewalt richten.</p>
+    <p>Nicht danach, sondern mitten hinein. Wer die Anschlagleisten erst
+    nach dem Festziehen auf Rechtwinkligkeit pr&uuml;ft, pr&uuml;ft zu
+    sp&auml;t: Die Stifte sitzen dann schon, und eine schiefe Leiste
+    bekommt man nur mit Gewalt wieder heraus.</p>
     <div class="tabellenrahmen"><table id="tabPruef"></table></div>
   </div>
 
   <div class="karte">
     <h2>Die Funktionspr&uuml;fung</h2>
-    <p>Erst die Probe zeigt, ob die Montage gelungen ist. An der Biegepresse:</p>
+    <p>Erst die Probe zeigt, ob die Montage gelungen ist. An der
+    Bohrvorrichtung:</p>
     <ol>
-      <li>L&auml;uft der Hebel &uuml;ber den ganzen Weg leicht?</li>
-      <li>Kommt der Stempelhalter von selbst wieder hoch?</li>
-      <li>Steht der Stempel mittig &uuml;ber der Nut?</li>
-      <li>Bleiben in der unteren Endlage 2&nbsp;mm bis zum Nutgrund?</li>
-      <li>Ein Probestreifen: Ist der Winkel sauber, ohne Riss au&szlig;en?</li>
+      <li>L&auml;sst sich die Lasche ohne Kraft einlegen und wieder
+        herausnehmen?</li>
+      <li>Liegt sie an beiden Anschlagleisten an, ohne zu klemmen?</li>
+      <li>H&auml;lt die Spannschraube, ohne das Werkst&uuml;ck zu
+        verbiegen?</li>
+      <li>Ein Probest&uuml;ck bohren: Stimmt der Lochabstand von
+        40&nbsp;mm?</li>
+      <li>Und stimmt er beim zweiten St&uuml;ck auch noch? Eine Vorrichtung
+        taugt nur, wenn sie wiederholt.</li>
     </ol>
-    <div class="merke">Aus 150&nbsp;N Handkraft werden an dieser Presse rund
-      7&nbsp;kN am Stempel &ndash; das 47-Fache. Deshalb geh&ouml;rt zur
-      &Uuml;bergabe auch der Satz, dass man beim Biegen nicht in die Nut
-      fasst.</div>
+    <div class="merke">Der letzte Punkt ist der eigentliche: Eine
+      Vorrichtung wird nicht gebaut, damit ein Teil stimmt, sondern damit
+      das hundertste noch stimmt. Wer sie montiert, baut die
+      Wiederholgenauigkeit ein &ndash; oder eben nicht.</div>
   </div>
 
   <div class="karte">
@@ -445,13 +457,15 @@ figure#bildPresse svg{max-width:none}
     <p>Die Demontage l&auml;uft r&uuml;ckw&auml;rts &ndash; aber sie ist nicht nur
     die Umkehrung. Es gibt Handgriffe, die es beim Zusammenbau nicht gab:</p>
     <ul>
-      <li><strong>Entspannen.</strong> Die Druckfedern sind auch in der
-        oberen Lage noch 5&nbsp;mm zusammengedr&uuml;ckt.</li>
-      <li><strong>Kennzeichnen.</strong> Die beiden St&auml;nder sehen gleich
-        aus, sind aber mit der Welle eingelaufen. Ein K&ouml;rnerschlag
-        gen&uuml;gt.</li>
-      <li><strong>Austreiben statt ziehen.</strong> Der Kegelstift geht nur
-        von der d&uuml;nnen Seite heraus &ndash; er verj&uuml;ngt sich 1:50.</li>
+      <li><strong>Entspannen.</strong> Erst die Spannschraube l&ouml;sen,
+        dann alles andere. Wer unter Spannung zerlegt, verbiegt das
+        Werkst&uuml;ck oder sich selbst.</li>
+      <li><strong>Kennzeichnen.</strong> Die beiden Anschlagleisten sehen
+        gleich aus, ihre Stiftbohrungen sind aber einzeln gerieben. Ein
+        K&ouml;rnerschlag gen&uuml;gt.</li>
+      <li><strong>Ausdr&uuml;cken statt ziehen.</strong> Ein Zylinderstift
+        m6 sitzt stramm. Mit der Zange bekommt man ihn nicht heraus, mit
+        einem Durchtreiber von der anderen Seite schon.</li>
     </ul>
   </div>
 
@@ -467,7 +481,8 @@ figure#bildPresse svg{max-width:none}
 </div>
 
 <script src="assets/zeichnen.js"></script>
-<script src="assets/biegepresse.js"></script>
+<script src="assets/zusammenstellung.js"></script>
+<script src="assets/bohrvorrichtung.js"></script>
 <script src="assets/montageplan.js"></script>
 <script>
 "use strict";
@@ -635,35 +650,35 @@ function grundTabelle(){
     ["Grundfunktion", "Was dabei geschieht", "An der Biegepresse"],
     [["<b>" + wort("handhaben", 1) + "</b>",
       "ein Teil in die richtige Lage bringen und dort halten",
-      "Feder aufstecken, Welle einlegen, St&auml;nder aufschieben"],
+      "Leiste auflegen, Werkst&uuml;ck einlegen, Platte aufsetzen"],
      ["<b>F&uuml;gen</b>", "zwei Teile l&ouml;sbar oder unl&ouml;sbar verbinden",
-      "schrauben, stiften, einschrauben"],
+      "schrauben, stiften, S&auml;ule einschrauben"],
      ["<b>" + wort("justieren", 1) + "</b>",
       "Lagen und Ma&szlig;e einstellen, damit die Funktion stimmt",
-      "Stempel mittig &uuml;ber der Nut, H&ouml;he des Gesenks"],
+      "Anschlag ausrichten, Spannschraube auf Ma&szlig; drehen"],
      ["<b>" + wort("kontrollieren", 1) + "</b>", "pr&uuml;fen, ob es stimmt",
-      "Winkel messen, Probe biegen, Leichtg&auml;ngigkeit"]]);
+      "Winkel messen, Probebohrung, Lochabstand pr&uuml;fen"]]);
 }
 
 function verbindungTabelle(){
   tabelle("tabVerbindung",
     ["Verbindung", "Wirkprinzip", "l&ouml;sbar?", "an der Presse"],
     [["Schraube", wort("kraftschluss", 1), "ja",
-      "St&auml;nder auf der Grundplatte"],
+      "Anschlagleiste auf der Grundplatte"],
      ["Zylinderstift", wort("formschluss", 1), "ja",
-      "richtet das Gesenk aus"],
-     ["Kegelstift", wort("formschluss", 1), "ja",
-      "sichert den Hebel auf der Welle"],
+      "richtet die Anschlagleiste aus"],
+     ["Gewinde", wort("kraftschluss", 1), "ja",
+      "Distanzs&auml;ule in der Grundplatte"],
      ["Steckverbindung", "Formschluss", "ja",
-      "Wellenzapfen in der St&auml;nderbohrung"],
+      "Werkst&uuml;ck in der Ecke der Anschlagleisten"],
      ["Schwei&szlig;naht, Klebung", wort("stoffschluss", 1), "nein",
-      "kommt an dieser Presse nicht vor"]]);
+      "kommt an dieser Vorrichtung nicht vor"]]);
 }
 
 function stuecklisteTabelle(){
   tabelle("tabStueck",
     ["Pos.", "Menge", "Benennung", "Werkstoff / Norm", "Bemerkung"],
-    PRESSE.TEILE.map(function(t){
+    VORRICHTUNG.TEILE.map(function(t){
       return ['<span class="pos">' + t.pos + "</span>", String(t.menge),
         t.benennung, t.werkstoff || "&ndash;", t.bemerkung || "&ndash;"];
     }));
@@ -691,12 +706,12 @@ function gruendeTabelle(){
     ["Grund", "Frage dahinter", "Beispiel an der Presse"],
     [["<b>Zug&auml;nglichkeit</b>",
       "Komme ich sp&auml;ter noch heran?",
-      "Die Federn liegen unter dem Stempelhalter &ndash; danach nicht mehr "
-      + "erreichbar."],
+      "&Uuml;ber den Anschlagleisten steht sp&auml;ter die Bohrplatte. "
+      + "Darunter bleiben 26 mm &ndash; zu wenig f&uuml;r den Schl&uuml;ssel."],
      ["<b>Der Weg</b>",
       "L&auml;sst sich das Teil &uuml;berhaupt noch an seinen Platz bringen?",
-      "Der Exzenterbund ist &#8960;&nbsp;56 und passt durch keine "
-      + "&#8960;-20-Bohrung. Die Welle muss vor den St&auml;ndern liegen."],
+      "Die Spannschraube wird durch das Gewinde der Bohrplatte gedreht. "
+      + "Ohne Platte hat sie nichts, worin sie sitzt."],
      ["<b>Die Funktion</b>",
       "Muss etwas erst ausgerichtet werden?",
       "Erst die Zylinderstifte, dann die Schrauben &ndash; sonst richtet man "
@@ -708,29 +723,29 @@ function planTabelle(){
     ["Nr.", "Arbeitsschritt", "Betriebsmittel", "Pr&uuml;fen"],
     [["1", "Grundplatte auf die Werkbank spannen",
       "Schraubstock, Schutzbacken", "&ndash;"],
-     ["2", "Zwei F&uuml;hrungsbolzen einschrauben", "von Hand, dann SW 6",
-      "bis zum Bund eingeschraubt?"],
-     ["3", "Zwei Druckfedern aufstecken", "von Hand",
-      "sitzen sie auf der Platte auf?"],
-     ["4", "Stempelhalter auf die Bolzen f&auml;deln", "von Hand",
-      "gleitet er leicht?"],
+     ["2", "Vier Zylinderstifte eintreiben", "Kunststoffhammer",
+      "stehen sie 8 mm heraus?"],
+     ["3", "Zwei Anschlagleisten auflegen", "von Hand",
+      "sitzen sie auf den Stiften auf?"],
+     ["4", "Vier Schrauben M6 anziehen", "Innensechskant SW 5",
+      "Leisten liegen plan auf?"],
      ["&hellip;", "&hellip;", "&hellip;", "&hellip;"],
-     ["11", "Handhebel aufschieben", "von Hand",
-      "Nabe liegt am St&auml;nder an?"],
-     ["12", "Kegelstift eintreiben", "Kunststoffhammer, Splinttreiber",
-      "steht er auf der d&uuml;nnen Seite heraus?"]]);
+     ["9", "Spannschraube einschrauben", "von Hand",
+      "l&auml;uft sie leicht?"],
+     ["10", "Kreuzgriff aufschrauben", "von Hand",
+      "sitzt er fest?"]]);
 }
 
 function pruefTabelle(){
   tabelle("tabPruef",
     ["Wann", "Was", "Womit"],
-    [["vor dem Festziehen", "St&auml;nder senkrecht?", "Haarwinkel"],
-     ["vor dem Verschrauben des Gesenks", "Stempel mittig &uuml;ber der Nut?",
-      "Augenma&szlig; und Blechstreifen"],
+    [["vor dem Festziehen", "Anschlagleisten rechtwinklig zueinander?",
+      "Haarwinkel"],
+     ["vor dem Aufsetzen der Bohrplatte", "S&auml;ulen bis zum Bund "
+      + "eingeschraubt?", "Augenma&szlig; und Messschieber"],
      ["beim Anziehen", "Anziehdrehmoment", "Drehmomentschl&uuml;ssel"],
-     ["nach der Montage", "Hub 12&nbsp;mm, Spalt 2&nbsp;mm",
-      "Messschieber"],
-     ["zum Schluss", "Probebiegung", "Streifen 30 &times; 2 mm"]]);
+     ["nach der Montage", "Lochabstand 40&nbsp;mm", "Messschieber"],
+     ["zum Schluss", "Probebohrung", "Lasche 80 &times; 40 &times; 6"]]);
 }
 
 function allesNeuZeichnen(){
@@ -749,8 +764,8 @@ var plan = null;
 
 function planAufbauen(){
   plan = Montageplan.reihenfolge("plan", {
-    teile: PRESSE.TEILE,
-    vorrang: PRESSE.VORRANG,
+    teile: VORRICHTUNG.TEILE,
+    vorrang: VORRICHTUNG.VORRANG,
     sofort: true
   });
 }
@@ -765,14 +780,14 @@ function start(){
   planTabelle();
   pruefTabelle();
 
-  PRESSE.zeichnen("bildPresse");
+  VORRICHTUNG.zeichnen("bildPresse");
   Montageplan.netz("netz", {
-    teile: PRESSE.TEILE,
-    kanten: PRESSE.STRUKTUR,
-    lage: PRESSE.NETZ_LAGE
+    teile: VORRICHTUNG.TEILE,
+    kanten: VORRICHTUNG.STRUKTUR,
+    lage: VORRICHTUNG.NETZ_LAGE
   });
 
-  var z = Montageplan.wieVieleFolgen(PRESSE.TEILE, PRESSE.VORRANG, 300000);
+  var z = Montageplan.wieVieleFolgen(VORRICHTUNG.TEILE, VORRICHTUNG.VORRANG, 300000);
   el("zahlFolgen").textContent = z.abgebrochen
     ? "mehr als " + z.zahl : String(z.zahl);
 
