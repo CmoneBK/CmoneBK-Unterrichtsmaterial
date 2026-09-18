@@ -1187,6 +1187,10 @@
         Object.keys(vor).forEach(function (k) { aus[k] = true; });
         seitenhinweis(neu);
         aendern();
+        /* Der Tabellenbuch-Schalter gilt nur fuer HS10 - er muss also
+           mitbekommen, dass hier gerade ein anderer Bildungsgang gewaehlt
+           wurde, und sich zeigen oder verschwinden. */
+        if (tbW) { tbW.auffrischen(); window.tbkTabellenbuch.anwenden(); }
       }
       var w = B.waehler(uebernehmen);
       feld = w.feld;
