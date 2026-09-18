@@ -52,6 +52,7 @@ const LEKTION = ['assets/bildungsgang.js', 'assets/qr.js', 'assets/pdf.js',
    Materialrepo. */
 const FEEDBACK = 'assets/feedback.js';
 const QUELLEN = 'assets/quellen.js';
+const TABELLENBUCH = 'assets/tabellenbuch.js';
 const THEMA = 'assets/thema.js';
 const THEMA_CSS = 'assets/thema-werkzeug.css';
 
@@ -151,6 +152,10 @@ ${zeile}`;
      dazu. So muss niemand daran denken, das Skript einzubinden - und keine
      Seite traegt es ohne Grund. */
   if (/<meta[^>]+name=["'](?:quellen|normen)["']/i.test(text)) vorBody(QUELLEN);
+  /* Wer etwas fuer den Fall auszeichnet, dass kein Tabellenbuch vorliegt,
+     bekommt den Schalter dazu - lektion.js fragt ihn beim Bauen des
+     Anpassen-Fensters. */
+  if (/<meta[^>]+name=["']tb["']|\sdata-tb=/i.test(text)) vorBody(TABELLENBUCH);
 
   /* 5. Rücklink ans Dateiende, als Letztes. data-ziel="../" führt aus tools/
         heraus zur Übersicht - auf GitHub Pages wie auf t-bk.de. */

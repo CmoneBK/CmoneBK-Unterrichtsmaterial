@@ -215,6 +215,13 @@
         .filter(function (b) { return !b.hidden; })[0];
       if (erster) erster.click();
     }
+
+    /* Wer sonst noch etwas verbirgt, soll danach wieder zum Zug kommen:
+       Ein Tabellenauszug, der in einer eben ein- oder ausgeblendeten Karte
+       liegt, gehoert uns nicht. */
+    try {
+      document.dispatchEvent(new CustomEvent('tbk-zuschnitt'));
+    } catch (e) { /* alte Browser: dann bleibt es beim Zuschnitt */ }
   }
 
   /* ---------- Bildungsgang ---------- */
@@ -1194,6 +1201,21 @@
       B.beiFremderWahl(function (neu) {
         feld.value = neu;
         uebernehmen(neu);
+        if (tbW) tbW.auffrischen();
+      });
+    }
+
+    /* Ob das Tabellenbuch auf dem Tisch liegt, ist eine eigene Frage - und
+       eine, die sich je Lerngruppe anders beantwortet. Der Schalter steht
+       deshalb neben dem Bildungsgang und nicht in ihm. */
+    var tbW = null;
+    var TB = window.tbkTabellenbuch;
+    if (TB) {
+      tbW = TB.waehler(function () {});
+      tafel.querySelector('#lk-bildungsgang').appendChild(tbW.knoten);
+      TB.beiFremderWahl(function () {
+        tbW.auffrischen();
+        TB.anwenden();
       });
     }
 
